@@ -24,13 +24,14 @@ var provider = new ServiceCollection()
 
 ## Additions/Changes from Discord.InteractivityAddon
 
- - Paginators now supports buttons.
- - Selections now supports buttons and select menus.
+ - Paginators now support buttons.
+ - Selections now support buttons and select menus.
  - Merged `MessageSelection` and `ReactionSelection` into `Selection`.
- - Added `EmoteConverter` and `StringConverter` and  to `SelectionBuilder`. These properties are used to properly convert the generic options in the selection into the options that can be used to receive the incoming inputs, like messages (from `StringConverter`) and reactions (from `EmoteConverter`), buttons and select menus (emotes and labels)
+ - Added `EmoteConverter` and `StringConverter` to `SelectionBuilder`. These properties are used to properly convert the generic options in the selection into the options that can be used to receive the incoming inputs, like messages (from `StringConverter`) and reactions (from `EmoteConverter`), buttons and select menus (emotes and labels)
  - Added `EqualityComparer`to `SelectionBuilder`. This is used to determine there are no duplicate options.
  - Added `EmoteSelectionBuilder` and `EmoteSelectionBuilder<TValue>`, they are a variant of `SelectionBuilder` that uses emotes as input and provides overriden properties with default values, making them ready to use in selections using reactions and buttons.
  - Added `InteractiveStatus` to `InteractiveResult`, containing all the possible status of an interactive result.
+ - Now the paginator/selection builders implement the fluent builder pattern using recursive generics. This makes creating custom builders much easier.
  - Now `SendPaginatorAsync()` and `SendSelectionAsync()` returns an `InteractiveMessageResult`. This is the same as `InteractiveResult` but contains the message that has the paginator/selection.
  - Added a `messageAction` parameter to `SendPaginatorAsync()` and `SendSelectionAsync()`. This allows to execute any action after the message containing the paginator/selection is sent or modified.
  - Now the paginators don't reset their internal timeout timer when a valid input is received. This option can be enabled again using the `resetTimeoutOnInput` parameter.
