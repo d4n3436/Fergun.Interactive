@@ -1,12 +1,14 @@
 # Fergun.Interactive
-[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE) ![NuGet](https://img.shields.io/nuget/vpre/Fergun.Interactive) ![Nuget](https://img.shields.io/nuget/vpre/Fergun.Interactive.Labs?label=nuget%20%28D.Net%20Labs%29)
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+[![NuGet](https://img.shields.io/nuget/vpre/Fergun.Interactive)](https://www.nuget.org/packages/Fergun.Interactive)
+[![Nuget](https://img.shields.io/nuget/vpre/Fergun.Interactive.Labs?label=nuget%20%28D.Net%20Labs%29)](https://www.nuget.org/packages/Fergun.Interactive.Labs)
 
 Fergun.Interactive is an addon that adds interactive actions to commands.
 
 This is a fork of [Discord.InteractivityAddon](https://github.com/Playwo/Discord.InteractivityAddon) that adds several features, including more customization and support for interactions (buttons and select menus).
 
 ## Usage
-- Install via Nuget:
+- Install via NuGet:
   - [Fergun.Interactive](https://www.nuget.org/packages/Fergun.Interactive) (For Discord.Net)
   - [Fergun.Interactive.Labs](https://www.nuget.org/packages/Fergun.Interactive.Labs) (For Discord.Net.Labs, supports buttons and select menus)
   
@@ -33,6 +35,8 @@ var provider = new ServiceCollection()
  - Added `EqualityComparer`to `SelectionBuilder`. This is used to determine there are no duplicate options.
  - Added `EmoteSelectionBuilder` and `EmoteSelectionBuilder<TValue>`, they are a variant of `SelectionBuilder` that uses emotes as input and provides overriden properties with default values, making them ready to use in selections using reactions and buttons.
  - Added `InteractiveStatus` to `InteractiveResult`, containing all the possible status of an interactive result.
+ - In `PaginatorBuilder`, now `Emotes`, `WithEmotes()` and `AddEmote()` are named `Options`, `WithOptions()` and `AddOption()`, respectively.
+ - In the methods that waits for a socket entity (`NextMessageAsync`, `NextReactionAsync`, etc.), now the `bool` parameter in `action` returns whether the entity *passed* the filter (the previous behavior was the same but inverted, not sure if this was intended).
  - Now the paginator/selection builders implement the fluent builder pattern using recursive generics. This makes creating custom builders much easier.
  - Now `SendPaginatorAsync()` and `SendSelectionAsync()` returns an `InteractiveMessageResult`. This is the same as `InteractiveResult` but contains the message that has the paginator/selection.
  - Added a `messageAction` parameter to `SendPaginatorAsync()` and `SendSelectionAsync()`. This allows to execute any action after the message containing the paginator/selection is sent or modified.
