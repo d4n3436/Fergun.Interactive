@@ -1,0 +1,47 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <LangVersion>8.0</LangVersion>
+    <Authors>d4n3436</Authors>
+    <NeutralLanguage>en</NeutralLanguage>
+    <TargetFrameworks>netstandard2.0;netstandard2.1</TargetFrameworks>
+    <Configurations>Debug;Release;DebugLabs;ReleaseLabs</Configurations>
+    <RestoreAdditionalProjectSources>https://www.myget.org/F/discord-net/api/v3/index.json</RestoreAdditionalProjectSources>
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <PackageProjectUrl>https://github.com/d4n3436/Fergun.Interactive</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/d4n3436/Fergun.Interactive</RepositoryUrl>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
+    <PackageTags>discord;discordapp;discord-bot;discordbot;discord-net;interactive</PackageTags>
+    <Description>
+      A fork of Discord.InteractivityAddon that adds several features, including more customization and support for buttons and select menus (with Fergun.Interactive.Labs).
+    </Description>
+    <PackageReleaseNotes>Initial release.</PackageReleaseNotes>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)'=='ReleaseLabs' Or '$(Configuration)'=='DebugLabs'">
+    <PackageId>$(MSBuildProjectName).Labs</PackageId>
+    <AssemblyName>$(MSBuildProjectName).Labs</AssemblyName>
+    <DefineConstants>$(DefineConstants)TRACE;DNETLABS</DefineConstants>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)'=='ReleaseLabs'">
+    <Optimize>True</Optimize>
+  </PropertyGroup>
+  
+  <Choose>
+    <When Condition="'$(Configuration)'=='Release' Or '$(Configuration)'=='Debug'">
+      <ItemGroup>
+	    <PackageReference Include="Discord.Net.WebSocket" Version="2.4.0" />
+      </ItemGroup>
+    </When>
+    <Otherwise>
+      <ItemGroup>
+	    <PackageReference Include="Discord.Net.Labs.WebSocket" Version="2.4.9" />
+      </ItemGroup>
+    </Otherwise>
+  </Choose>
+
+</Project>
