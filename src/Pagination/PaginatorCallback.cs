@@ -128,7 +128,7 @@ namespace Fergun.Interactive.Pagination
 
             if (action == PaginatorAction.Exit)
             {
-                await interaction.AcknowledgeAsync().ConfigureAwait(false);
+                await interaction.DeferAsync().ConfigureAwait(false);
                 Cancel();
                 return;
             }
@@ -140,8 +140,12 @@ namespace Fergun.Interactive.Pagination
                 var currentPage = await Paginator.GetOrLoadCurrentPageAsync().ConfigureAwait(false);
                 var buttons = Paginator.BuildComponents(false);
 
-                await interaction.RespondAsync(currentPage.Text, embed: currentPage.Embed,
-                    type: InteractionResponseType.UpdateMessage, component: buttons).ConfigureAwait(false);
+                await interaction.UpdateAsync(x =>
+                {
+                    x.Content = currentPage.Text;
+                    x.Embed = currentPage.Embed;
+                    x.Components = buttons;
+                }).ConfigureAwait(false);
             }
         }
 #endif

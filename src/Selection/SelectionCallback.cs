@@ -194,7 +194,7 @@ namespace Fergun.Interactive.Selection
                 return;
             }
 
-            await interaction.AcknowledgeAsync().ConfigureAwait(false);
+            await interaction.DeferAsync().ConfigureAwait(false);
 
             bool isCanceled = Selection.AllowCancel
                 && (Selection.EmoteConverter?.Invoke(Selection.CancelOption)?.ToString()

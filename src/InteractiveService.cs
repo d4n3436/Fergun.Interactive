@@ -638,11 +638,7 @@ namespace Fergun.Interactive
             return Task.CompletedTask;
         }
 
-#if DNETLABS
         private Task ReactionAdded(Cacheable<IUserMessage, ulong> cachedMessage, Cacheable<IMessageChannel, ulong> cachedChannel, SocketReaction reaction)
-#else
-        private Task ReactionAdded(Cacheable<IUserMessage, ulong> cachedMessage, ISocketMessageChannel channel, SocketReaction reaction)
-#endif
         {
             if (reaction.UserId != _client.CurrentUser.Id
                 && _callbacks.TryGetValue(reaction.MessageId, out var callback))

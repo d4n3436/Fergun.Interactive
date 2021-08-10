@@ -1,6 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
+    <Version>1.0.1-dev</Version>
     <LangVersion>8.0</LangVersion>
     <Authors>d4n3436</Authors>
     <NeutralLanguage>en</NeutralLanguage>
@@ -18,7 +19,7 @@
     <Description>
       A fork of Discord.InteractivityAddon that adds several features, including more customization and support for buttons and select menus (with Fergun.Interactive.Labs).
     </Description>
-    <PackageReleaseNotes>Initial release.</PackageReleaseNotes>
+    <PackageReleaseNotes>Update Discord.Net/Discord.Net.Labs to pre-release versions.</PackageReleaseNotes>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)'=='ReleaseLabs' Or '$(Configuration)'=='DebugLabs'">
@@ -34,12 +35,12 @@
   <Choose>
     <When Condition="'$(Configuration)'=='Release' Or '$(Configuration)'=='Debug'">
       <ItemGroup>
-	    <PackageReference Include="Discord.Net.WebSocket" Version="2.4.0" />
+	    <PackageReference Include="Discord.Net.WebSocket" Version="3.0.0-dev-20210710.3" />
       </ItemGroup>
     </When>
     <Otherwise>
       <ItemGroup>
-	    <PackageReference Include="Discord.Net.Labs.WebSocket" Version="2.4.9" />
+	    <PackageReference Include="Discord.Net.Labs.WebSocket" Version="3.0.1-pre" />
       </ItemGroup>
     </Otherwise>
   </Choose>
