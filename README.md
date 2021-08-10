@@ -1,7 +1,9 @@
 # Fergun.Interactive
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE) ![NuGet](https://img.shields.io/nuget/vpre/Fergun.Interactive) ![Nuget](https://img.shields.io/nuget/vpre/Fergun.Interactive.Labs?label=nuget%20%28D.Net%20Labs%29)
 
-A fork of [Discord.InteractivityAddon](https://github.com/Playwo/Discord.InteractivityAddon) that adds several features, including more customization and support for interactions (buttons and select menus).
+Fergun.Interactive is an addon that adds interactive actions to commands.
+
+This is a fork of [Discord.InteractivityAddon](https://github.com/Playwo/Discord.InteractivityAddon) that adds several features, including more customization and support for interactions (buttons and select menus).
 
 ## Usage
 - Install via Nuget:
