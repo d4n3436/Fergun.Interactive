@@ -184,7 +184,7 @@ namespace Fergun.Interactive.Pagination
         }
 
         /// <summary>
-        /// Sets input type, that is, what is used to interact with the <typeparamref name="TPaginator"/>.
+        /// Sets the input type, that is, what is used to interact with the <typeparamref name="TPaginator"/>.
         /// </summary>
         /// <param name="type">The input type.</param>
         /// <returns>This builder.</returns>

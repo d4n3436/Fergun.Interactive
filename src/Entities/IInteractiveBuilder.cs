@@ -40,7 +40,7 @@ namespace Fergun.Interactive
         DeletionOptions Deletion { get; set; }
 
         /// <summary>
-        /// Gets or sets input type, that is, what is used to interact with the <typeparamref name="TElement"/>.
+        /// Gets or sets the input type, that is, what is used to interact with the <typeparamref name="TElement"/>.
         /// </summary>
         InputType InputType { get; set; }
 

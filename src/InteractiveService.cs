@@ -535,7 +535,7 @@ namespace Fergun.Interactive
             var action = result.Status switch
             {
                 InteractiveStatus.Timeout => element.ActionOnTimeout,
-                InteractiveStatus.Canceled => element.ActionOnTimeout,
+                InteractiveStatus.Canceled => element.ActionOnCancellation,
                 InteractiveStatus.Success when element is BaseSelection<TOption> selection => selection.ActionOnSuccess,
                 InteractiveStatus.Unknown => throw new InvalidOperationException("Unknown action."),
                 _ => throw new InvalidOperationException("Unknown action.")

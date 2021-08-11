@@ -250,6 +250,17 @@ namespace Fergun.Interactive.Selection
         }
 
         /// <summary>
+        /// Sets the <see cref="Page"/> which the <see cref="BaseSelection{TOption}"/> gets modified to after a valid input is received (except cancellation inputs).
+        /// </summary>
+        /// <param name="page">The page.</param>
+        /// <returns>This builder.</returns>
+        public virtual TBuilder WithSuccessPage(PageBuilder page)
+        {
+            SuccessPage = page;
+            return (TBuilder)this;
+        }
+
+        /// <summary>
         /// Sets what type of inputs the <see cref="BaseSelection{TOption}"/> should delete.
         /// </summary>
         /// <param name="deletion">The deletion options.</param>
@@ -261,7 +272,7 @@ namespace Fergun.Interactive.Selection
         }
 
         /// <summary>
-        /// Sets input type, that is, what is used to interact with the <see cref="BaseSelection{TOption}"/>.
+        /// Sets the input type, that is, what is used to interact with the <see cref="BaseSelection{TOption}"/>.
         /// </summary>
         /// <param name="type">The input type.</param>
         /// <returns>This builder.</returns>

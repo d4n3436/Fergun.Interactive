@@ -1,7 +1,5 @@
 # Fergun.Interactive
-[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
-[![NuGet](https://img.shields.io/nuget/vpre/Fergun.Interactive)](https://www.nuget.org/packages/Fergun.Interactive)
-[![Nuget](https://img.shields.io/nuget/vpre/Fergun.Interactive.Labs?label=nuget%20%28D.Net%20Labs%29)](https://www.nuget.org/packages/Fergun.Interactive.Labs)
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE) [![NuGet](https://img.shields.io/nuget/vpre/Fergun.Interactive)](https://www.nuget.org/packages/Fergun.Interactive) [![Nuget](https://img.shields.io/nuget/vpre/Fergun.Interactive.Labs?label=nuget%20%28D.Net%20Labs%29)](https://www.nuget.org/packages/Fergun.Interactive.Labs)
 
 Fergun.Interactive is an addon that adds interactive actions to commands.
 
@@ -16,6 +14,9 @@ This is a fork of [Discord.InteractivityAddon](https://github.com/Playwo/Discord
   
 - Add the `InteractiveService` into your service provider:
 ```cs
+using Fergun.Interactive;
+...
+
 var provider = new ServiceCollection()
     .AddSingleton<InteractiveService>()
     ...
@@ -24,7 +25,23 @@ var provider = new ServiceCollection()
 
 ## Examples
 
-- TODO (Meanwhile you can use the examples from Discord.InteractivityAddon, they should work fine)
+The [ExampleBot](ExampleBot) contains multiple examples with comments. The default prefix is `!`.
+
+Compile with the `DebugLabs` or `ReleaseLabs` configuration to be able to use interactions.
+
+Example modules:
+- Waiting for socket entities (messages, reactions, etc.)
+  - WIP
+- Selection
+  - [Simple selection message](ExampleBot/Modules/SelectionModule.cs#24) (`!select`)
+  - [Emote selection message](ExampleBot/Modules/SelectionModule.cs#64) (`!select emote`) (for selections using reactions/buttons as input)
+  - [Emote selection message 2](ExampleBot/Modules/SelectionModule.cs#98) (`!select emote2`)
+  - [Selection message with extra features](ExampleBot/Modules/SelectionModule.cs#135) (`!select extra`)
+  - [Menu](ExampleBot/Modules/SelectionModule.cs#193) (`!select menu`) (How to reuse a selection message)
+
+- Paginator
+  - WIP
+
 
 ## Additions/Changes from Discord.InteractivityAddon
 
@@ -58,12 +75,9 @@ var provider = new ServiceCollection()
    - `DelayedSendMessageAndDeleteAsync()`
    - `DelayedDeleteMessageAsync()`
    - `DelayedSendFileAndDeleteAsync()`
-   - `DelayedDeleteMessageAsync()`
    
    If you don't want to wait for completion, simply discard the Task:
 
    ```cs
    _ = Interactive.DelayedSendMessageAndDeleteAsync(...);
    ```
-   
-   
