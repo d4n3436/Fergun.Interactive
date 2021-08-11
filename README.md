@@ -33,11 +33,11 @@ Example modules:
 - Waiting for socket entities (messages, reactions, etc.)
   - WIP
 - Selection
-  - [Simple selection message](ExampleBot/Modules/SelectionModule.cs#24) (`!select`)
-  - [Emote selection message](ExampleBot/Modules/SelectionModule.cs#64) (`!select emote`) (for selections using reactions/buttons as input)
-  - [Emote selection message 2](ExampleBot/Modules/SelectionModule.cs#98) (`!select emote2`)
-  - [Selection message with extra features](ExampleBot/Modules/SelectionModule.cs#135) (`!select extra`)
-  - [Menu](ExampleBot/Modules/SelectionModule.cs#193) (`!select menu`) (How to reuse a selection message)
+  - [Simple selection message](ExampleBot/Modules/SelectionModule.cs#L24) (`!select`)
+  - [Emote selection message](ExampleBot/Modules/SelectionModule.cs#L64) (`!select emote`) (for selections using reactions/buttons as input)
+  - [Emote selection message 2](ExampleBot/Modules/SelectionModule.cs#L98) (`!select emote2`)
+  - [Selection message with extra features](ExampleBot/Modules/SelectionModule.cs#L135) (`!select extra`)
+  - [Menu](ExampleBot/Modules/SelectionModule.cs#L193) (`!select menu`) (How to reuse a selection message)
 
 - Paginator
   - WIP
