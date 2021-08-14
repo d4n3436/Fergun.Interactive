@@ -12,7 +12,7 @@ namespace ExampleBot
 {
     internal class Program
     {
-        public static bool CanUseInteractions;
+        public static bool CanUseInteractions { get; set; }
 
         public static readonly DiscordSocketConfig ClientConfig = new();
 
@@ -28,7 +28,6 @@ namespace ExampleBot
 
             var services = ConfigureServices();
             var client = services.GetRequiredService<DiscordSocketClient>();
-
 
             services.GetRequiredService<CommandService>().Log += LogAsync;
             client.Log += LogAsync;

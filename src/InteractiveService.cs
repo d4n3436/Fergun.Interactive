@@ -44,10 +44,13 @@ namespace Fergun.Interactive
             InteractiveGuards.NotNull(client, nameof(client));
             _client = client;
             _client.MessageReceived += MessageReceived;
-            _client.ReactionAdded += ReactionAdded;
 #if DNETLABS
+            _client.ReactionAdded += _reactionAddedNew;
             _client.InteractionCreated += InteractionCreated;
+#else
+            DynamicSubscribeReactionAdded();
 #endif
+
         }
 
         /// <summary>
@@ -316,7 +319,7 @@ namespace Fergun.Interactive
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> to cancel the paginator.</param>
         /// <returns>
         /// A task that represents the asynchronous operation for sending the paginator and waiting for a timeout or cancellation.<br/>
-        /// The task result contains an <see cref="InteractiveMessageResult{T}"/> with the message used for pagination
+        /// The task result contains an <see cref="InteractiveMessageResult"/> with the message used for pagination
         /// (which may not be valid if the message has been deleted), the elapsed time and the status.<br/>
         /// If the paginator only contains one page, the task will return when the message has been sent and the result
         /// will contain the sent message and a <see cref="InteractiveStatus.Success"/> status.
@@ -620,6 +623,36 @@ namespace Fergun.Interactive
             }
         }
 
+        private void DynamicSubscribeReactionAdded()
+        {
+            // The ReactionAdded event signature was changed in a pre-release version of Discord.Net 3.0
+            // This breaks compatibility between version 2.4.0 and 3.0
+            // Fortunately it's possible to keep backwards compatibility by dynamically subscribing to the ReactionAdded event
+
+            // Get event
+            var eventInfo = _client
+                .GetType()
+                .GetEvent(nameof(_client.ReactionAdded));
+
+            // Get the second argument of ReactionAdded, this is either "ISocketMessageChannel" (old) or "Cacheable<IMessageChannel, ulong>" (new)
+            var secondArgName = eventInfo!
+                .EventHandlerType!
+                .GetMethod("Invoke")!
+                .GetParameters()[1]
+                .ParameterType
+                .Name;
+
+            var del = secondArgName == nameof(ISocketMessageChannel) ? (Delegate)ReactionAddedOld : ReactionAddedNew;
+
+            eventInfo.AddEventHandler(_client, del);
+        }
+
+        private Func<Cacheable<IUserMessage, ulong>, IMessageChannel, SocketReaction, Task> ReactionAddedOld
+            => (cachedMessage, channel, reaction) => ReactionAdded(reaction);
+
+        private Func<Cacheable<IUserMessage, ulong>, Cacheable<IMessageChannel, ulong>, SocketReaction, Task> ReactionAddedNew
+            => (cachedMessage, cachedChannel, reaction) => ReactionAdded(reaction);
+
         private Task MessageReceived(SocketMessage message)
         {
             if (message.Author.Id == _client.CurrentUser.Id)
@@ -638,7 +671,7 @@ namespace Fergun.Interactive
             return Task.CompletedTask;
         }
 
-        private Task ReactionAdded(Cacheable<IUserMessage, ulong> cachedMessage, Cacheable<IMessageChannel, ulong> cachedChannel, SocketReaction reaction)
+        private Task ReactionAdded(SocketReaction reaction)
         {
             if (reaction.UserId != _client.CurrentUser.Id
                 && _callbacks.TryGetValue(reaction.MessageId, out var callback))

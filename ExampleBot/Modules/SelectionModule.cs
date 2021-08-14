@@ -67,7 +67,7 @@ namespace ExampleBot.Modules
             {
                 new Emoji("📱"),
                 new Emoji("🖥"),
-                new Emoji("💻"),
+                new Emoji("💻")
             };
 
             var pageBuilder = new PageBuilder()
@@ -103,7 +103,7 @@ namespace ExampleBot.Modules
                 [new Emoji("\u0032\u20E3")] = "two",
                 [new Emoji("\u0033\u20E3")] = "three",
                 [new Emoji("\u0034\u20E3")] = "four",
-                [new Emoji("\u0035\u20E3")] = "five",
+                [new Emoji("\u0035\u20E3")] = "five"
             };
 
             var pageBuilder = new PageBuilder()
