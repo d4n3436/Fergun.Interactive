@@ -10,8 +10,6 @@ This is a fork of [Discord.InteractivityAddon](https://github.com/Playwo/Discord
   - [Fergun.Interactive](https://www.nuget.org/packages/Fergun.Interactive) (For Discord.Net)
   - [Fergun.Interactive.Labs](https://www.nuget.org/packages/Fergun.Interactive.Labs) (For Discord.Net.Labs, supports buttons and select menus)
   
-  Note: Use the preview version if you're using a preview version of Discord.Net(.Labs)
-  
 - Add the `InteractiveService` into your service provider:
 ```cs
 using Fergun.Interactive;
@@ -32,6 +30,7 @@ Compile with the `DebugLabs` or `ReleaseLabs` configuration to be able to use in
 Example modules:
 - Waiting for socket entities (messages, reactions, etc.)
   - WIP
+
 - Selection
   - [Simple selection message](ExampleBot/Modules/SelectionModule.cs#L24) (`!select`)
   - [Emote selection message](ExampleBot/Modules/SelectionModule.cs#L64) (`!select emote`) (for selections using reactions/buttons as input)
