@@ -635,14 +635,13 @@ namespace Fergun.Interactive
                 .GetEvent(nameof(_client.ReactionAdded));
 
             // Get the second argument of ReactionAdded, this is either "ISocketMessageChannel" (old) or "Cacheable<IMessageChannel, ulong>" (new)
-            var secondArgName = eventInfo!
+            var secondArg = eventInfo!
                 .EventHandlerType!
                 .GetMethod("Invoke")!
                 .GetParameters()[1]
-                .ParameterType
-                .Name;
+                .ParameterType;
 
-            var del = secondArgName == nameof(ISocketMessageChannel) ? (Delegate)ReactionAddedOld : ReactionAddedNew;
+            var del = secondArg == typeof(ISocketMessageChannel) ? (Delegate)ReactionAddedOld : ReactionAddedNew;
 
             eventInfo.AddEventHandler(_client, del);
         }
