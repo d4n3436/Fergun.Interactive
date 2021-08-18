@@ -1,7 +1,7 @@
 # Fergun.Interactive
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE) [![NuGet](https://img.shields.io/nuget/vpre/Fergun.Interactive)](https://www.nuget.org/packages/Fergun.Interactive) [![Nuget](https://img.shields.io/nuget/vpre/Fergun.Interactive.Labs?label=nuget%20%28D.Net%20Labs%29)](https://www.nuget.org/packages/Fergun.Interactive.Labs)
 
-Fergun.Interactive is an addon that adds interactive actions to commands.
+Fergun.Interactive is an addon that adds interactive functionality to commands.
 
 This is a fork of [Discord.InteractivityAddon](https://github.com/Playwo/Discord.InteractivityAddon) that adds several features, including more customization and support for interactions (buttons and select menus).
 
@@ -29,17 +29,21 @@ Compile with the `DebugLabs` or `ReleaseLabs` configuration to be able to use in
 
 Example modules:
 - Waiting for socket entities (messages, reactions, etc.)
-  - WIP
+  - [Wait for a message](ExampleBot/Modules/WaitModule.cs#L16) (`!next message`)
+  - [Wait for a reaction](ExampleBot/Modules/WaitModule.cs#L27) (`!next reaction`)
+  - [Wait for an interaction](ExampleBot/Modules/WaitModule.cs#L43) (`!next interaction`)
 
 - Selection
-  - [Simple selection message](ExampleBot/Modules/SelectionModule.cs#L24) (`!select`)
-  - [Emote selection message](ExampleBot/Modules/SelectionModule.cs#L64) (`!select emote`) (for selections using reactions/buttons as input)
-  - [Emote selection message 2](ExampleBot/Modules/SelectionModule.cs#L98) (`!select emote2`)
-  - [Selection message with extra features](ExampleBot/Modules/SelectionModule.cs#L135) (`!select extra`)
+  - [Simple selection](ExampleBot/Modules/SelectionModule.cs#L24) (`!select`)
+  - [Emote selection](ExampleBot/Modules/SelectionModule.cs#L64) (`!select emote`) (for selections using reactions/buttons as input)
+  - [Emote selection 2](ExampleBot/Modules/SelectionModule.cs#L98) (`!select emote2`)
+  - [Selection with extra features](ExampleBot/Modules/SelectionModule.cs#L135) (`!select extra`)
   - [Menu](ExampleBot/Modules/SelectionModule.cs#L193) (`!select menu`) (How to reuse a selection message)
 
 - Paginator
-  - WIP
+  - [Static paginator](ExampleBot/Modules/PaginatorModule.cs#L23) (`!paginator`)
+  - [Lazy paginator](ExampleBot/Modules/PaginatorModule.cs#L46) (`!paginator lazy`)
+  - [Image paginator](ExampleBot/Modules/PaginatorModule.cs#L68) (`!paginator img [query]`)
 
 
 ## Additions/Changes from Discord.InteractivityAddon

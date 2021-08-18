@@ -221,7 +221,7 @@ namespace Fergun.Interactive.Pagination
             Options.Add(new Emoji("⏭"), PaginatorAction.SkipToEnd);
             Options.Add(new Emoji("🛑"), PaginatorAction.Exit);
 
-            return this as TBuilder;
+            return (TBuilder)this;
         }
 
         /// <summary>

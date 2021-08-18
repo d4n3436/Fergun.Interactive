@@ -123,7 +123,7 @@ namespace ExampleBot.Modules
             string selected = result.Value.Value; // Selected option
 
             var builder = new EmbedBuilder()
-                .WithDescription(result.IsSuccess ? $"You selected: {selected} ({emote})" : "Timeout!")
+                .WithDescription(result.IsSuccess ? $"You selected: {emote} ({selected})" : "Timeout!")
                 .WithColor(GetRandomColor());
 
             await ReplyAsync(embed: builder.Build());

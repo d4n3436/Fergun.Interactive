@@ -45,7 +45,7 @@ namespace Fergun.Interactive
             _client = client;
             _client.MessageReceived += MessageReceived;
 #if DNETLABS
-            _client.ReactionAdded += _reactionAddedNew;
+            _client.ReactionAdded += ReactionAddedNew;
             _client.InteractionCreated += InteractionCreated;
 #else
             DynamicSubscribeReactionAdded();
@@ -623,6 +623,7 @@ namespace Fergun.Interactive
             }
         }
 
+#if !DNETLABS
         private void DynamicSubscribeReactionAdded()
         {
             // The ReactionAdded event signature was changed in a pre-release version of Discord.Net 3.0
@@ -648,6 +649,7 @@ namespace Fergun.Interactive
 
         private Func<Cacheable<IUserMessage, ulong>, IMessageChannel, SocketReaction, Task> ReactionAddedOld
             => (cachedMessage, channel, reaction) => ReactionAdded(reaction);
+#endif
 
         private Func<Cacheable<IUserMessage, ulong>, Cacheable<IMessageChannel, ulong>, SocketReaction, Task> ReactionAddedNew
             => (cachedMessage, cachedChannel, reaction) => ReactionAdded(reaction);
