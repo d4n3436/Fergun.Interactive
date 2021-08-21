@@ -28,7 +28,6 @@ namespace Fergun.Interactive
         /// </summary>
         PageBuilder CanceledPage { get; set; }
 
-
         /// <summary>
         /// Gets or sets the <see cref="Page"/> which the <typeparamref name="TElement"/> gets modified to after a timeout.
         /// </summary>
