@@ -114,7 +114,7 @@ namespace Fergun.Interactive.Pagination
         /// </summary>
         /// <param name="pageIndex">The index of the page to set.</param>
         /// <returns>A task representing the asynchronous operation. The result contains whether the operation succeeded.</returns>
-        public virtual async Task<bool> SetPageAsync(int pageIndex)
+        public virtual async ValueTask<bool> SetPageAsync(int pageIndex)
         {
             if (pageIndex < 0 || CurrentPageIndex == pageIndex || pageIndex > MaxPageIndex)
             {
@@ -152,14 +152,14 @@ namespace Fergun.Interactive.Pagination
         /// </summary>
         /// <param name="action">The paginator action</param>
         /// <returns>A task representing the asynchronous operation. The task result contains whether the action succeeded.</returns>
-        public virtual Task<bool> ApplyActionAsync(PaginatorAction action) =>
+        public virtual ValueTask<bool> ApplyActionAsync(PaginatorAction action) =>
             action switch
             {
                 PaginatorAction.Backward => SetPageAsync(CurrentPageIndex - 1),
                 PaginatorAction.Forward => SetPageAsync(CurrentPageIndex + 1),
                 PaginatorAction.SkipToStart => SetPageAsync(0),
                 PaginatorAction.SkipToEnd => SetPageAsync(MaxPageIndex),
-                _ => Task.FromResult(false)
+                _ => new ValueTask<bool>(false)
             };
 
 #if DNETLABS
