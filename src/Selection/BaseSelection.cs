@@ -147,7 +147,7 @@ namespace Fergun.Interactive.Selection
             if (InputType != InputType.Reactions) return;
             if (EmoteConverter == null)
             {
-                throw new InvalidOperationException("Reaction-based selections must have a valid emote converter.");
+                throw new InvalidOperationException($"Reaction-based selections must have a valid {nameof(EmoteConverter)}.");
             }
 
             foreach (var selection in Options)
@@ -173,7 +173,7 @@ namespace Fergun.Interactive.Selection
         {
             if (InputType != InputType.Buttons && InputType != InputType.SelectMenus)
             {
-                throw new InvalidOperationException("InputType must be either Buttons or SelectMenus.");
+                throw new InvalidOperationException($"{nameof(InputType)} must be either {InputType.Buttons} or {InputType.SelectMenus}.");
             }
 
             var builder = new ComponentBuilder();
@@ -185,7 +185,7 @@ namespace Fergun.Interactive.Selection
                     string label = StringConverter?.Invoke(selection);
                     if (emote == null && label == null)
                     {
-                        throw new InvalidOperationException("Failed to set a valid emote and label to the button.");
+                        throw new InvalidOperationException($"Neither {nameof(EmoteConverter)} nor {nameof(StringConverter)} returned a valid emote or string.");
                     }
 
                     builder.WithButton(label, emote?.ToString() ?? label, ButtonStyle.Primary, emote, null, disableAll);
@@ -201,7 +201,7 @@ namespace Fergun.Interactive.Selection
                     string label = StringConverter?.Invoke(selection);
                     if (emote == null && label == null)
                     {
-                        throw new InvalidOperationException("Failed to set a valid emote and label to the menu option.");
+                        throw new InvalidOperationException($"Neither {nameof(EmoteConverter)} nor {nameof(StringConverter)} returned a valid emote or string.");
                     }
 
                     var option = new SelectMenuOptionBuilder()

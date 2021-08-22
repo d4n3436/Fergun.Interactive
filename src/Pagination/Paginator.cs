@@ -17,7 +17,7 @@ namespace Fergun.Interactive.Pagination
         public bool IsUserRestricted => Users?.Count > 0;
 
         /// <summary>
-        /// Gets the index of the current page of the this paginator.
+        /// Gets the index of the current page of this paginator.
         /// </summary>
         public int CurrentPageIndex { get; protected set; }
 
@@ -27,7 +27,7 @@ namespace Fergun.Interactive.Pagination
         public abstract int MaxPageIndex { get; }
 
         /// <summary>
-        /// Gets a read-only collection of users who can interact with the this paginator.
+        /// Gets a read-only collection of users who can interact with this paginator.
         /// </summary>
         public IReadOnlyCollection<IUser> Users { get; }
 

@@ -63,7 +63,7 @@ namespace Fergun.Interactive
                 return ExecuteAsync(input);
             }
 
-            throw new InvalidOperationException("Cannot execute this callback using a message.");
+            throw new ArgumentException("Cannot execute this callback using a message.", nameof(message));
         }
 
         /// <inheritdoc/>
@@ -74,7 +74,7 @@ namespace Fergun.Interactive
                 return ExecuteAsync(input);
             }
 
-            throw new InvalidOperationException("Cannot execute this callback using a reaction.");
+            throw new ArgumentException("Cannot execute this callback using a reaction.", nameof(reaction));
         }
 
 #if DNETLABS
@@ -86,7 +86,7 @@ namespace Fergun.Interactive
                 return ExecuteAsync(input);
             }
 
-            throw new InvalidOperationException("Cannot execute this callback using a reaction.");
+            throw new ArgumentException("Cannot execute this callback using an interaction.", nameof(interaction));
         }
 #endif
 

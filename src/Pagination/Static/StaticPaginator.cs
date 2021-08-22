@@ -33,7 +33,7 @@ namespace Fergun.Interactive.Pagination
 
             if (pages.Count == 0)
             {
-                throw new InvalidOperationException("A paginator needs at least one page.");
+                throw new ArgumentException("A paginator needs at least one page.", nameof(pages));
             }
 
             Pages = pages;
