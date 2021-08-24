@@ -369,6 +369,7 @@ namespace Fergun.Interactive
         /// <param name="interaction">The interaction to respond.</param>
         /// <param name="timeout">The time until the <see cref="Paginator"/> times out.</param>
         /// <param name="responseType">The response type. When using the "Deferred" response types, you must pass an interaction that has already been deferred.</param>
+        /// <param name="ephemeral">Whether the response message should be ephemeral. Ignored if modifying a non-ephemeral message.</param>
         /// <param name="messageAction">A method that gets executed once when a message containing the paginator is sent or modified.</param>
         /// <param name="resetTimeoutOnInput">Whether to reset the internal timeout timer when a valid input is received.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> to cancel the paginator.</param>
@@ -383,8 +384,8 @@ namespace Fergun.Interactive
         /// <exception cref="ArgumentNullException"/>
         /// <exception cref="NotSupportedException"/>
         public async Task<InteractiveMessageResult> SendPaginatorAsync(Paginator paginator, SocketInteraction interaction, TimeSpan? timeout = null,
-            InteractionResponseType responseType = InteractionResponseType.ChannelMessageWithSource, Action<IUserMessage> messageAction = null,
-            bool resetTimeoutOnInput = false, CancellationToken cancellationToken = default)
+            InteractionResponseType responseType = InteractionResponseType.ChannelMessageWithSource, bool ephemeral = false,
+            Action<IUserMessage> messageAction = null, bool resetTimeoutOnInput = false, CancellationToken cancellationToken = default)
         {
             InteractiveGuards.NotNull(paginator, nameof(paginator));
             InteractiveGuards.NotNull(interaction, nameof(interaction));
@@ -393,7 +394,7 @@ namespace Fergun.Interactive
             InteractiveGuards.SupportedInputType(paginator);
             InteractiveGuards.ValidResponseType(responseType, nameof(responseType));
 
-            var message = await SendOrModifyMessageAsync(paginator, interaction, responseType).ConfigureAwait(false);
+            var message = await SendOrModifyMessageAsync(paginator, interaction, responseType, ephemeral).ConfigureAwait(false);
             messageAction?.Invoke(message);
 
             if (paginator.MaxPageIndex == 0)
@@ -461,6 +462,7 @@ namespace Fergun.Interactive
         /// <param name="interaction">The interaction to respond.</param>
         /// <param name="timeout">The time until the selection times out.</param>
         /// <param name="responseType">The response type. When using the "Deferred" response types, you must pass an interaction that has already been deferred.</param>
+        /// <param name="ephemeral">Whether the response message should be ephemeral. Ignored if modifying a non-ephemeral message.</param>
         /// <param name="messageAction">A method that gets executed once when a message containing the selection is sent or modified.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> to cancel the selection.</param>
         /// <returns>
@@ -472,7 +474,7 @@ namespace Fergun.Interactive
         /// <exception cref="ArgumentNullException"/>
         /// <exception cref="NotSupportedException"/>
         public async Task<InteractiveMessageResult<TOption>> SendSelectionAsync<TOption>(BaseSelection<TOption> selection, SocketInteraction interaction,
-            TimeSpan? timeout = null, InteractionResponseType responseType = InteractionResponseType.ChannelMessageWithSource,
+            TimeSpan? timeout = null, InteractionResponseType responseType = InteractionResponseType.ChannelMessageWithSource, bool ephemeral = false,
             Action<IUserMessage> messageAction = null, CancellationToken cancellationToken = default)
         {
             InteractiveGuards.NotNull(selection, nameof(selection));
@@ -482,7 +484,7 @@ namespace Fergun.Interactive
             InteractiveGuards.DeleteAndDisableInputNotSet(selection.ActionOnSuccess, nameof(selection.ActionOnSuccess));
             InteractiveGuards.ValidResponseType(responseType, nameof(responseType));
 
-            var message = await SendOrModifyMessageAsync(selection, interaction, responseType).ConfigureAwait(false);
+            var message = await SendOrModifyMessageAsync(selection, interaction, responseType, ephemeral).ConfigureAwait(false);
             messageAction?.Invoke(message);
 
             var timeoutTaskSource = new TimeoutTaskCompletionSource<(TOption, InteractiveStatus)>(timeout ?? DefaultTimeout,
@@ -639,7 +641,7 @@ namespace Fergun.Interactive
 
 #if DNETLABS
         private static async Task<IUserMessage> SendOrModifyMessageAsync<TOption>(IInteractiveElement<TOption> element, SocketInteraction interaction,
-            InteractionResponseType responseType)
+            InteractionResponseType responseType, bool ephemeral)
         {
             var page = element switch
             {
@@ -658,11 +660,11 @@ namespace Fergun.Interactive
             switch (responseType)
             {
                 case InteractionResponseType.ChannelMessageWithSource:
-                    await interaction.RespondAsync(page.Text, embed: page.Embed, component: component).ConfigureAwait(false);
+                    await interaction.RespondAsync(page.Text, embed: page.Embed, ephemeral: ephemeral, component: component).ConfigureAwait(false);
                     return await interaction.GetOriginalResponseAsync().ConfigureAwait(false);
 
                 case InteractionResponseType.DeferredChannelMessageWithSource:
-                    return await interaction.FollowupAsync(page.Text, embed: page.Embed, component: component).ConfigureAwait(false);
+                    return await interaction.FollowupAsync(page.Text, embed: page.Embed, ephemeral: ephemeral, component: component).ConfigureAwait(false);
 
                 case InteractionResponseType.DeferredUpdateMessage:
                     InteractiveGuards.ValidResponseType(responseType, interaction, nameof(responseType));
@@ -688,6 +690,11 @@ namespace Fergun.Interactive
 
         private static async Task ApplyActionOnStopAsync<TOption>(IInteractiveElement<TOption> element, IInteractiveMessageResult result)
         {
+            if (result.Message.Flags.GetValueOrDefault().HasFlag(MessageFlags.Ephemeral))
+            {
+                return;
+            }
+
             var action = result.Status switch
             {
                 InteractiveStatus.Timeout => element.ActionOnTimeout,

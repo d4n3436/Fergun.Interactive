@@ -7,6 +7,7 @@ namespace Fergun.Interactive
     /// <summary>
     /// Specifies the actions that will be applied to a message after a timeout or a cancellation.
     /// </summary>
+    /// <remarks>Ephemeral messages cannot use these actions and will be ignored.</remarks>
     [Flags]
     public enum ActionOnStop
     {
