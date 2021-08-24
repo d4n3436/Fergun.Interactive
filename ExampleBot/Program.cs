@@ -22,8 +22,6 @@ namespace ExampleBot
         {
 #if DNETLABS
             CanUseInteractions = true;
-            // Currently we need to disable this option otherwise the selection/paginator won't respond
-            ClientConfig.AlwaysAcknowledgeInteractions = false;
 #endif
 
             var services = ConfigureServices();

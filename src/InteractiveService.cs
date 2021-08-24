@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Net;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using Discord;
@@ -22,6 +23,7 @@ namespace Fergun.Interactive
     public class InteractiveService
     {
         private readonly BaseSocketClient _client;
+        private readonly bool _alwaysAck;
         private readonly ConcurrentDictionary<ulong, IInteractiveCallback> _callbacks = new ConcurrentDictionary<ulong, IInteractiveCallback>();
         private readonly ConcurrentDictionary<Guid, IInteractiveCallback> _filteredCallbacks = new ConcurrentDictionary<Guid, IInteractiveCallback>();
 
@@ -47,10 +49,15 @@ namespace Fergun.Interactive
 #if DNETLABS
             _client.ReactionAdded += ReactionAddedNew;
             _client.InteractionCreated += InteractionCreated;
+            _alwaysAck = ((DiscordSocketConfig)client
+                .GetType()
+                .GetField("BaseConfig", BindingFlags.Instance | BindingFlags.NonPublic)!
+                .GetValue(client))
+                .AlwaysAcknowledgeInteractions;
 #else
             DynamicSubscribeReactionAdded();
+            _alwaysAck = false;
 #endif
-
         }
 
         /// <summary>
@@ -356,7 +363,7 @@ namespace Fergun.Interactive
             var timeoutTaskSource = new TimeoutTaskCompletionSource<InteractiveStatus>(timeout ?? DefaultTimeout,
                 resetTimeoutOnInput, InteractiveStatus.Timeout, InteractiveStatus.Canceled, cancellationToken);
 
-            var callback = new PaginatorCallback(paginator, message, timeoutTaskSource, DateTimeOffset.UtcNow);
+            var callback = new PaginatorCallback(paginator, message, timeoutTaskSource, DateTimeOffset.UtcNow, _alwaysAck);
 
             return await WaitPaginatorResultAsync(callback).ConfigureAwait(false);
         }
@@ -405,7 +412,7 @@ namespace Fergun.Interactive
             var timeoutTaskSource = new TimeoutTaskCompletionSource<InteractiveStatus>(timeout ?? DefaultTimeout,
                 resetTimeoutOnInput, InteractiveStatus.Timeout, InteractiveStatus.Canceled, cancellationToken);
 
-            var callback = new PaginatorCallback(paginator, message, timeoutTaskSource, DateTimeOffset.UtcNow);
+            var callback = new PaginatorCallback(paginator, message, timeoutTaskSource, DateTimeOffset.UtcNow, _alwaysAck);
 
             return await WaitPaginatorResultAsync(callback).ConfigureAwait(false);
         }
@@ -448,7 +455,7 @@ namespace Fergun.Interactive
             var timeoutTaskSource = new TimeoutTaskCompletionSource<(TOption, InteractiveStatus)>(timeout ?? DefaultTimeout,
                 false, (default, InteractiveStatus.Timeout), (default, InteractiveStatus.Canceled), cancellationToken);
 
-            var callback = new SelectionCallback<TOption>(selection, message, timeoutTaskSource, DateTimeOffset.UtcNow);
+            var callback = new SelectionCallback<TOption>(selection, message, timeoutTaskSource, DateTimeOffset.UtcNow, _alwaysAck);
 
             return await WaitForSelectionResultAsync(callback).ConfigureAwait(false);
         }
@@ -490,7 +497,7 @@ namespace Fergun.Interactive
             var timeoutTaskSource = new TimeoutTaskCompletionSource<(TOption, InteractiveStatus)>(timeout ?? DefaultTimeout,
                 false, (default, InteractiveStatus.Timeout), (default, InteractiveStatus.Canceled), cancellationToken);
 
-            var callback = new SelectionCallback<TOption>(selection, message, timeoutTaskSource, DateTimeOffset.UtcNow);
+            var callback = new SelectionCallback<TOption>(selection, message, timeoutTaskSource, DateTimeOffset.UtcNow, _alwaysAck);
 
             return await WaitForSelectionResultAsync(callback).ConfigureAwait(false);
         }

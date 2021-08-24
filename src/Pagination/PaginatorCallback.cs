@@ -14,12 +14,14 @@ namespace Fergun.Interactive.Pagination
         private bool _disposed;
 
         public PaginatorCallback(Paginator paginator, IUserMessage message,
-            TimeoutTaskCompletionSource<InteractiveStatus> timeoutTaskSource, DateTimeOffset startTime)
+            TimeoutTaskCompletionSource<InteractiveStatus> timeoutTaskSource,
+            DateTimeOffset startTime, bool alwaysAck = false)
         {
             Paginator = paginator;
             Message = message;
             TimeoutTaskSource = timeoutTaskSource;
             StartTime = startTime;
+            AlwaysAck = alwaysAck;
         }
 
         /// <summary>
@@ -39,6 +41,11 @@ namespace Fergun.Interactive.Pagination
 
         /// <inheritdoc/>
         public DateTimeOffset StartTime { get; }
+
+        /// <summary>
+        /// Whether the client always acknowledges interactions.
+        /// </summary>
+        public bool AlwaysAck { get; }
 
         /// <inheritdoc/>
         public void Cancel() => TimeoutTaskSource.TryCancel();
@@ -128,7 +135,10 @@ namespace Fergun.Interactive.Pagination
 
             if (action == PaginatorAction.Exit)
             {
-                await interaction.DeferAsync().ConfigureAwait(false);
+                if (!AlwaysAck)
+                {
+                    await interaction.DeferAsync().ConfigureAwait(false);
+                }
                 Cancel();
                 return;
             }
@@ -140,12 +150,21 @@ namespace Fergun.Interactive.Pagination
                 var currentPage = await Paginator.GetOrLoadCurrentPageAsync().ConfigureAwait(false);
                 var buttons = Paginator.BuildComponents(false);
 
-                await interaction.UpdateAsync(x =>
+                if (AlwaysAck)
                 {
-                    x.Content = currentPage.Text;
-                    x.Embed = currentPage.Embed;
-                    x.Components = buttons;
-                }).ConfigureAwait(false);
+                    await interaction.ModifyOriginalResponseAsync(UpdateMessage).ConfigureAwait(false);
+                }
+                else
+                {
+                    await interaction.UpdateAsync(UpdateMessage).ConfigureAwait(false);
+                }
+
+                void UpdateMessage(MessageProperties props)
+                {
+                    props.Content = currentPage.Text;
+                    props.Embed = currentPage.Embed;
+                    props.Components = buttons;
+                }
             }
         }
 #endif

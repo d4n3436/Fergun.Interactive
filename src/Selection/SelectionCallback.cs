@@ -15,12 +15,14 @@ namespace Fergun.Interactive.Selection
         private bool _disposed;
 
         public SelectionCallback(BaseSelection<TOption> selection, IUserMessage message,
-            TimeoutTaskCompletionSource<(TOption, InteractiveStatus)> timeoutTaskSource, DateTimeOffset startTime)
+            TimeoutTaskCompletionSource<(TOption, InteractiveStatus)> timeoutTaskSource,
+            DateTimeOffset startTime, bool alwaysAck = false)
         {
             Selection = selection;
             Message = message;
             TimeoutTaskSource = timeoutTaskSource;
             StartTime = startTime;
+            AlwaysAck = alwaysAck;
         }
 
         /// <summary>
@@ -40,6 +42,11 @@ namespace Fergun.Interactive.Selection
 
         /// <inheritdoc/>
         public DateTimeOffset StartTime { get; }
+
+        /// <summary>
+        /// Whether the client always acknowledges interactions.
+        /// </summary>
+        public bool AlwaysAck { get; }
 
         /// <inheritdoc/>
         public void Cancel() => TimeoutTaskSource.TryCancel();
@@ -194,7 +201,10 @@ namespace Fergun.Interactive.Selection
                 return;
             }
 
-            await interaction.DeferAsync().ConfigureAwait(false);
+            if (!AlwaysAck)
+            {
+                await interaction.DeferAsync().ConfigureAwait(false);
+            }
 
             bool isCanceled = Selection.AllowCancel
                 && (Selection.EmoteConverter?.Invoke(Selection.CancelOption)?.ToString()
