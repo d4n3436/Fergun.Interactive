@@ -690,10 +690,12 @@ namespace Fergun.Interactive
 
         private static async Task ApplyActionOnStopAsync<TOption>(IInteractiveElement<TOption> element, IInteractiveMessageResult result)
         {
+#if DNETLABS
             if (result.Message.Flags.GetValueOrDefault().HasFlag(MessageFlags.Ephemeral))
             {
                 return;
             }
+#endif
 
             var action = result.Status switch
             {
