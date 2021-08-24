@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <Version>1.0.1-dev</Version>
+    <Version>1.1</Version>
     <LangVersion>8.0</LangVersion>
     <Authors>d4n3436</Authors>
     <NeutralLanguage>en</NeutralLanguage>
@@ -16,9 +16,17 @@
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
     <PackageTags>discord;discordapp;discord-bot;discordbot;discord-net;interactive</PackageTags>
     <Description>
-      A fork of Discord.InteractivityAddon that adds several features, including more customization and support for buttons and select menus (with Fergun.Interactive.Labs).
+      An addon that adds interactive functionality to commands.
+      This is a fork of Discord.InteractivityAddon that adds several features like more customization and support for interactions.
     </Description>
-    <PackageReleaseNotes>Update Discord.Net/Discord.Net.Labs to pre-release versions.</PackageReleaseNotes>
+    <PackageReleaseNotes>
+      - Improved backwards compatibility for Discord.Net.
+      - Improved support for .NET Framework 4.6.1.
+      - [Labs] Added support for responding an interaction with a paginator/selection.
+      - [Labs] Updated Discord.Net.Labs.WebSocket to version 3.0.
+      - [Labs] Now the lib will know if the client is always acknowledging interactions using reflection. This is only done once.
+      - Minor bug fixes.
+    </PackageReleaseNotes>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)'=='ReleaseLabs' Or '$(Configuration)'=='DebugLabs'">
