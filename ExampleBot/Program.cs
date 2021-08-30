@@ -14,8 +14,6 @@ namespace ExampleBot
     {
         public static bool CanUseInteractions { get; set; }
 
-        public static readonly DiscordSocketConfig ClientConfig = new();
-
         private static Task Main() => new Program().StartAsync();
 
         private async Task StartAsync()
@@ -49,7 +47,6 @@ namespace ExampleBot
 
         private IServiceProvider ConfigureServices()
             => new ServiceCollection()
-                .AddSingleton(ClientConfig)
                 .AddSingleton<DiscordSocketClient>()
                 .AddSingleton<CommandService>()
                 .AddSingleton<CommandHandlingService>()

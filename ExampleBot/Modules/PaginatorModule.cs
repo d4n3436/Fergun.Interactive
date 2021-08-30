@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Linq;
 using System.Threading.Tasks;
 using Discord;
 using Discord.Commands;
@@ -12,7 +11,7 @@ namespace ExampleBot.Modules
     [Group("paginator")]
     public class PaginatorModule : ModuleBase
     {
-        private static readonly GoogleScraper _scraper = new GoogleScraper();
+        private static readonly GoogleScraper _scraper = new();
 
         public InteractiveService Interactive { get; set; }
 
@@ -23,7 +22,7 @@ namespace ExampleBot.Modules
         public async Task PaginatorAsync()
         {
             var pages = new[] {
-                new PageBuilder().WithDescription(@"Lorem ipsum dolor sit amet, consectetur adipiscing elit."),
+                new PageBuilder().WithDescription("Lorem ipsum dolor sit amet, consectetur adipiscing elit."),
                 new PageBuilder().WithDescription("Praesent eu est vitae dui sollicitudin volutpat."),
                 new PageBuilder().WithDescription("Etiam in ex sed turpis imperdiet viverra id eget nunc."),
                 new PageBuilder().WithDescription("Donec eget feugiat nisi. Praesent faucibus malesuada nulla, a vulputate velit eleifend ut.")

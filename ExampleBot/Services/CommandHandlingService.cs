@@ -24,10 +24,7 @@ namespace ExampleBot.Services
             _client.MessageReceived += HandleMessageAsync;
         }
 
-        public async Task InitializeAsync()
-        {
-            await _commands.AddModulesAsync(Assembly.GetEntryAssembly(), _services);
-        }
+        public async Task InitializeAsync() => await _commands.AddModulesAsync(Assembly.GetEntryAssembly(), _services);
 
         private async Task HandleMessageAsync(SocketMessage socketMessage)
         {

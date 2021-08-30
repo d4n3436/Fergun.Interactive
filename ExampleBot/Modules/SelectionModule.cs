@@ -175,7 +175,7 @@ namespace ExampleBot.Modules
                 .WithActionOnCancellation(ActionOnStop.DeleteMessage) // Delete the message if the selection gets canceled.
                 // The Name property is used to get a string representation of an item. This is required in selections using messages and select menus as input.
                 .WithStringConverter(item => item.Name)
-                // The Emote property is used to get a string representation of an item. This is required in selections using reactions as input.
+                // The Emote property is used to get an emote representation of an item. This is required in selections using reactions as input.
                 .WithEmoteConverter(item => item.Emote)
                 // Since we have set both string and emote converter, we can use all 4 input types.
 #if DNETLABS
