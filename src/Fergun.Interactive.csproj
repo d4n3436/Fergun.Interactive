@@ -16,16 +16,16 @@
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
     <PackageTags>discord;discordapp;discord-bot;discordbot;discord-net;interactive</PackageTags>
     <Description>
-      An addon that adds interactive functionality to commands.
-      This is a fork of Discord.InteractivityAddon that adds several features like more customization and support for interactions.
+An addon that adds interactive functionality to commands.
+This is a fork of Discord.InteractivityAddon that adds several features like more customization and support for interactions.
     </Description>
     <PackageReleaseNotes>
-      - Improved backwards compatibility for Discord.Net.
-      - Improved support for .NET Framework 4.6.1.
-      - [Labs] Added support for responding an interaction with a paginator/selection.
-      - [Labs] Updated Discord.Net.Labs.WebSocket to version 3.0.
-      - [Labs] Now the lib will know if the client is always acknowledging interactions using reflection. This is only done once.
-      - Minor bug fixes.
+- Improved backwards compatibility for Discord.Net.
+- Improved support for .NET Framework 4.6.1.
+- [Labs] Added support for responding an interaction with a paginator/selection.
+- [Labs] Updated Discord.Net.Labs.WebSocket to version 3.0.
+- [Labs] Now the lib will know if the client is always acknowledging interactions using reflection. This is only done once.
+- Minor bug fixes.
     </PackageReleaseNotes>
   </PropertyGroup>
 
@@ -42,12 +42,12 @@
   <Choose>
     <When Condition="'$(Configuration)'=='Release' Or '$(Configuration)'=='Debug'">
       <ItemGroup>
-	    <PackageReference Include="Discord.Net.WebSocket" Version="2.4.0" />
+        <PackageReference Include="Discord.Net.WebSocket" Version="2.4.0" />
       </ItemGroup>
     </When>
     <Otherwise>
       <ItemGroup>
-	    <PackageReference Include="Discord.Net.Labs.WebSocket" Version="3.0.0" />
+        <PackageReference Include="Discord.Net.Labs.WebSocket" Version="3.0.0" />
       </ItemGroup>
     </Otherwise>
   </Choose>
