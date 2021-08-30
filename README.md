@@ -1,5 +1,5 @@
 # Fergun.Interactive
-[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE) [![NuGet](https://img.shields.io/nuget/vpre/Fergun.Interactive)](https://www.nuget.org/packages/Fergun.Interactive) [![Nuget](https://img.shields.io/nuget/vpre/Fergun.Interactive.Labs?label=nuget%20%28D.Net%20Labs%29)](https://www.nuget.org/packages/Fergun.Interactive.Labs)
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE) [![NuGet](https://img.shields.io/nuget/vpre/Fergun.Interactive)](https://www.nuget.org/packages/Fergun.Interactive) [![Nuget](https://img.shields.io/nuget/vpre/Fergun.Interactive.Labs?label=nuget%20%28D.Net%20Labs%29)](https://www.nuget.org/packages/Fergun.Interactive.Labs) [![Discord](https://discord.com/api/guilds/460627183501574144/widget.png)](https://discord.gg/V3TgaZRUPX)
 
 Fergun.Interactive is an addon that adds interactive functionality to commands.
 
@@ -7,8 +7,8 @@ This is a fork of [Discord.InteractivityAddon](https://github.com/Playwo/Discord
 
 ## Usage
 - Install via NuGet:
-  - [Fergun.Interactive](https://www.nuget.org/packages/Fergun.Interactive) (For Discord.Net)
-  - [Fergun.Interactive.Labs](https://www.nuget.org/packages/Fergun.Interactive.Labs) (For Discord.Net.Labs, supports buttons and select menus)
+  - [Fergun.Interactive](https://www.nuget.org/packages/Fergun.Interactive) (For [Discord.Net](https://github.com/discord-net/Discord.Net))
+  - [Fergun.Interactive.Labs](https://www.nuget.org/packages/Fergun.Interactive.Labs) (For [Discord.Net.Labs](https://github.com/Discord-Net-Labs/Discord.Net-Labs), supports interactions)
   
 - Add the `InteractiveService` into your service provider:
 ```cs
@@ -51,7 +51,7 @@ Example modules:
  - Paginators now support buttons.
  - Selections now support buttons and select menus.
  - Merged `MessageSelection` and `ReactionSelection` into `Selection`.
- - Added `EmoteConverter` and `StringConverter` to `SelectionBuilder`. These properties are used to properly convert the generic options in the selection into the options that can be used to receive the incoming inputs, like messages (from `StringConverter`) and reactions (from `EmoteConverter`), buttons and select menus (emotes and labels)
+ - Added `EmoteConverter` and `StringConverter` to `SelectionBuilder`. These properties are used to properly convert the generic options in the selection into the options that can be used to receive the incoming inputs, like messages (from `StringConverter`), reactions (from `EmoteConverter`), buttons and select menus (emotes and labels)
  - Added `EqualityComparer`to `SelectionBuilder`. This is used to determine there are no duplicate options.
  - Added `EmoteSelectionBuilder` and `EmoteSelectionBuilder<TValue>`, they are a variant of `SelectionBuilder` that uses emotes as input and provides overriden properties with default values, making them ready to use in selections using reactions and buttons.
  - Added `InteractiveStatus` to `InteractiveResult`, containing all the possible status of an interactive result.
