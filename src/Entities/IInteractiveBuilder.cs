@@ -26,12 +26,12 @@ namespace Fergun.Interactive
         /// <summary>
         /// Gets or sets the <see cref="Page"/> which the <typeparamref name="TElement"/> gets modified to after cancellation.
         /// </summary>
-        PageBuilder CanceledPage { get; set; }
+        PageBuilder? CanceledPage { get; set; }
 
         /// <summary>
         /// Gets or sets the <see cref="Page"/> which the <typeparamref name="TElement"/> gets modified to after a timeout.
         /// </summary>
-        PageBuilder TimeoutPage { get; set; }
+        PageBuilder? TimeoutPage { get; set; }
 
         /// <summary>
         /// Gets or sets what type of inputs the <typeparamref name="TElement"/> should delete.

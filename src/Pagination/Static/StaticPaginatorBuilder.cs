@@ -14,7 +14,14 @@ namespace Fergun.Interactive.Pagination
         /// <summary>
         /// Gets or sets the pages of the <see cref="Paginator"/>.
         /// </summary>
-        public IList<PageBuilder> Pages { get; set; }
+        public IList<PageBuilder> Pages { get; set; } = new List<PageBuilder>();
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="StaticPaginatorBuilder"/> class.
+        /// </summary>
+        public StaticPaginatorBuilder()
+        {
+        }
 
         /// <inheritdoc/>
         public override StaticPaginator Build(int startPageIndex = 0)
@@ -24,16 +31,8 @@ namespace Fergun.Interactive.Pagination
                 WithDefaultEmotes();
             }
 
-            if (Pages != null)
-            {
-                for (int i = 0; i < Pages.Count; i++)
-                {
-                    Pages[i].WithPaginatorFooter(Footer, i, Pages.Count - 1, Users);
-                }
-            }
-
             return new StaticPaginator(
-                Users?.ToArray() ?? Array.Empty<IUser>(),
+                Users.ToArray(),
                 new ReadOnlyDictionary<IEmote, PaginatorAction>(Options), // TODO: Find a way to create an ImmutableDictionary without getting the contents reordered.
                 CanceledPage?.Build(),
                 TimeoutPage?.Build(),
@@ -41,35 +40,40 @@ namespace Fergun.Interactive.Pagination
                 InputType,
                 ActionOnCancellation,
                 ActionOnTimeout,
-                Pages?.Select(x => x.Build()).ToArray(),
+                Pages.Select((x, i) => x.WithPaginatorFooter(Footer, i, Pages.Count - 1, Users).Build()).ToArray(),
                 startPageIndex);
         }
 
         /// <summary>
         /// Sets the pages of the paginator.
         /// </summary>
+        /// <param name="pages">The pages.</param>
+        /// <returns>This builder.</returns>
         public StaticPaginatorBuilder WithPages(params PageBuilder[] pages)
         {
-            Pages = pages.ToList();
+            Pages = pages?.ToList() ?? throw new ArgumentNullException(nameof(pages));
             return this;
         }
 
         /// <summary>
         /// Sets the pages of the paginator.
         /// </summary>
+        /// <param name="pages">The pages.</param>
+        /// <returns>This builder.</returns>
         public StaticPaginatorBuilder WithPages(IEnumerable<PageBuilder> pages)
         {
-            Pages = pages.ToList();
+            Pages = pages?.ToList() ?? throw new ArgumentNullException(nameof(pages));
             return this;
         }
 
         /// <summary>
         /// Adds a page to the paginator.
         /// </summary>
+        /// <param name="page">The page.</param>
+        /// <returns>This builder.</returns>
         public StaticPaginatorBuilder AddPage(PageBuilder page)
         {
-            Pages ??= new List<PageBuilder>();
-            Pages.Add(page);
+            Pages.Add(page ?? throw new ArgumentNullException(nameof(page)));
             return this;
         }
     }

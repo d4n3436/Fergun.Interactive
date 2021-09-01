@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
 using Discord;
 
@@ -10,7 +11,7 @@ namespace Fergun.Interactive.Pagination
     /// </summary>
     public sealed class LazyPaginator : Paginator
     {
-        private readonly Dictionary<int, Page> _cachedPages;
+        private readonly Dictionary<int, Page>? _cachedPages;
 
         /// <summary>
         /// Gets the function used to load the pages of this paginator lazily.
@@ -23,15 +24,16 @@ namespace Fergun.Interactive.Pagination
         /// <summary>
         /// Gets whether to cache loaded pages.
         /// </summary>
+        [MemberNotNullWhen(true, nameof(_cachedPages))]
         public bool CacheLoadedPages { get; }
 
         internal LazyPaginator(IReadOnlyCollection<IUser> users, IReadOnlyDictionary<IEmote, PaginatorAction> emotes,
-            Page canceledPage, Page timeoutPage, DeletionOptions deletion, InputType inputType,
+            Page? canceledPage, Page? timeoutPage, DeletionOptions deletion, InputType inputType,
             ActionOnStop actionOnCancellation, ActionOnStop actionOnTimeout, Func<int, Task<Page>> pageFactory,
             int startPage, int maxPageIndex, bool cacheLoadedPages)
             : base(users, emotes, canceledPage, timeoutPage, deletion, inputType, actionOnCancellation, actionOnTimeout, startPage)
         {
-            PageFactory = pageFactory;
+            PageFactory = pageFactory ?? throw new ArgumentNullException(nameof(pageFactory));
             MaxPageIndex = maxPageIndex;
             CacheLoadedPages = cacheLoadedPages;
 
@@ -44,14 +46,14 @@ namespace Fergun.Interactive.Pagination
         /// <inheritdoc/>
         public override async Task<Page> GetOrLoadPageAsync(int pageIndex)
         {
-            if (CacheLoadedPages && _cachedPages != null && _cachedPages.TryGetValue(pageIndex, out var page))
+            if (CacheLoadedPages && _cachedPages.TryGetValue(pageIndex, out var page))
             {
                 return page;
             }
 
             page = await PageFactory(pageIndex).ConfigureAwait(false);
 
-            if (_cachedPages != null && !_cachedPages.ContainsKey(pageIndex))
+            if (_cachedPages?.ContainsKey(pageIndex) == false)
             {
                 _cachedPages.Add(pageIndex, page);
             }

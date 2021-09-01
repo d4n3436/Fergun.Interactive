@@ -22,12 +22,12 @@ namespace Fergun.Interactive
         /// <summary>
         /// Gets the <see cref="Page"/> which this element gets modified to after cancellation.
         /// </summary>
-        Page CanceledPage { get; }
+        Page? CanceledPage { get; }
 
         /// <summary>
         /// Gets the <see cref="Page"/> which this element gets modified to after a timeout.
         /// </summary>
-        Page TimeoutPage { get; }
+        Page? TimeoutPage { get; }
 
         /// <summary>
         /// Gets what type of inputs this element should delete.

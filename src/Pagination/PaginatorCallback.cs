@@ -120,12 +120,12 @@ namespace Fergun.Interactive.Pagination
                 return;
             }
 
-            var emote = ((ButtonComponent)interaction
+            var emote = (interaction
                 .Message
                 .Components
                 .FirstOrDefault()?
                 .Components?
-                .FirstOrDefault(x => x is ButtonComponent button && button.CustomId == interaction.Data.CustomId))?
+                .FirstOrDefault(x => x is ButtonComponent button && button.CustomId == interaction.Data.CustomId) as ButtonComponent)?
                 .Emote;
 
             if (emote is null || !Paginator.Emotes.TryGetValue(emote, out var action))

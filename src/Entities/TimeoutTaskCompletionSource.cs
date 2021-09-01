@@ -19,19 +19,19 @@ namespace Fergun.Interactive
         /// </summary>
         public bool CanReset { get; }
 
-        public TResult TimeoutResult => _timeoutAction == null ? _timeoutResult : _timeoutAction();
+        public TResult? TimeoutResult => _timeoutAction is null ? _timeoutResult : _timeoutAction();
 
-        public TResult CancelResult => _cancelAction == null ? _cancelResult : _cancelAction();
+        public TResult? CancelResult => _cancelAction is null ? _cancelResult : _cancelAction();
 
         public Task<TResult> Task => _taskSource.Task;
 
         private bool _disposed;
         private readonly Timer _timer;
         private readonly TaskCompletionSource<TResult> _taskSource;
-        private readonly TResult _timeoutResult;
-        private readonly TResult _cancelResult;
-        private readonly Func<TResult> _timeoutAction;
-        private readonly Func<TResult> _cancelAction;
+        private readonly TResult? _timeoutResult;
+        private readonly TResult? _cancelResult;
+        private readonly Func<TResult>? _timeoutAction;
+        private readonly Func<TResult>? _cancelAction;
         private CancellationTokenRegistration _tokenRegistration;
 
         private TimeoutTaskCompletionSource(TimeSpan delay, bool canReset = true, CancellationToken cancellationToken = default)
@@ -43,16 +43,16 @@ namespace Fergun.Interactive
             _tokenRegistration = cancellationToken.Register(() => TryCancel());
         }
 
-        public TimeoutTaskCompletionSource(TimeSpan delay, bool canReset = true, TResult timeoutResult = default,
-            TResult cancelResult = default, CancellationToken cancellationToken = default)
+        public TimeoutTaskCompletionSource(TimeSpan delay, bool canReset = true, TResult? timeoutResult = default,
+            TResult? cancelResult = default, CancellationToken cancellationToken = default)
             : this(delay, canReset, cancellationToken)
         {
             _timeoutResult = timeoutResult;
             _cancelResult = cancelResult;
         }
 
-        public TimeoutTaskCompletionSource(TimeSpan delay, bool canReset = true, Func<TResult> timeoutAction = default,
-            Func<TResult> cancelAction = default, CancellationToken cancellationToken = default)
+        public TimeoutTaskCompletionSource(TimeSpan delay, bool canReset = true, Func<TResult>? timeoutAction = default,
+            Func<TResult>? cancelAction = default, CancellationToken cancellationToken = default)
             : this(delay, canReset, cancellationToken)
         {
             _timeoutAction = timeoutAction;
@@ -63,7 +63,7 @@ namespace Fergun.Interactive
         {
             _disposed = true;
             _timer.Dispose();
-            _taskSource.TrySetResult(TimeoutResult);
+            TrySetResult(TimeoutResult);
             _tokenRegistration.Dispose();
         }
 
@@ -78,9 +78,9 @@ namespace Fergun.Interactive
             return true;
         }
 
-        public bool TryCancel() => !_disposed && _taskSource.TrySetResult(CancelResult);
+        public bool TryCancel() => !_disposed && TrySetResult(CancelResult);
 
-        public bool TrySetResult(TResult result) => _taskSource.TrySetResult(result);
+        public bool TrySetResult(TResult? result) => _taskSource.TrySetResult(result!);
 
         public bool TryDispose()
         {

@@ -7,7 +7,7 @@ namespace Fergun.Interactive
 {
     internal static class InteractiveGuards
     {
-        public static void NotNull<T>(T obj, string parameterName) where T : class
+        public static void NotNull<T>(T? obj, string parameterName) where T : class
         {
             if (obj is null)
             {
@@ -15,7 +15,7 @@ namespace Fergun.Interactive
             }
         }
 
-        public static void MessageFromCurrentUser(IDiscordClient client, IUserMessage message, string parameterName)
+        public static void MessageFromCurrentUser(IDiscordClient client, IUserMessage? message, string parameterName)
         {
             if (message is null) return;
 
@@ -55,7 +55,7 @@ namespace Fergun.Interactive
         public static void ValidResponseType(InteractionResponseType responseType, string parameterName)
         {
             int value = (int)responseType;
-            if (value >= 1 && value <= 3)
+            if (value is >= 1 and <= 3)
             {
                 throw new ArgumentException("Invalid response type.", parameterName);
             }
@@ -63,8 +63,8 @@ namespace Fergun.Interactive
 
         public static void ValidResponseType(InteractionResponseType responseType, SocketInteraction interaction, string parameterName)
         {
-            if (!(interaction is SocketMessageComponent) &&
-                (responseType == InteractionResponseType.DeferredUpdateMessage || responseType == InteractionResponseType.UpdateMessage))
+            if (interaction is not SocketMessageComponent &&
+                responseType is InteractionResponseType.DeferredUpdateMessage or InteractionResponseType.UpdateMessage)
             {
                 throw new ArgumentException($"Interaction response type {responseType} can only be used on component interactions.", parameterName);
             }
@@ -72,7 +72,7 @@ namespace Fergun.Interactive
 #else
         public static void CanUseComponents<TOption>(IInteractiveElement<TOption> element)
         {
-            if (element.InputType == InputType.Buttons || element.InputType == InputType.SelectMenus)
+            if (element.InputType is InputType.Buttons or InputType.SelectMenus)
             {
                 throw new NotSupportedException("Discord.Net does not support components (yet). Use Discord.Net.Labs and Fergun.Interactive.Labs.");
             }

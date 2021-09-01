@@ -14,7 +14,7 @@ namespace Fergun.Interactive.Selection
         : BaseSelectionBuilder<Selection<KeyValuePair<IEmote, TValue>>, KeyValuePair<IEmote, TValue>, EmoteSelectionBuilder<TValue>>
     {
         /// <inheritdoc/>
-        public override Func<KeyValuePair<IEmote, TValue>, IEmote> EmoteConverter { get; set; } = pair => pair.Key;
+        public override Func<KeyValuePair<IEmote, TValue>, IEmote>? EmoteConverter { get; set; } = pair => pair.Key;
 
         /// <inheritdoc/>
         public override IEqualityComparer<KeyValuePair<IEmote, TValue>> EqualityComparer { get; set; } = new EmoteComparer<TValue>();
@@ -24,10 +24,17 @@ namespace Fergun.Interactive.Selection
         /// </summary>
         public new IDictionary<IEmote, TValue> Options { get; set; } = new Dictionary<IEmote, TValue>();
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="EmoteSelectionBuilder{TValue}"/> class.
+        /// </summary>
+        public EmoteSelectionBuilder()
+        {
+        }
+
         /// <inheritdoc/>
         public override Selection<KeyValuePair<IEmote, TValue>> Build()
-            => new Selection<KeyValuePair<IEmote, TValue>>(EmoteConverter, StringConverter,
-                EqualityComparer, AllowCancel, SelectionPage?.Build(), Users?.ToArray(), Options?.ToArray(),
+            => new(EmoteConverter, StringConverter,
+                EqualityComparer, AllowCancel, SelectionPage.Build(), Users.ToArray(), Options.ToArray(),
                 CanceledPage?.Build(), TimeoutPage?.Build(), SuccessPage?.Build(), Deletion, InputType,
                 ActionOnCancellation, ActionOnTimeout, ActionOnSuccess);
 
@@ -37,7 +44,7 @@ namespace Fergun.Interactive.Selection
         /// <param name="options">The options.</param>
         public EmoteSelectionBuilder<TValue> WithOptions(IDictionary<IEmote, TValue> options)
         {
-            Options = options;
+            Options = options ?? throw new ArgumentNullException(nameof(options));
             return this;
         }
 
@@ -48,7 +55,7 @@ namespace Fergun.Interactive.Selection
         /// <param name="value">The value.</param>
         public EmoteSelectionBuilder<TValue> AddOption(IEmote emote, TValue value)
         {
-            Options?.Add(emote, value);
+            Options.Add(emote, value);
             return this;
         }
     }
@@ -60,15 +67,22 @@ namespace Fergun.Interactive.Selection
     public sealed class EmoteSelectionBuilder : BaseSelectionBuilder<Selection<IEmote>, IEmote, EmoteSelectionBuilder>
     {
         /// <inheritdoc/>
-        public override Func<IEmote, IEmote> EmoteConverter { get; set; } = emote => emote;
+        public override Func<IEmote, IEmote>? EmoteConverter { get; set; } = emote => emote;
 
         /// <inheritdoc/>
         public override IEqualityComparer<IEmote> EqualityComparer { get; set; } = new EmoteComparer();
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="EmoteSelectionBuilder"/> class.
+        /// </summary>
+        public EmoteSelectionBuilder()
+        {
+        }
+
         /// <inheritdoc/>
         public override Selection<IEmote> Build()
-            => new Selection<IEmote>(EmoteConverter, StringConverter,
-                EqualityComparer, AllowCancel, SelectionPage?.Build(), Users?.ToArray(), Options?.ToArray(),
+            => new(EmoteConverter, StringConverter,
+                EqualityComparer, AllowCancel, SelectionPage?.Build()!, Users.ToArray(), Options.ToArray(),
                 CanceledPage?.Build(), TimeoutPage?.Build(), SuccessPage?.Build(), Deletion, InputType,
                 ActionOnCancellation, ActionOnTimeout, ActionOnSuccess);
     }

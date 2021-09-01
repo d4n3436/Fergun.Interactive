@@ -24,8 +24,8 @@ namespace Fergun.Interactive
     {
         private readonly BaseSocketClient _client;
         private readonly bool _alwaysAck;
-        private readonly ConcurrentDictionary<ulong, IInteractiveCallback> _callbacks = new ConcurrentDictionary<ulong, IInteractiveCallback>();
-        private readonly ConcurrentDictionary<Guid, IInteractiveCallback> _filteredCallbacks = new ConcurrentDictionary<Guid, IInteractiveCallback>();
+        private readonly ConcurrentDictionary<ulong, IInteractiveCallback> _callbacks = new();
+        private readonly ConcurrentDictionary<Guid, IInteractiveCallback> _filteredCallbacks = new();
 
         /// <summary>
         /// Gets a dictionary of active callbacks.
@@ -144,15 +144,15 @@ namespace Fergun.Interactive
         /// <exception cref="ArgumentException"/>
         /// <exception cref="ArgumentNullException"/>
         public async Task DelayedSendMessageAndDeleteAsync(IMessageChannel channel, TimeSpan? sendDelay = null, TimeSpan? deleteDelay = null,
-            IUserMessage message = null, string text = null, bool isTTS = false, Embed embed = null, RequestOptions options = null,
-            AllowedMentions allowedMentions = null, MessageReference messageReference = null)
+            IUserMessage? message = null, string? text = null, bool isTTS = false, Embed? embed = null, RequestOptions? options = null,
+            AllowedMentions? allowedMentions = null, MessageReference? messageReference = null)
         {
             InteractiveGuards.NotNull(channel, nameof(channel));
             InteractiveGuards.MessageFromCurrentUser(_client, message, nameof(message));
 
             await Task.Delay(sendDelay ?? TimeSpan.Zero).ConfigureAwait(false);
 
-            if (message == null)
+            if (message is null)
             {
                 message = await channel.SendMessageAsync(text, isTTS, embed, options, allowedMentions, messageReference).ConfigureAwait(false);
             }
@@ -190,8 +190,8 @@ namespace Fergun.Interactive
         /// <returns>A task that represents the asynchronous delay, send message operation, delay and delete message operation.</returns>
         /// <exception cref="ArgumentNullException"/>
         public async Task DelayedSendFileAndDeleteAsync(IMessageChannel channel, TimeSpan? sendDelay = null, TimeSpan? deleteDelay = null,
-            string filePath = null, string text = null, bool isTTS = false, Embed embed = null, RequestOptions options = null,
-            bool isSpoiler = false, AllowedMentions allowedMentions = null, MessageReference messageReference = null)
+            string? filePath = null, string? text = null, bool isTTS = false, Embed? embed = null, RequestOptions? options = null,
+            bool isSpoiler = false, AllowedMentions? allowedMentions = null, MessageReference? messageReference = null)
         {
             InteractiveGuards.NotNull(channel, nameof(channel));
 
@@ -223,8 +223,8 @@ namespace Fergun.Interactive
         /// <returns>A task that represents the asynchronous delay, send message operation, delay and delete message operation.</returns>
         /// <exception cref="ArgumentNullException"/>
         public async Task DelayedSendFileAndDeleteAsync(IMessageChannel channel, TimeSpan? sendDelay = null, TimeSpan? deleteDelay = null,
-            Stream stream = null, string filename = null, string text = null, bool isTTS = false, Embed embed = null, RequestOptions options = null,
-            bool isSpoiler = false, AllowedMentions allowedMentions = null, MessageReference messageReference = null)
+            Stream? stream = null, string? filename = null, string? text = null, bool isTTS = false, Embed? embed = null, RequestOptions? options = null,
+            bool isSpoiler = false, AllowedMentions? allowedMentions = null, MessageReference? messageReference = null)
         {
             InteractiveGuards.NotNull(channel, nameof(channel));
 
@@ -274,8 +274,8 @@ namespace Fergun.Interactive
         /// The task result contains an <see cref="InteractiveResult{T}"/> with the
         /// message (if successful), the elapsed time and the status.
         /// </returns>
-        public Task<InteractiveResult<SocketMessage>> NextMessageAsync(Func<SocketMessage, bool> filter = null,
-            Func<SocketMessage, bool, Task> action = null, TimeSpan? timeout = null, CancellationToken cancellationToken = default)
+        public Task<InteractiveResult<SocketMessage?>> NextMessageAsync(Func<SocketMessage, bool>? filter = null,
+            Func<SocketMessage, bool, Task>? action = null, TimeSpan? timeout = null, CancellationToken cancellationToken = default)
             => NextEntityAsync(filter, action, timeout, cancellationToken);
 
         /// <summary>
@@ -293,8 +293,8 @@ namespace Fergun.Interactive
         /// The task result contains an <see cref="InteractiveResult{T}"/> with the
         /// reaction (if successful), the elapsed time and the status.
         /// </returns>
-        public Task<InteractiveResult<SocketReaction>> NextReactionAsync(Func<SocketReaction, bool> filter = null,
-            Func<SocketReaction, bool, Task> action = null, TimeSpan? timeout = null, CancellationToken cancellationToken = default)
+        public Task<InteractiveResult<SocketReaction?>> NextReactionAsync(Func<SocketReaction, bool>? filter = null,
+            Func<SocketReaction, bool, Task>? action = null, TimeSpan? timeout = null, CancellationToken cancellationToken = default)
             => NextEntityAsync(filter, action, timeout, cancellationToken);
 
 #if DNETLABS
@@ -314,8 +314,8 @@ namespace Fergun.Interactive
         /// The task result contains an <see cref="InteractiveResult{T}"/> with the
         /// interaction (if successful), the elapsed time and the status.
         /// </returns>
-        public Task<InteractiveResult<SocketInteraction>> NextInteractionAsync(Func<SocketInteraction, bool> filter = null,
-            Func<SocketInteraction, bool, Task> action = null, TimeSpan? timeout = null, CancellationToken cancellationToken = default)
+        public Task<InteractiveResult<SocketInteraction?>> NextInteractionAsync(Func<SocketInteraction, bool>? filter = null,
+            Func<SocketInteraction, bool, Task>? action = null, TimeSpan? timeout = null, CancellationToken cancellationToken = default)
             => NextEntityAsync(filter, action, timeout, cancellationToken);
 #endif
 
@@ -340,7 +340,7 @@ namespace Fergun.Interactive
         /// <exception cref="ArgumentNullException"/>
         /// <exception cref="NotSupportedException"/>
         public async Task<InteractiveMessageResult> SendPaginatorAsync(Paginator paginator, IMessageChannel channel, TimeSpan? timeout = null,
-            IUserMessage message = null, Action<IUserMessage> messageAction = null, bool resetTimeoutOnInput = false, CancellationToken cancellationToken = default)
+            IUserMessage? message = null, Action<IUserMessage>? messageAction = null, bool resetTimeoutOnInput = false, CancellationToken cancellationToken = default)
         {
             InteractiveGuards.NotNull(paginator, nameof(paginator));
             InteractiveGuards.NotNull(channel, nameof(channel));
@@ -357,7 +357,7 @@ namespace Fergun.Interactive
 
             if (paginator.MaxPageIndex == 0)
             {
-                return new InteractiveMessageResult(TimeSpan.Zero, InteractiveStatus.Success, message);
+                return new InteractiveMessageResult(TimeSpan.Zero, message);
             }
 
             var timeoutTaskSource = new TimeoutTaskCompletionSource<InteractiveStatus>(timeout ?? DefaultTimeout,
@@ -392,7 +392,7 @@ namespace Fergun.Interactive
         /// <exception cref="NotSupportedException"/>
         public async Task<InteractiveMessageResult> SendPaginatorAsync(Paginator paginator, SocketInteraction interaction, TimeSpan? timeout = null,
             InteractionResponseType responseType = InteractionResponseType.ChannelMessageWithSource, bool ephemeral = false,
-            Action<IUserMessage> messageAction = null, bool resetTimeoutOnInput = false, CancellationToken cancellationToken = default)
+            Action<IUserMessage>? messageAction = null, bool resetTimeoutOnInput = false, CancellationToken cancellationToken = default)
         {
             InteractiveGuards.NotNull(paginator, nameof(paginator));
             InteractiveGuards.NotNull(interaction, nameof(interaction));
@@ -406,7 +406,7 @@ namespace Fergun.Interactive
 
             if (paginator.MaxPageIndex == 0)
             {
-                return new InteractiveMessageResult(TimeSpan.Zero, InteractiveStatus.Success, message);
+                return new InteractiveMessageResult(TimeSpan.Zero, message);
             }
 
             var timeoutTaskSource = new TimeoutTaskCompletionSource<InteractiveStatus>(timeout ?? DefaultTimeout,
@@ -436,8 +436,8 @@ namespace Fergun.Interactive
         /// <exception cref="ArgumentException"/>
         /// <exception cref="ArgumentNullException"/>
         /// <exception cref="NotSupportedException"/>
-        public async Task<InteractiveMessageResult<TOption>> SendSelectionAsync<TOption>(BaseSelection<TOption> selection, IMessageChannel channel,
-            TimeSpan? timeout = null, IUserMessage message = null, Action<IUserMessage> messageAction = null, CancellationToken cancellationToken = default)
+        public async Task<InteractiveMessageResult<TOption?>> SendSelectionAsync<TOption>(BaseSelection<TOption> selection, IMessageChannel channel,
+            TimeSpan? timeout = null, IUserMessage? message = null, Action<IUserMessage>? messageAction = null, CancellationToken cancellationToken = default)
         {
             InteractiveGuards.NotNull(selection, nameof(selection));
             InteractiveGuards.NotNull(channel, nameof(channel));
@@ -452,7 +452,7 @@ namespace Fergun.Interactive
             message = await SendOrModifyMessageAsync(selection, message, channel).ConfigureAwait(false);
             messageAction?.Invoke(message);
 
-            var timeoutTaskSource = new TimeoutTaskCompletionSource<(TOption, InteractiveStatus)>(timeout ?? DefaultTimeout,
+            var timeoutTaskSource = new TimeoutTaskCompletionSource<(TOption?, InteractiveStatus)>(timeout ?? DefaultTimeout,
                 false, (default, InteractiveStatus.Timeout), (default, InteractiveStatus.Canceled), cancellationToken);
 
             var callback = new SelectionCallback<TOption>(selection, message, timeoutTaskSource, DateTimeOffset.UtcNow, _alwaysAck);
@@ -480,9 +480,9 @@ namespace Fergun.Interactive
         /// <exception cref="ArgumentException"/>
         /// <exception cref="ArgumentNullException"/>
         /// <exception cref="NotSupportedException"/>
-        public async Task<InteractiveMessageResult<TOption>> SendSelectionAsync<TOption>(BaseSelection<TOption> selection, SocketInteraction interaction,
+        public async Task<InteractiveMessageResult<TOption?>> SendSelectionAsync<TOption>(BaseSelection<TOption> selection, SocketInteraction interaction,
             TimeSpan? timeout = null, InteractionResponseType responseType = InteractionResponseType.ChannelMessageWithSource, bool ephemeral = false,
-            Action<IUserMessage> messageAction = null, CancellationToken cancellationToken = default)
+            Action<IUserMessage>? messageAction = null, CancellationToken cancellationToken = default)
         {
             InteractiveGuards.NotNull(selection, nameof(selection));
             InteractiveGuards.NotNull(interaction, nameof(interaction));
@@ -494,7 +494,7 @@ namespace Fergun.Interactive
             var message = await SendOrModifyMessageAsync(selection, interaction, responseType, ephemeral).ConfigureAwait(false);
             messageAction?.Invoke(message);
 
-            var timeoutTaskSource = new TimeoutTaskCompletionSource<(TOption, InteractiveStatus)>(timeout ?? DefaultTimeout,
+            var timeoutTaskSource = new TimeoutTaskCompletionSource<(TOption?, InteractiveStatus)>(timeout ?? DefaultTimeout,
                 false, (default, InteractiveStatus.Timeout), (default, InteractiveStatus.Canceled), cancellationToken);
 
             var callback = new SelectionCallback<TOption>(selection, message, timeoutTaskSource, DateTimeOffset.UtcNow, _alwaysAck);
@@ -503,15 +503,15 @@ namespace Fergun.Interactive
         }
 #endif
 
-        private async Task<InteractiveResult<T>> NextEntityAsync<T>(Func<T, bool> filter = null, Func<T, bool, Task> action = null,
+        private async Task<InteractiveResult<T?>> NextEntityAsync<T>(Func<T, bool>? filter = null, Func<T, bool, Task>? action = null,
             TimeSpan? timeout = null, CancellationToken cancellationToken = default)
         {
-            filter ??= entity => true;
-            action ??= (entity, filterPassed) => Task.CompletedTask;
+            filter ??= _ => true;
+            action ??= (_, _) => Task.CompletedTask;
 
             var guid = Guid.NewGuid();
 
-            var timeoutTaskSource = new TimeoutTaskCompletionSource<(T, InteractiveStatus)>(timeout ?? DefaultTimeout,
+            var timeoutTaskSource = new TimeoutTaskCompletionSource<(T?, InteractiveStatus)>(timeout ?? DefaultTimeout,
                 false, (default, InteractiveStatus.Timeout), (default, InteractiveStatus.Canceled), cancellationToken);
 
             var callback = new FilteredCallback<T>(filter, action, timeoutTaskSource, DateTimeOffset.UtcNow);
@@ -527,7 +527,7 @@ namespace Fergun.Interactive
             _filteredCallbacks.TryRemove(guid, out _);
             callback.Dispose();
 
-            return new InteractiveResult<T>(result, elapsed, status);
+            return new InteractiveResult<T?>(result, elapsed, status);
         }
 
         private async Task<InteractiveMessageResult> WaitPaginatorResultAsync(PaginatorCallback callback)
@@ -545,7 +545,7 @@ namespace Fergun.Interactive
                 ? DateTimeOffset.UtcNow - callback.StartTime
                 : callback.TimeoutTaskSource.Delay;
 
-            var result = new InteractiveMessageResult(elapsed, taskResult, callback.Message);
+            var result = new InteractiveMessageResult(elapsed, callback.Message, taskResult);
 
             if (_callbacks.TryRemove(callback.Message.Id, out _))
             {
@@ -557,20 +557,20 @@ namespace Fergun.Interactive
             return result;
         }
 
-        private async Task<InteractiveMessageResult<TOption>> WaitForSelectionResultAsync<TOption>(SelectionCallback<TOption> callback)
+        private async Task<InteractiveMessageResult<TOption?>> WaitForSelectionResultAsync<TOption>(SelectionCallback<TOption> callback)
         {
             _callbacks[callback.Message.Id] = callback;
 
             // A CancellationTokenSource is used here for 2 things:
             // 1. To cancel NextMessageAsync() to avoid memory leaks
             // 2. To cancel InitializeMessageAsync() to avoid adding reactions after TimeoutTaskSource.Task has returned.
-            var cts = callback.Selection.InputType == InputType.Messages || callback.Selection.InputType == InputType.Reactions ? new CancellationTokenSource() : null;
+            var cts = callback.Selection.InputType is InputType.Messages or InputType.Reactions ? new CancellationTokenSource() : null;
 
             _ = callback.Selection.InitializeMessageAsync(callback.Message, cts?.Token ?? default).ConfigureAwait(false);
 
             if (callback.Selection.InputType == InputType.Messages)
             {
-                _ = NextMessageAsync(x => false, async (msg, pass) =>
+                _ = NextMessageAsync(_ => false, async (msg, _) =>
                 {
                     if (msg.Channel.Id == callback.Message.Channel.Id && msg.Source == MessageSource.User)
                     {
@@ -590,7 +590,7 @@ namespace Fergun.Interactive
                 ? callback.TimeoutTaskSource.Delay
                 : DateTimeOffset.UtcNow - callback.StartTime;
 
-            var result = new InteractiveMessageResult<TOption>(selected, elapsed, status, callback.Message);
+            var result = new InteractiveMessageResult<TOption?>(selected, elapsed, callback.Message, status);
 
             if (_callbacks.TryRemove(callback.Message.Id, out _))
             {
@@ -603,7 +603,7 @@ namespace Fergun.Interactive
         }
 
         private static async Task<IUserMessage> SendOrModifyMessageAsync<TOption>(IInteractiveElement<TOption> element,
-            IUserMessage message, IMessageChannel channel)
+            IUserMessage? message, IMessageChannel channel)
         {
             var page = element switch
             {
@@ -613,9 +613,9 @@ namespace Fergun.Interactive
             };
 
 #if DNETLABS
-            MessageComponent component = null;
-            bool moreThanOnePage = !(element is Paginator pag) || pag.MaxPageIndex > 0;
-            if ((element.InputType == InputType.Buttons || element.InputType == InputType.SelectMenus) && moreThanOnePage)
+            MessageComponent? component = null;
+            bool moreThanOnePage = element is not Paginator pag || pag.MaxPageIndex > 0;
+            if (element.InputType is InputType.Buttons or InputType.SelectMenus && moreThanOnePage)
             {
                 component = element.BuildComponents(false);
             }
@@ -657,9 +657,9 @@ namespace Fergun.Interactive
                 _ => throw new ArgumentException("Unknown interactive element.", nameof(element))
             };
 
-            MessageComponent component = null;
-            bool moreThanOnePage = !(element is Paginator pag) || pag.MaxPageIndex > 0;
-            if ((element.InputType == InputType.Buttons || element.InputType == InputType.SelectMenus) && moreThanOnePage)
+            MessageComponent? component = null;
+            bool moreThanOnePage = element is not Paginator pag || pag.MaxPageIndex > 0;
+            if (element.InputType is InputType.Buttons or InputType.SelectMenus && moreThanOnePage)
             {
                 component = element.BuildComponents(false);
             }
@@ -709,8 +709,8 @@ namespace Fergun.Interactive
                 InteractiveStatus.Timeout => element.ActionOnTimeout,
                 InteractiveStatus.Canceled => element.ActionOnCancellation,
                 InteractiveStatus.Success when element is BaseSelection<TOption> selection => selection.ActionOnSuccess,
-                InteractiveStatus.Unknown => throw new ArgumentException("Unknown action.", nameof(result.Status)),
-                _ => throw new ArgumentException("Unknown action.", nameof(result.Status))
+                InteractiveStatus.Unknown => throw new ArgumentException("Unknown action.", nameof(result)),
+                _ => throw new ArgumentException("Unknown action.", nameof(result))
             };
 
             if (action == ActionOnStop.None)
@@ -731,7 +731,7 @@ namespace Fergun.Interactive
                 return;
             }
 
-            Page page = null;
+            Page? page = null;
             if (action.HasFlag(ActionOnStop.ModifyMessage))
             {
                 page = result.Status switch
@@ -739,16 +739,16 @@ namespace Fergun.Interactive
                     InteractiveStatus.Timeout => element.TimeoutPage,
                     InteractiveStatus.Canceled => element.CanceledPage,
                     InteractiveStatus.Success when element is BaseSelection<TOption> selection => selection.SuccessPage,
-                    InteractiveStatus.Unknown => throw new ArgumentException("Unknown action.", nameof(result.Status)),
-                    _ => throw new ArgumentException("Unknown action.", nameof(result.Status))
+                    InteractiveStatus.Unknown => throw new ArgumentException("Unknown action.", nameof(result)),
+                    _ => throw new ArgumentException("Unknown action.", nameof(result))
                 };
             }
 
 #if DNETLABS
-            MessageComponent components = null;
+            MessageComponent? components = null;
             if (action.HasFlag(ActionOnStop.DisableInput))
             {
-                if (element.InputType == InputType.Buttons || element.InputType == InputType.SelectMenus)
+                if (element.InputType is InputType.Buttons or InputType.SelectMenus)
                 {
                     components = element.BuildComponents(true);
                 }
@@ -806,7 +806,7 @@ namespace Fergun.Interactive
 
             // Get the second argument of ReactionAdded, this is either "ISocketMessageChannel" (old) or "Cacheable<IMessageChannel, ulong>" (new)
             var secondArg = eventInfo!
-                .EventHandlerType!
+                .EventHandlerType
                 .GetMethod("Invoke")!
                 .GetParameters()[1]
                 .ParameterType;
@@ -817,11 +817,11 @@ namespace Fergun.Interactive
         }
 
         private Func<Cacheable<IUserMessage, ulong>, IMessageChannel, SocketReaction, Task> ReactionAddedOld
-            => (cachedMessage, channel, reaction) => ReactionAdded(reaction);
+            => (_, _, reaction) => ReactionAdded(reaction);
 #endif
 
         private Func<Cacheable<IUserMessage, ulong>, Cacheable<IMessageChannel, ulong>, SocketReaction, Task> ReactionAddedNew
-            => (cachedMessage, cachedChannel, reaction) => ReactionAdded(reaction);
+            => (_, _, reaction) => ReactionAdded(reaction);
 
         private Task MessageReceived(SocketMessage message)
         {

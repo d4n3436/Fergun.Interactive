@@ -9,11 +9,18 @@ namespace Fergun.Interactive.Selection
     public class SelectionBuilder<TOption> : BaseSelectionBuilder<Selection<TOption>, TOption, SelectionBuilder<TOption>>
     {
         /// <summary>
+        /// Initializes a new instance of the <see cref="SelectionBuilder{TOption}"/> class.
+        /// </summary>
+        public SelectionBuilder()
+        {
+        }
+
+        /// <summary>
         /// Builds this builder into an immutable selection.
         /// </summary>
         /// <returns>A <see cref="Selection{TOption}"/>.</returns>
-        public override Selection<TOption> Build() => new Selection<TOption>(EmoteConverter, StringConverter,
-            EqualityComparer, AllowCancel, SelectionPage?.Build(), Users?.ToArray(), Options?.ToArray(),
+        public override Selection<TOption> Build() => new(EmoteConverter, StringConverter,
+            EqualityComparer, AllowCancel, SelectionPage?.Build()!, Users.ToArray(), Options.ToArray(),
             CanceledPage?.Build(), TimeoutPage?.Build(), SuccessPage?.Build(), Deletion, InputType,
             ActionOnCancellation, ActionOnTimeout, ActionOnSuccess);
     }

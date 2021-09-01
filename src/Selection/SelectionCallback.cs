@@ -15,7 +15,7 @@ namespace Fergun.Interactive.Selection
         private bool _disposed;
 
         public SelectionCallback(BaseSelection<TOption> selection, IUserMessage message,
-            TimeoutTaskCompletionSource<(TOption, InteractiveStatus)> timeoutTaskSource,
+            TimeoutTaskCompletionSource<(TOption?, InteractiveStatus)> timeoutTaskSource,
             DateTimeOffset startTime, bool alwaysAck = false)
         {
             Selection = selection;
@@ -38,7 +38,7 @@ namespace Fergun.Interactive.Selection
         /// <summary>
         /// Gets the <see cref="TimeoutTaskCompletionSource{TResult}"/> used to set the result of the selection.
         /// </summary>
-        public TimeoutTaskCompletionSource<(TOption, InteractiveStatus)> TimeoutTaskSource { get; }
+        public TimeoutTaskCompletionSource<(TOption?, InteractiveStatus)> TimeoutTaskSource { get; }
 
         /// <inheritdoc/>
         public DateTimeOffset StartTime { get; }
@@ -62,18 +62,18 @@ namespace Fergun.Interactive.Selection
             bool manageMessages = message.Channel is SocketGuildChannel guildChannel
                                   && guildChannel.Guild.CurrentUser.GetPermissions(guildChannel).ManageMessages;
 
-            TOption selected = default;
-            string selectedString = null;
+            TOption? selected = default;
+            string? selectedString = null;
             foreach (var value in Selection.Options)
             {
-                string temp = Selection.StringConverter(value);
+                string? temp = Selection.StringConverter?.Invoke(value);
                 if (temp != message.Content) continue;
                 selectedString = temp;
                 selected = value;
                 break;
             }
 
-            if (selectedString == null)
+            if (selectedString is null)
             {
                 if (manageMessages && Selection.Deletion.HasFlag(DeletionOptions.Invalid))
                 {
@@ -82,7 +82,7 @@ namespace Fergun.Interactive.Selection
                 return;
             }
 
-            bool isCanceled = Selection.AllowCancel && Selection.StringConverter(Selection.CancelOption) == selectedString;
+            bool isCanceled = Selection.AllowCancel && Selection.StringConverter?.Invoke(Selection.CancelOption) == selectedString;
 
             if (isCanceled)
             {
@@ -109,12 +109,12 @@ namespace Fergun.Interactive.Selection
             bool manageMessages = Message.Channel is SocketGuildChannel guildChannel
                                   && guildChannel.Guild.CurrentUser.GetPermissions(guildChannel).ManageMessages;
 
-            TOption selected = default;
-            IEmote selectedEmote = null;
+            TOption? selected = default;
+            IEmote? selectedEmote = null;
             foreach (var value in Selection.Options)
             {
-                var temp = Selection.EmoteConverter(value);
-                if (temp.Name != reaction.Emote.Name) continue;
+                var temp = Selection.EmoteConverter?.Invoke(value);
+                if (temp?.Name != reaction.Emote.Name) continue;
                 selectedEmote = temp;
                 selected = value;
                 break;
@@ -129,7 +129,7 @@ namespace Fergun.Interactive.Selection
                 return;
             }
 
-            bool isCanceled = Selection.AllowCancel && Selection.EmoteConverter(Selection.CancelOption).Name == selectedEmote.Name;
+            bool isCanceled = Selection.AllowCancel && Selection.EmoteConverter?.Invoke(Selection.CancelOption).Name == selectedEmote.Name;
 
             if (isCanceled)
             {
@@ -149,7 +149,7 @@ namespace Fergun.Interactive.Selection
         /// <inheritdoc/>
         public Task ExecuteAsync(SocketInteraction interaction)
         {
-            if ((Selection.InputType == InputType.Buttons || Selection.InputType == InputType.SelectMenus)
+            if (Selection.InputType is InputType.Buttons or InputType.SelectMenus
                 && interaction is SocketMessageComponent componentInteraction)
             {
                 return ExecuteAsync(componentInteraction);
@@ -165,9 +165,9 @@ namespace Fergun.Interactive.Selection
                 return;
             }
 
-            TOption selected = default;
-            string selectedString = null;
-            string customId = Selection.InputType switch
+            TOption? selected = default;
+            string? selectedString = null;
+            string? customId = Selection.InputType switch
             {
                 InputType.Buttons => interaction.Data.CustomId,
                 InputType.SelectMenus => (interaction
@@ -182,21 +182,21 @@ namespace Fergun.Interactive.Selection
                 _ => null
             };
 
-            if (customId == null)
+            if (customId is null)
             {
                 return;
             }
 
             foreach (var value in Selection.Options)
             {
-                string stringValue = Selection.EmoteConverter?.Invoke(value)?.ToString() ?? Selection.StringConverter?.Invoke(value);
+                string? stringValue = Selection.EmoteConverter?.Invoke(value)?.ToString() ?? Selection.StringConverter?.Invoke(value);
                 if (customId != stringValue) continue;
                 selected = value;
                 selectedString = stringValue;
                 break;
             }
 
-            if (selectedString == null)
+            if (selectedString is null)
             {
                 return;
             }

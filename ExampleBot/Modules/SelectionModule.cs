@@ -226,7 +226,7 @@ namespace ExampleBot.Modules
             InteractiveMessageResult<KeyValuePair<IEmote, int>> result = null;
             IUserMessage message = null;
 
-            while (result == null || result.Status == InteractiveStatus.Success)
+            while (result is null || result.Status == InteractiveStatus.Success)
             {
                 var pageBuilder = new PageBuilder()
                     .WithTitle("Bot Control Panel")

@@ -10,21 +10,22 @@ namespace Fergun.Interactive
     /// </summary>
     public class PageBuilder
     {
-        private readonly EmbedBuilder _builder = new EmbedBuilder();
+        private readonly EmbedBuilder _builder;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="PageBuilder"/> class.
         /// </summary>
         public PageBuilder()
         {
+            _builder = new EmbedBuilder();
         }
 
-        internal PageBuilder(EmbedBuilder builder)
+        internal PageBuilder(EmbedBuilder? builder)
         {
-            _builder = builder;
+            _builder = builder ?? new EmbedBuilder();
         }
 
-        internal PageBuilder(string text, EmbedBuilder builder)
+        internal PageBuilder(string? text, EmbedBuilder? builder)
             : this(builder)
         {
             Text = text;
@@ -34,7 +35,7 @@ namespace Fergun.Interactive
         /// Gets or sets the text of a <see cref="Page"/>.
         /// </summary>
         /// <returns>The text of the page.</returns>
-        public string Text { get; set; }
+        public string? Text { get; set; }
 
         /// <summary>
         /// Gets or sets the title of a <see cref="Page"/>.
@@ -159,14 +160,14 @@ namespace Fergun.Interactive
         /// <param name="builder">The <see cref="EmbedBuilder"/>.</param>
         /// <returns>A <see cref="PageBuilder"/>.</returns>
         public static PageBuilder FromEmbedBuilder(EmbedBuilder builder)
-            => new PageBuilder(builder);
+            => new(builder);
 
         /// <summary>
         /// Builds this builder to an immutable <see cref="Page"/>.
         /// </summary>
         /// <returns>A <see cref="Page"/>.</returns>
         public Page Build()
-            => new Page(Text, _builder);
+            => new(Text, _builder);
 
         /// <summary>
         /// Sets the text of a <see cref="Page"/>.
@@ -295,7 +296,7 @@ namespace Fergun.Interactive
         /// <param name="iconUrl">The icon URL of the author field.</param>
         /// <param name="url">The URL of the author field.</param>
         /// <returns>The current builder.</returns>
-        public PageBuilder WithAuthor(string name, string iconUrl = null, string url = null)
+        public PageBuilder WithAuthor(string name, string? iconUrl = null, string? url = null)
         {
             _builder.WithAuthor(name, iconUrl, url);
             return this;
@@ -335,7 +336,7 @@ namespace Fergun.Interactive
         /// <param name="text">The title of the footer field.</param>
         /// <param name="iconUrl">The icon URL of the footer field.</param>
         /// <returns>The current builder.</returns>
-        public PageBuilder WithFooter(string text, string iconUrl = null)
+        public PageBuilder WithFooter(string text, string? iconUrl = null)
         {
             _builder.WithFooter(text, iconUrl);
             return this;
@@ -396,7 +397,7 @@ namespace Fergun.Interactive
             return this;
         }
 
-        internal PageBuilder WithPaginatorFooter(PaginatorFooter footer, int page, int totalPages, IList<IUser> users)
+        internal PageBuilder WithPaginatorFooter(PaginatorFooter footer, int page, int totalPages, IList<IUser>? users)
         {
             if (footer == PaginatorFooter.None)
             {
@@ -406,7 +407,7 @@ namespace Fergun.Interactive
             Footer = new EmbedFooterBuilder();
             if (footer.HasFlag(PaginatorFooter.Users))
             {
-                if (users == null || users.Count == 0)
+                if (users is null || users.Count == 0)
                 {
                     Footer.Text += "Interactors: Everyone\n";
                 }

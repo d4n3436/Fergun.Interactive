@@ -13,7 +13,7 @@ namespace Fergun.Interactive
         private bool _disposed;
 
         public FilteredCallback(Func<TInput, bool> filter, Func<TInput, bool, Task> action,
-            TimeoutTaskCompletionSource<(TInput, InteractiveStatus)> timeoutTaskSource, DateTimeOffset startTime)
+            TimeoutTaskCompletionSource<(TInput?, InteractiveStatus)> timeoutTaskSource, DateTimeOffset startTime)
         {
             Filter = filter;
             Action = action;
@@ -34,7 +34,7 @@ namespace Fergun.Interactive
         /// <summary>
         /// Gets the <see cref="TimeoutTaskCompletionSource{TResult}"/> used to set the result of the callback.
         /// </summary>
-        public TimeoutTaskCompletionSource<(TInput, InteractiveStatus)> TimeoutTaskSource { get; }
+        public TimeoutTaskCompletionSource<(TInput?, InteractiveStatus)> TimeoutTaskSource { get; }
 
         /// <inheritdoc/>
         public DateTimeOffset StartTime { get; }

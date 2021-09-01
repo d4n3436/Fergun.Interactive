@@ -30,7 +30,7 @@ namespace Fergun.Interactive.Selection
         /// Buttons: Required (for emotes) unless a <see cref="StringConverter"/> is provided (for labels).<br/>
         /// Select menus: Optional.
         /// </remarks>
-        public virtual Func<TOption, IEmote> EmoteConverter { get; set; }
+        public virtual Func<TOption, IEmote>? EmoteConverter { get; set; }
 
         /// <summary>
         /// Gets or sets a function that returns a <see cref="string"/> representation of a <typeparamref name="TOption"/>.
@@ -42,7 +42,7 @@ namespace Fergun.Interactive.Selection
         /// Buttons: Required (for labels) unless a <see cref="EmoteConverter"/> is provided (for emotes). Defaults to <see cref="object.ToString()"/> if neither are set.<br/>
         /// Select menus: Required. If not set, defaults to <see cref="object.ToString()"/>.
         /// </remarks>
-        public virtual Func<TOption, string> StringConverter { get; set; }
+        public virtual Func<TOption, string>? StringConverter { get; set; }
 
         /// <summary>
         /// Gets or sets the equality comparer of <typeparamref name="TOption"/>s.
@@ -59,7 +59,7 @@ namespace Fergun.Interactive.Selection
         /// <summary>
         /// Gets or sets the <see cref="Page"/> which is sent into the channel.
         /// </summary>
-        public virtual PageBuilder SelectionPage { get; set; }
+        public virtual PageBuilder SelectionPage { get; set; } = null!;
 
         /// <summary>
         /// Gets or sets the users who can interact with the <see cref="BaseSelection{TOption}"/>.
@@ -72,16 +72,16 @@ namespace Fergun.Interactive.Selection
         public virtual ICollection<TOption> Options { get; set; } = new List<TOption>();
 
         /// <inheritdoc />
-        public virtual PageBuilder CanceledPage { get; set; }
+        public virtual PageBuilder? CanceledPage { get; set; }
 
         /// <inheritdoc />
-        public virtual PageBuilder TimeoutPage { get; set; }
+        public virtual PageBuilder? TimeoutPage { get; set; }
 
         /// <summary>
         /// Gets or sets the <see cref="Page"/> which the <see cref="BaseSelection{TOption}"/>
         /// gets modified to after a valid input is received (except cancellation inputs).
         /// </summary>
-        public virtual PageBuilder SuccessPage { get; set; }
+        public virtual PageBuilder? SuccessPage { get; set; }
 
         /// <inheritdoc />
         public virtual DeletionOptions Deletion { get; set; } = DeletionOptions.Valid;
@@ -109,7 +109,7 @@ namespace Fergun.Interactive.Selection
         ICollection<IUser> IInteractiveBuilder<TSelection, TOption, TBuilder>.Users
         {
             get => Users;
-            set => Users = value?.ToList();
+            set => Users = value?.ToList() ?? throw new ArgumentNullException(nameof(value));
         }
 
         /// <inheritdoc />
@@ -141,7 +141,7 @@ namespace Fergun.Interactive.Selection
         /// Buttons: Required (for labels) unless a <see cref="EmoteConverter"/> is provided (for emotes). Defaults to <see cref="object.ToString()"/> if neither are set.<br/>
         /// Select menus: Required. If not set, defaults to <see cref="object.ToString()"/>.
         /// </remarks>
-        public virtual TBuilder WithStringConverter(Func<TOption, string> stringConverter)
+        public virtual TBuilder WithStringConverter(Func<TOption, string>? stringConverter)
         {
             StringConverter = stringConverter;
             return (TBuilder)this;
@@ -153,7 +153,7 @@ namespace Fergun.Interactive.Selection
         /// <returns>This builder.</returns>
         public virtual TBuilder WithEqualityComparer(IEqualityComparer<TOption> equalityComparer)
         {
-            EqualityComparer = equalityComparer;
+            EqualityComparer = equalityComparer ?? throw new ArgumentNullException(nameof(equalityComparer));
             return (TBuilder)this;
         }
 
@@ -176,7 +176,7 @@ namespace Fergun.Interactive.Selection
         /// <returns>This builder.</returns>
         public virtual TBuilder WithSelectionPage(PageBuilder page)
         {
-            SelectionPage = page;
+            SelectionPage = page ?? throw new ArgumentNullException(nameof(page));
             return (TBuilder)this;
         }
 
@@ -187,7 +187,7 @@ namespace Fergun.Interactive.Selection
         /// <returns>This builder.</returns>
         public virtual TBuilder WithUsers(params IUser[] users)
         {
-            Users = users?.ToList();
+            Users = users?.ToList() ?? throw new ArgumentNullException(nameof(users));
             return (TBuilder)this;
         }
 
@@ -198,7 +198,7 @@ namespace Fergun.Interactive.Selection
         /// <returns>This builder.</returns>
         public virtual TBuilder WithUsers(IEnumerable<IUser> users)
         {
-            Users = users?.ToList();
+            Users = users?.ToList() ?? throw new ArgumentNullException(nameof(users));
             return (TBuilder)this;
         }
 
@@ -209,21 +209,21 @@ namespace Fergun.Interactive.Selection
         /// <returns>This builder.</returns>
         public virtual TBuilder AddUser(IUser user)
         {
-            Users?.Add(user);
+            Users.Add(user ?? throw new ArgumentNullException(nameof(user)));
             return (TBuilder)this;
         }
 
         /// <inheritdoc/>
         public virtual TBuilder WithOptions(ICollection<TOption> options)
         {
-            Options = options;
+            Options = options ?? throw new ArgumentNullException(nameof(options));
             return (TBuilder)this;
         }
 
         /// <inheritdoc/>
         public virtual TBuilder AddOption(TOption option)
         {
-            Options.Add(option);
+            Options.Add(option ?? throw new ArgumentNullException(nameof(option)));
             return (TBuilder)this;
         }
 
@@ -232,7 +232,7 @@ namespace Fergun.Interactive.Selection
         /// </summary>
         /// <param name="page">The page.</param>
         /// <returns>This builder.</returns>
-        public virtual TBuilder WithCanceledPage(PageBuilder page)
+        public virtual TBuilder WithCanceledPage(PageBuilder? page)
         {
             CanceledPage = page;
             return (TBuilder)this;
@@ -243,7 +243,7 @@ namespace Fergun.Interactive.Selection
         /// </summary>
         /// <param name="page">The page.</param>
         /// <returns>This builder.</returns>
-        public virtual TBuilder WithTimeoutPage(PageBuilder page)
+        public virtual TBuilder WithTimeoutPage(PageBuilder? page)
         {
             TimeoutPage = page;
             return (TBuilder)this;
@@ -254,7 +254,7 @@ namespace Fergun.Interactive.Selection
         /// </summary>
         /// <param name="page">The page.</param>
         /// <returns>This builder.</returns>
-        public virtual TBuilder WithSuccessPage(PageBuilder page)
+        public virtual TBuilder WithSuccessPage(PageBuilder? page)
         {
             SuccessPage = page;
             return (TBuilder)this;

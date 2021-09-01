@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -16,17 +17,17 @@ namespace Fergun.Interactive.Selection
         /// <summary>
         /// Gets whether the selection is restricted to <see cref="Users"/>.
         /// </summary>
-        public bool IsUserRestricted => Users?.Count > 0;
+        public bool IsUserRestricted => Users.Count > 0;
 
         /// <summary>
         /// Gets a function that returns an <see cref="IEmote"/> representation of a <typeparamref name="TOption"/>.
         /// </summary>
-        public Func<TOption, IEmote> EmoteConverter { get; }
+        public Func<TOption, IEmote>? EmoteConverter { get; }
 
         /// <summary>
         /// Gets a function that returns a <see cref="string"/> representation of a <typeparamref name="TOption"/>.
         /// </summary>
-        public Func<TOption, string> StringConverter { get; }
+        public Func<TOption, string>? StringConverter { get; }
 
         /// <summary>
         /// Gets the equality comparer of <typeparamref name="TOption"/>s.
@@ -36,13 +37,14 @@ namespace Fergun.Interactive.Selection
         /// <summary>
         /// Gets whether this selection allows for cancellation.
         /// </summary>
+        [MemberNotNullWhen(true, nameof(CancelOption))]
         public bool AllowCancel { get; }
 
         /// <summary>
         /// Gets the option used for cancellation.
         /// </summary>
-        /// <remarks>This option is ignored if <see cref="AllowCancel"/> is <see langword="false"/> or <see cref="Options"/> contains only one element.</remarks>
-        public TOption CancelOption { get; }
+        /// <remarks>This option is ignored (and <see langword="default"/>) if <see cref="AllowCancel"/> is <see langword="false"/> or <see cref="Options"/> contains only one element.</remarks>
+        public TOption? CancelOption { get; }
 
         /// <summary>
         /// Gets the <see cref="Page"/> which is sent into the channel.
@@ -56,16 +58,16 @@ namespace Fergun.Interactive.Selection
         public IReadOnlyCollection<TOption> Options { get; }
 
         /// <inheritdoc/>
-        public Page CanceledPage { get; }
+        public Page? CanceledPage { get; }
 
         /// <inheritdoc/>
-        public Page TimeoutPage { get; }
+        public Page? TimeoutPage { get; }
 
         /// <summary>
         /// Gets the <see cref="Page"/> which this selection gets modified to after a valid input is received
         /// (except if <see cref="CancelOption"/> is received).
         /// </summary>
-        public Page SuccessPage { get; }
+        public Page? SuccessPage { get; }
 
         /// <inheritdoc/>
         public DeletionOptions Deletion { get; }
@@ -87,19 +89,19 @@ namespace Fergun.Interactive.Selection
         /// <summary>
         /// Initializes a new instance of the <see cref="BaseSelection{TOption}"/> class.
         /// </summary>
-        protected BaseSelection(Func<TOption, IEmote> emoteConverter, Func<TOption, string> stringConverter, IEqualityComparer<TOption> equalityComparer,
-            bool allowCancel, Page selectionPage, IReadOnlyCollection<IUser> users, IReadOnlyCollection<TOption> options, Page canceledPage,
-            Page timeoutPage, Page successPage, DeletionOptions deletion, InputType inputType, ActionOnStop actionOnCancellation,
+        protected BaseSelection(Func<TOption, IEmote>? emoteConverter, Func<TOption, string>? stringConverter, IEqualityComparer<TOption> equalityComparer,
+            bool allowCancel, Page selectionPage, IReadOnlyCollection<IUser> users, IReadOnlyCollection<TOption> options, Page? canceledPage,
+            Page? timeoutPage, Page? successPage, DeletionOptions deletion, InputType inputType, ActionOnStop actionOnCancellation,
             ActionOnStop actionOnTimeout, ActionOnStop actionOnSuccess)
         {
-            if (inputType == InputType.Reactions && emoteConverter == null)
+            if (inputType == InputType.Reactions && emoteConverter is null)
             {
                 throw new ArgumentNullException(nameof(emoteConverter), $"{nameof(emoteConverter)} is required when {nameof(inputType)} is Reactions.");
             }
 
-            if (stringConverter == null && (inputType != InputType.Buttons || emoteConverter == null))
+            if (stringConverter is null && (inputType != InputType.Buttons || emoteConverter is null))
             {
-                stringConverter = x => x.ToString();
+                stringConverter = x => x?.ToString()!;
             }
 
             EmoteConverter = emoteConverter;
@@ -107,7 +109,7 @@ namespace Fergun.Interactive.Selection
             EqualityComparer = equalityComparer ?? throw new ArgumentNullException(nameof(equalityComparer));
             SelectionPage = selectionPage ?? throw new ArgumentNullException(nameof(selectionPage));
 
-            if (options == null)
+            if (options is null)
             {
                 throw new ArgumentNullException(nameof(options));
             }
@@ -124,7 +126,7 @@ namespace Fergun.Interactive.Selection
 
             AllowCancel = allowCancel && options.Count > 1;
             CancelOption = AllowCancel ? options.Last() : default;
-            Users = users;
+            Users = users ?? throw new ArgumentNullException(nameof(users));
             Options = options;
             CanceledPage = canceledPage;
             TimeoutPage = timeoutPage;
@@ -145,7 +147,7 @@ namespace Fergun.Interactive.Selection
         internal virtual async Task InitializeMessageAsync(IUserMessage message, CancellationToken cancellationToken = default)
         {
             if (InputType != InputType.Reactions) return;
-            if (EmoteConverter == null)
+            if (EmoteConverter is null)
             {
                 throw new InvalidOperationException($"Reaction-based selections must have a valid {nameof(EmoteConverter)}.");
             }
@@ -182,8 +184,8 @@ namespace Fergun.Interactive.Selection
                 foreach (var selection in Options)
                 {
                     var emote = EmoteConverter?.Invoke(selection);
-                    string label = StringConverter?.Invoke(selection);
-                    if (emote == null && label == null)
+                    string? label = StringConverter?.Invoke(selection);
+                    if (emote is null && label is null)
                     {
                         throw new InvalidOperationException($"Neither {nameof(EmoteConverter)} nor {nameof(StringConverter)} returned a valid emote or string.");
                     }
@@ -198,8 +200,8 @@ namespace Fergun.Interactive.Selection
                 foreach (var selection in Options)
                 {
                     var emote = EmoteConverter?.Invoke(selection);
-                    string label = StringConverter?.Invoke(selection);
-                    if (emote == null && label == null)
+                    string? label = StringConverter?.Invoke(selection);
+                    if (emote is null && label is null)
                     {
                         throw new InvalidOperationException($"Neither {nameof(EmoteConverter)} nor {nameof(StringConverter)} returned a valid emote or string.");
                     }

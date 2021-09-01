@@ -14,7 +14,7 @@ namespace Fergun.Interactive.Pagination
         /// <summary>
         /// Gets whether this paginator is restricted to <see cref="Users"/>.
         /// </summary>
-        public bool IsUserRestricted => Users?.Count > 0;
+        public bool IsUserRestricted => Users.Count > 0;
 
         /// <summary>
         /// Gets the index of the current page of this paginator.
@@ -36,15 +36,11 @@ namespace Fergun.Interactive.Pagination
         /// </summary>
         public IReadOnlyDictionary<IEmote, PaginatorAction> Emotes { get; }
 
-        /// <summary>
-        /// Gets the <see cref="Embed"/> which this paginator gets modified to after cancellation.
-        /// </summary>
-        public Page CanceledPage { get; }
+        /// <inheritdoc/>
+        public Page? CanceledPage { get; }
 
-        /// <summary>
-        /// Gets the <see cref="Embed"/> which this paginator gets modified to after a timeout.
-        /// </summary>
-        public Page TimeoutPage { get; }
+        /// <inheritdoc/>
+        public Page? TimeoutPage { get; }
 
         /// <summary>
         /// Gets or sets what type of inputs this paginator should delete.
@@ -74,10 +70,21 @@ namespace Fergun.Interactive.Pagination
         /// Initializes a new instance of the <see cref="Paginator"/> class.
         /// </summary>
         protected Paginator(IReadOnlyCollection<IUser> users, IReadOnlyDictionary<IEmote, PaginatorAction> emotes,
-            Page canceledPage, Page timeoutPage, DeletionOptions deletion, InputType inputType,
+            Page? canceledPage, Page? timeoutPage, DeletionOptions deletion, InputType inputType,
             ActionOnStop actionOnCancellation, ActionOnStop actionOnTimeout, int startPageIndex)
         {
-            Users = users;
+            Users = users ?? throw new ArgumentNullException(nameof(users));
+
+            if (emotes is null)
+            {
+                throw new ArgumentNullException(nameof(emotes));
+            }
+
+            if (emotes.Count == 0)
+            {
+                throw new ArgumentException($"{nameof(emotes)} must contain at least one element.", nameof(emotes));
+            }
+
             Emotes = emotes ?? throw new ArgumentNullException(nameof(emotes));
             CanceledPage = canceledPage;
             TimeoutPage = timeoutPage;
@@ -123,7 +130,7 @@ namespace Fergun.Interactive.Pagination
 
             var page = await GetOrLoadPageAsync(pageIndex).ConfigureAwait(false);
 
-            if (page == null)
+            if (page is null)
             {
                 return false;
             }

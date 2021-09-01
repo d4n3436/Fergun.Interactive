@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Discord;
@@ -15,7 +16,7 @@ namespace Fergun.Interactive.Pagination
         /// <summary>
         /// Gets whether the paginator is restricted to <see cref="Users"/>.
         /// </summary>
-        public virtual bool IsUserRestricted => Users?.Count > 0;
+        public virtual bool IsUserRestricted => Users.Count > 0;
 
         /// <summary>
         /// Gets or sets the footer format in the <see cref="Embed"/> of the <typeparamref name="TPaginator"/>.
@@ -34,10 +35,10 @@ namespace Fergun.Interactive.Pagination
         public virtual IDictionary<IEmote, PaginatorAction> Options { get; set; } = new Dictionary<IEmote, PaginatorAction>();
 
         /// <inheritdoc/>
-        public virtual PageBuilder CanceledPage { get; set; }
+        public virtual PageBuilder? CanceledPage { get; set; }
 
         /// <inheritdoc/>
-        public virtual PageBuilder TimeoutPage { get; set; }
+        public virtual PageBuilder? TimeoutPage { get; set; }
 
         /// <inheritdoc/>
         /// <remarks>This property is ignored in button-based paginators.</remarks>
@@ -63,13 +64,13 @@ namespace Fergun.Interactive.Pagination
         ICollection<KeyValuePair<IEmote, PaginatorAction>> IInteractiveBuilder<TPaginator, KeyValuePair<IEmote, PaginatorAction>, TBuilder>.Options
         {
             get => Options;
-            set => Options = new Dictionary<IEmote, PaginatorAction>(value.ToDictionary(x => x.Key, x => x.Value));
+            set => Options = value?.ToDictionary(x => x.Key, x => x.Value) ?? throw new ArgumentNullException(nameof(value));
         }
 
         ICollection<IUser> IInteractiveBuilder<TPaginator, KeyValuePair<IEmote, PaginatorAction>, TBuilder>.Users
         {
             get => Users;
-            set => Users = value?.ToList();
+            set => Users = value?.ToList() ?? throw new ArgumentNullException(nameof(value));
         }
 
         /// <summary>
@@ -96,7 +97,7 @@ namespace Fergun.Interactive.Pagination
         /// <returns>This builder.</returns>
         public virtual TBuilder WithUsers(params IUser[] users)
         {
-            Users = users?.ToList();
+            Users = users?.ToList() ?? throw new ArgumentNullException(nameof(users));
             return (TBuilder)this;
         }
 
@@ -107,7 +108,7 @@ namespace Fergun.Interactive.Pagination
         /// <returns>This builder.</returns>
         public virtual TBuilder WithUsers(IEnumerable<IUser> users)
         {
-            Users = users?.ToList();
+            Users = users?.ToList() ?? throw new ArgumentNullException(nameof(users));
             return (TBuilder)this;
         }
 
@@ -118,7 +119,7 @@ namespace Fergun.Interactive.Pagination
         /// <returns>This builder.</returns>
         public virtual TBuilder AddUser(IUser user)
         {
-            Users?.Add(user);
+            Users.Add(user ?? throw new ArgumentNullException(nameof(user)));
             return (TBuilder)this;
         }
 
@@ -155,7 +156,7 @@ namespace Fergun.Interactive.Pagination
         /// </summary>
         /// <param name="page">The page.</param>
         /// <returns>This builder.</returns>
-        public virtual TBuilder WithCanceledPage(PageBuilder page)
+        public virtual TBuilder WithCanceledPage(PageBuilder? page)
         {
             CanceledPage = page;
             return (TBuilder)this;
@@ -166,7 +167,7 @@ namespace Fergun.Interactive.Pagination
         /// </summary>
         /// <param name="page">The page.</param>
         /// <returns>This builder.</returns>
-        public virtual TBuilder WithTimeoutPage(PageBuilder page)
+        public virtual TBuilder WithTimeoutPage(PageBuilder? page)
         {
             TimeoutPage = page;
             return (TBuilder)this;

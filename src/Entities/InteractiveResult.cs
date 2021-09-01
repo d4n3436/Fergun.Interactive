@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Fergun.Interactive
 {
@@ -8,7 +9,7 @@ namespace Fergun.Interactive
     /// <typeparam name="T">The type of the value of this result.</typeparam>
     public class InteractiveResult<T> : InteractiveResult
     {
-        internal InteractiveResult(T value, TimeSpan elapsed, InteractiveStatus status = InteractiveStatus.Success)
+        internal InteractiveResult(T? value, TimeSpan elapsed, InteractiveStatus status = InteractiveStatus.Success)
         : base(elapsed, status)
         {
             Value = value;
@@ -17,7 +18,14 @@ namespace Fergun.Interactive
         /// <summary>
         /// Gets the value representing the result returned by the interactive action.
         /// </summary>
-        public T Value { get; }
+        /// <remarks>
+        /// This value is not <see langword="null"/> if <see cref="IsSuccess"/> is <see langword="true"/>.
+        /// </remarks>
+        public T? Value { get; }
+
+        /// <inheritdoc/>
+        [MemberNotNullWhen(true, nameof(Value))]
+        public override bool IsSuccess => Status == InteractiveStatus.Success;
     }
 
     /// <summary>
@@ -34,26 +42,26 @@ namespace Fergun.Interactive
         /// <summary>
         /// Gets the time passed between starting the interactive action and getting its result.
         /// </summary>
-        public TimeSpan Elapsed { get; }
+        public virtual TimeSpan Elapsed { get; }
 
         /// <summary>
         /// Gets the status of this result.
         /// </summary>
-        public InteractiveStatus Status { get; }
+        public virtual InteractiveStatus Status { get; }
 
         /// <summary>
         /// Gets whether the interactive action timed out.
         /// </summary>
-        public bool IsTimeout => Status == InteractiveStatus.Timeout;
+        public virtual bool IsTimeout => Status == InteractiveStatus.Timeout;
 
         /// <summary>
         /// Gets whether the interactive action was canceled.
         /// </summary>
-        public bool IsCanceled => Status == InteractiveStatus.Canceled;
+        public virtual bool IsCanceled => Status == InteractiveStatus.Canceled;
 
         /// <summary>
         /// Gets whether the interactive action was successful.
         /// </summary>
-        public bool IsSuccess => Status == InteractiveStatus.Success;
+        public virtual bool IsSuccess => Status == InteractiveStatus.Success;
     }
 }

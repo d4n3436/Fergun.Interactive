@@ -8,8 +8,8 @@ namespace Fergun.Interactive
     /// </summary>
     public class InteractiveMessageResult<T> : InteractiveResult<T>, IInteractiveMessageResult
     {
-        internal InteractiveMessageResult(T value, TimeSpan elapsed,
-            InteractiveStatus status = InteractiveStatus.Success, IUserMessage message = null)
+        internal InteractiveMessageResult(T? value, TimeSpan elapsed, IUserMessage message,
+            InteractiveStatus status = InteractiveStatus.Success)
             : base (value, elapsed, status)
         {
             Message = message;
@@ -24,8 +24,8 @@ namespace Fergun.Interactive
     /// </summary>
     public class InteractiveMessageResult : InteractiveResult, IInteractiveMessageResult
     {
-        internal InteractiveMessageResult(TimeSpan elapsed,
-            InteractiveStatus status = InteractiveStatus.Success, IUserMessage message = null)
+        internal InteractiveMessageResult(TimeSpan elapsed, IUserMessage message,
+            InteractiveStatus status = InteractiveStatus.Success)
             : base(elapsed, status)
         {
             Message = message;

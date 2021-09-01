@@ -11,35 +11,35 @@ namespace Fergun.Interactive
         /// <summary>
         /// Gets the text of this <see cref="Page"/>.
         /// </summary>
-        public string Text { get; }
+        public string? Text { get; }
 
         /// <summary>
         /// Gets the embed of this <see cref="Page"/>.
         /// </summary>
-        public Embed Embed { get; }
+        public Embed? Embed { get; }
 
         /// <summary>
         /// Creates a <see cref="PageBuilder"/> with all the values of this <see cref="Page"/>.
         /// </summary>
         /// <returns>A <see cref="PageBuilder"/>.</returns>
         public PageBuilder ToPageBuilder()
-            => new PageBuilder(Text, Embed.ToEmbedBuilder());
+            => new(Text, Embed?.ToEmbedBuilder());
 
-        internal Page(string text = null, EmbedBuilder builder = null)
+        internal Page(string? text = null, EmbedBuilder? builder = null)
         {
             Text = text;
             bool isEmpty = false;
 
-            if (builder?.Color == null &&
-                builder?.Description == null &&
-                builder?.Title == null &&
-                builder?.Url == null &&
-                builder?.ThumbnailUrl == null &&
-                builder?.ImageUrl == null &&
-                (builder?.Fields == null || builder.Fields.Count == 0) &&
-                builder?.Footer == null &&
-                builder?.Author == null &&
-                builder?.Timestamp == null)
+            if (builder?.Author is null &&
+                builder?.Color is null &&
+                builder?.Description is null &&
+                (builder?.Fields is null || builder.Fields.Count == 0) &&
+                builder?.Footer is null &&
+                builder?.ImageUrl is null &&
+                builder?.ThumbnailUrl is null &&
+                builder?.Timestamp is null &&
+                builder?.Title is null &&
+                builder?.Url is null)
             {
                 if (string.IsNullOrEmpty(text))
                 {
@@ -49,7 +49,7 @@ namespace Fergun.Interactive
                 isEmpty = true;
             }
 
-            Embed = isEmpty ? null : builder.Build();
+            Embed = isEmpty ? null : builder!.Build();
         }
 
         /// <summary>
@@ -58,7 +58,7 @@ namespace Fergun.Interactive
         /// <param name="embed">The embed.</param>
         /// <returns>A <see cref="Page"/>.</returns>
         public static Page FromEmbed(Embed embed)
-            => new Page(null, embed?.ToEmbedBuilder());
+            => new(null, embed?.ToEmbedBuilder());
 
         /// <summary>
         /// Creates a new <see cref="Page"/> from an <see cref="EmbedBuilder"/>.
@@ -66,6 +66,6 @@ namespace Fergun.Interactive
         /// <param name="builder">The builder.</param>
         /// <returns>A <see cref="Page"/>.</returns>
         public static Page FromEmbedBuilder(EmbedBuilder builder)
-            => new Page(null, builder);
+            => new(null, builder);
     }
 }
