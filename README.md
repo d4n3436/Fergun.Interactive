@@ -45,6 +45,37 @@ Example modules:
   - [Lazy paginator](ExampleBot/Modules/PaginatorModule.cs#L46) (`!paginator lazy`)
   - [Image paginator](ExampleBot/Modules/PaginatorModule.cs#L68) (`!paginator img [query]`)
 
+## Q&A
+
+### Q: Why the paginator/selection doesn't do anything after I press a reaction/button? / I'm getting an "A MessageReceived handler is blocking the gateway task." message in the console
+A: You're blocking the gateway task with a method from the interactive service. Make sure your command is running in a different thread using `RunMode.Async`:
+
+```cs
+[Command("command", RunMode = RunMode.Async)]
+public async Task Command()
+...
+```
+
+### Q: Why is my reaction/message to the paginator/selection not automatically deleted even if I specified to delete valid or invalid responses?
+
+A: The bot doesn't have the `ManageMessages` permission in the channel you're using the paginator/selection. This is required to delete messages and reactions.
+
+### Q: When responding an interaction with a paginator/selection, Why does response message have no components even if I specified to use buttons or select menus?
+
+  - A: Your paginator only has one page. The library doesn't include components in this case.
+  - A: You're not passing the correct response type. The default value is `ChannelMessageWithSource`, but if you're deferring the interaction explicitly or implicitly (via `AlwaysAcknowledgeInteractions` in the client config), you'll have to use either `DeferredChannelMessageWithSource` (send a message) or `DeferredUpdateMessage` (update a message).
+
+### Q: Why can't I use reactions in ephemeral messages?
+
+A: Discord doesn't support support reactions in ephemeral messages. Why would you do that anyways?
+
+### Q: When sending ephemeral messages, the cancellation/timeout/success action is not executed. Why?
+
+A: Currently these actions are not supported with ephemeral messages. More info [here](https://github.com/d4n3436/Fergun.Interactive/issues/1).
+
+### Q: Can I use reactions and buttons in a paginator/selection?
+
+A: Currently no, but I'm planning to add support for multiple input types.
 
 ## Additions/Changes from Discord.InteractivityAddon
 
