@@ -60,7 +60,7 @@ public async Task Command()
 
 A: The bot doesn't have the `ManageMessages` permission in the channel you're using the paginator/selection. This is required to delete messages and reactions.
 
-### Q: When responding an interaction with a paginator/selection, Why does response message have no components even if I specified to use buttons or select menus?
+### Q: When responding an interaction with a paginator/selection, Why does the response message have no components even if I specified to use buttons or select menus?
 
   - A: Your paginator only has one page. The library doesn't include components in this case.
   - A: You're not passing the correct response type. The default value is `ChannelMessageWithSource`, but if you're deferring the interaction explicitly or implicitly (via `AlwaysAcknowledgeInteractions` in the client config), you'll have to use either `DeferredChannelMessageWithSource` (send a message) or `DeferredUpdateMessage` (update a message).
@@ -73,7 +73,7 @@ A: Discord doesn't support support reactions in ephemeral messages. Why would yo
 
 A: Currently these actions are not supported with ephemeral messages. More info [here](https://github.com/d4n3436/Fergun.Interactive/issues/1).
 
-### Q: Can I use reactions and buttons in a paginator/selection?
+### Q: Can I use reactions and buttons simultaneously in a paginator/selection?
 
 A: Currently no, but I'm planning to add support for multiple input types.
 
