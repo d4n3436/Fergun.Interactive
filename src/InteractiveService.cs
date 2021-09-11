@@ -49,11 +49,10 @@ namespace Fergun.Interactive
 #if DNETLABS
             _client.ReactionAdded += ReactionAddedNew;
             _client.InteractionCreated += InteractionCreated;
-            _alwaysAck = ((DiscordSocketConfig)client
-                .GetType()
-                .GetField("BaseConfig", BindingFlags.Instance | BindingFlags.NonPublic)!
-                .GetValue(client))
-                .AlwaysAcknowledgeInteractions;
+            _alwaysAck = (typeof(BaseSocketClient)
+                .GetField("BaseConfig", BindingFlags.Instance | BindingFlags.NonPublic)?
+                .GetValue(client) as DiscordSocketConfig)?
+                .AlwaysAcknowledgeInteractions ?? false;
 #else
             DynamicSubscribeReactionAdded();
             _alwaysAck = false;

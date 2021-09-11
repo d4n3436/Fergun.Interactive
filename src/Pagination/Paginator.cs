@@ -85,7 +85,7 @@ namespace Fergun.Interactive.Pagination
                 throw new ArgumentException($"{nameof(emotes)} must contain at least one element.", nameof(emotes));
             }
 
-            Emotes = emotes ?? throw new ArgumentNullException(nameof(emotes));
+            Emotes = emotes;
             CanceledPage = canceledPage;
             TimeoutPage = timeoutPage;
             Deletion = deletion;
