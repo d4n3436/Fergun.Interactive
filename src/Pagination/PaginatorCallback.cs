@@ -15,13 +15,15 @@ namespace Fergun.Interactive.Pagination
 
         public PaginatorCallback(Paginator paginator, IUserMessage message,
             TimeoutTaskCompletionSource<InteractiveStatus> timeoutTaskSource,
-            DateTimeOffset startTime, bool alwaysAck = false)
+            DateTimeOffset startTime, bool alwaysAck = false,
+            SocketInteraction? initialInteraction = null)
         {
             Paginator = paginator;
             Message = message;
             TimeoutTaskSource = timeoutTaskSource;
             StartTime = startTime;
             AlwaysAck = alwaysAck;
+            LastInteraction = initialInteraction;
         }
 
         /// <summary>
@@ -43,17 +45,27 @@ namespace Fergun.Interactive.Pagination
         public DateTimeOffset StartTime { get; }
 
         /// <summary>
-        /// Whether the client always acknowledges interactions.
+        /// Gets whether the client always acknowledges interactions.
         /// </summary>
         public bool AlwaysAck { get; }
+
+        /// <summary>
+        /// Gets or sets the last received interaction that is not <see cref="StopInteraction"/>.
+        /// </summary>
+        /// <remarks>For paginators, this is either the interaction that was received to update a message to a paginator or the interaction received to change the pages.</remarks>
+        public SocketInteraction? LastInteraction { get; private set; }
+
+        /// <summary>
+        /// Gets or sets the interaction that was received to stop the paginator.
+        /// </summary>
+        public SocketMessageComponent? StopInteraction { get; private set; }
 
         /// <inheritdoc/>
         public void Cancel() => TimeoutTaskSource.TryCancel();
 
+        /// <inheritdoc/>
         public Task ExecuteAsync(SocketMessage message)
-        {
-            throw new NotSupportedException("Cannot execute this callback using a message.");
-        }
+            => throw new NotSupportedException("Cannot execute this callback using a message.");
 
         /// <inheritdoc/>
         public async Task ExecuteAsync(SocketReaction reaction)
@@ -135,13 +147,12 @@ namespace Fergun.Interactive.Pagination
 
             if (action == PaginatorAction.Exit)
             {
-                if (!AlwaysAck)
-                {
-                    await interaction.DeferAsync().ConfigureAwait(false);
-                }
+                StopInteraction = interaction;
                 Cancel();
                 return;
             }
+
+            LastInteraction = interaction;
 
             TimeoutTaskSource.TryReset();
             bool refreshPage = await Paginator.ApplyActionAsync(action).ConfigureAwait(false);

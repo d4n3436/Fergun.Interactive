@@ -51,6 +51,14 @@ namespace Fergun.Interactive
             }
         }
 
+        public static void SupportedInputType<TOption>(IInteractiveElement<TOption> element, bool ephemeral)
+        {
+            if (ephemeral && element.InputType == InputType.Reactions)
+            {
+                throw new NotSupportedException("Ephemeral messages cannot use reactions as input.");
+            }
+        }
+
 #if DNETLABS
         public static void ValidResponseType(InteractionResponseType responseType, string parameterName)
         {

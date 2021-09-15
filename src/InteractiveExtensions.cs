@@ -1,4 +1,8 @@
+using System;
+using System.Threading.Tasks;
 using Discord;
+using Fergun.Interactive.Pagination;
+using Fergun.Interactive.Selection;
 
 namespace Fergun.Interactive
 {
@@ -24,5 +28,13 @@ namespace Fergun.Interactive
 
             return false;
         }
+
+        public static async Task<Page> GetCurrentPageAsync<TOption>(this IInteractiveElement<TOption> element)
+            => element switch
+            {
+                Paginator paginator => await paginator.GetOrLoadCurrentPageAsync().ConfigureAwait(false),
+                BaseSelection<TOption> selection => selection.SelectionPage,
+                _ => throw new ArgumentException("Unknown interactive element.", nameof(element))
+            };
     }
 }

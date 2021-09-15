@@ -1,13 +1,11 @@
 using System;
 using Discord;
-using Fergun.Interactive.Pagination;
 
 namespace Fergun.Interactive
 {
     /// <summary>
     /// Specifies the actions that will be applied to a message after a timeout or a cancellation.
     /// </summary>
-    /// <remarks>Ephemeral messages cannot use these actions and will be ignored.</remarks>
     [Flags]
     public enum ActionOnStop
     {
@@ -16,7 +14,7 @@ namespace Fergun.Interactive
         /// </summary>
         None = 0,
         /// <summary>
-        /// Modify the message using <see cref="Paginator.TimeoutPage"/> or <see cref="Paginator.CanceledPage"/>.
+        /// Modify the message using <see cref="IInteractiveElement{TOption}.TimeoutPage"/> or <see cref="IInteractiveElement{TOption}.CanceledPage"/>.
         /// </summary>
         /// <remarks>This action is mutually exclusive with <see cref="DeleteMessage"/>.</remarks>
         ModifyMessage = 1 << 0,
@@ -36,7 +34,10 @@ namespace Fergun.Interactive
         /// <summary>
         /// Delete the message.
         /// </summary>
-        /// <remarks>This action takes the highest precedence over any other flag.</remarks>
+        /// <remarks>
+        /// This action takes the highest precedence over any other flag.<br/>
+        /// Ephemeral messages can't be deleted.
+        /// </remarks>
         DeleteMessage = 1 << 3
     }
 }

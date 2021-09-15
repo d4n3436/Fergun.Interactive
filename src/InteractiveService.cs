@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Net;
 using System.Reflection;
@@ -364,7 +365,7 @@ namespace Fergun.Interactive
 
             var callback = new PaginatorCallback(paginator, message, timeoutTaskSource, DateTimeOffset.UtcNow, _alwaysAck);
 
-            return await WaitPaginatorResultAsync(callback).ConfigureAwait(false);
+            return await WaitForPaginatorResultAsync(callback).ConfigureAwait(false);
         }
 
 #if DNETLABS
@@ -375,7 +376,15 @@ namespace Fergun.Interactive
         /// <param name="interaction">The interaction to respond.</param>
         /// <param name="timeout">The time until the <see cref="Paginator"/> times out.</param>
         /// <param name="responseType">The response type. When using the "Deferred" response types, you must pass an interaction that has already been deferred.</param>
-        /// <param name="ephemeral">Whether the response message should be ephemeral. Ignored if modifying a non-ephemeral message.</param>
+        /// <param name="ephemeral">
+        /// Whether the response message should be ephemeral. Ignored if modifying a non-ephemeral message.<br/><br/>
+        /// Ephemeral paginators have several limitations:<br/>
+        /// - <see cref="ActionOnStop.DeleteMessage"/> won't work (they cannot be deleted through the API).<br/>
+        /// - <see cref="InputType.Reactions"/> won't work (they can't have reactions).<br/><br/>
+        /// Ephemeral paginators require an interaction to be modified, which causes the following problems:<br/>
+        /// - <see cref="BaseSelection{TOption}.ActionOnTimeout"/> will only work if a least one interaction for changing the page has been received in the last 15 minutes.<br/>
+        /// - <see cref="BaseSelection{TOption}.ActionOnCancellation"/> won't work if the selection is cancelled using a <paramref name="cancellationToken"/>, unless the requisites above are satisfied.<br/>
+        /// </param>
         /// <param name="messageAction">A method that gets executed once when a message containing the paginator is sent or modified.</param>
         /// <param name="resetTimeoutOnInput">Whether to reset the internal timeout timer when a valid input is received.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> to cancel the paginator.</param>
@@ -398,6 +407,7 @@ namespace Fergun.Interactive
             InteractiveGuards.DeleteAndDisableInputNotSet(paginator.ActionOnTimeout, nameof(paginator.ActionOnTimeout));
             InteractiveGuards.DeleteAndDisableInputNotSet(paginator.ActionOnCancellation, nameof(paginator.ActionOnCancellation));
             InteractiveGuards.SupportedInputType(paginator);
+            InteractiveGuards.SupportedInputType(paginator, ephemeral);
             InteractiveGuards.ValidResponseType(responseType, nameof(responseType));
 
             var message = await SendOrModifyMessageAsync(paginator, interaction, responseType, ephemeral).ConfigureAwait(false);
@@ -411,9 +421,10 @@ namespace Fergun.Interactive
             var timeoutTaskSource = new TimeoutTaskCompletionSource<InteractiveStatus>(timeout ?? DefaultTimeout,
                 resetTimeoutOnInput, InteractiveStatus.Timeout, InteractiveStatus.Canceled, cancellationToken);
 
-            var callback = new PaginatorCallback(paginator, message, timeoutTaskSource, DateTimeOffset.UtcNow, _alwaysAck);
+            var initialInteraction = responseType is InteractionResponseType.DeferredUpdateMessage or InteractionResponseType.UpdateMessage ? interaction : null;
+            var callback = new PaginatorCallback(paginator, message, timeoutTaskSource, DateTimeOffset.UtcNow, _alwaysAck, initialInteraction);
 
-            return await WaitPaginatorResultAsync(callback).ConfigureAwait(false);
+            return await WaitForPaginatorResultAsync(callback).ConfigureAwait(false);
         }
 #endif
 
@@ -430,7 +441,7 @@ namespace Fergun.Interactive
         /// <returns>
         /// A task that represents the asynchronous operation for sending the selection and waiting for a valid input, a timeout or a cancellation.<br/>
         /// The task result contains an <see cref="InteractiveMessageResult{T}"/> with the selected value (if valid), the message used for the selection
-        /// (which may not be valid if the message has been deleted), the elapsed time and the status.<br/>
+        /// (which may not be valid if the message has been deleted), the elapsed time and the status.
         /// </returns>
         /// <exception cref="ArgumentException"/>
         /// <exception cref="ArgumentNullException"/>
@@ -454,7 +465,7 @@ namespace Fergun.Interactive
             var timeoutTaskSource = new TimeoutTaskCompletionSource<(TOption?, InteractiveStatus)>(timeout ?? DefaultTimeout,
                 false, (default, InteractiveStatus.Timeout), (default, InteractiveStatus.Canceled), cancellationToken);
 
-            var callback = new SelectionCallback<TOption>(selection, message, timeoutTaskSource, DateTimeOffset.UtcNow, _alwaysAck);
+            var callback = new SelectionCallback<TOption>(selection, message, timeoutTaskSource, DateTimeOffset.UtcNow);
 
             return await WaitForSelectionResultAsync(callback).ConfigureAwait(false);
         }
@@ -468,13 +479,21 @@ namespace Fergun.Interactive
         /// <param name="interaction">The interaction to respond.</param>
         /// <param name="timeout">The time until the selection times out.</param>
         /// <param name="responseType">The response type. When using the "Deferred" response types, you must pass an interaction that has already been deferred.</param>
-        /// <param name="ephemeral">Whether the response message should be ephemeral. Ignored if modifying a non-ephemeral message.</param>
+        /// <param name="ephemeral">
+        /// Whether the response message should be ephemeral. Ignored if modifying a non-ephemeral message.<br/><br/>
+        /// Ephemeral selections have several limitations:<br/>
+        /// - <see cref="ActionOnStop.DeleteMessage"/> won't work (they cannot be deleted via through the API).<br/>
+        /// - <see cref="InputType.Reactions"/> won't work (they can't have reactions).<br/><br/>
+        /// Ephemeral selections require an interaction to be modified, which causes the following problems:<br/>
+        /// - <see cref="BaseSelection{TOption}.ActionOnTimeout"/> won't work.<br/>
+        /// - <see cref="BaseSelection{TOption}.ActionOnCancellation"/> won't work if the selection is cancelled using a <paramref name="cancellationToken"/>.<br/>
+        /// </param>
         /// <param name="messageAction">A method that gets executed once when a message containing the selection is sent or modified.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> to cancel the selection.</param>
         /// <returns>
         /// A task that represents the asynchronous operation for sending the selection and waiting for a valid input, a timeout or a cancellation.<br/>
         /// The task result contains an <see cref="InteractiveMessageResult{T}"/> with the selected value (if valid), the message used for the selection
-        /// (which may not be valid if the message has been deleted), the elapsed time and the status.<br/>
+        /// (which may not be valid if the message has been deleted), the elapsed time and the status.
         /// </returns>
         /// <exception cref="ArgumentException"/>
         /// <exception cref="ArgumentNullException"/>
@@ -488,6 +507,7 @@ namespace Fergun.Interactive
             InteractiveGuards.DeleteAndDisableInputNotSet(selection.ActionOnTimeout, nameof(selection.ActionOnTimeout));
             InteractiveGuards.DeleteAndDisableInputNotSet(selection.ActionOnCancellation, nameof(selection.ActionOnCancellation));
             InteractiveGuards.DeleteAndDisableInputNotSet(selection.ActionOnSuccess, nameof(selection.ActionOnSuccess));
+            InteractiveGuards.SupportedInputType(selection, ephemeral);
             InteractiveGuards.ValidResponseType(responseType, nameof(responseType));
 
             var message = await SendOrModifyMessageAsync(selection, interaction, responseType, ephemeral).ConfigureAwait(false);
@@ -496,7 +516,8 @@ namespace Fergun.Interactive
             var timeoutTaskSource = new TimeoutTaskCompletionSource<(TOption?, InteractiveStatus)>(timeout ?? DefaultTimeout,
                 false, (default, InteractiveStatus.Timeout), (default, InteractiveStatus.Canceled), cancellationToken);
 
-            var callback = new SelectionCallback<TOption>(selection, message, timeoutTaskSource, DateTimeOffset.UtcNow, _alwaysAck);
+            var initialInteraction = responseType is InteractionResponseType.DeferredUpdateMessage or InteractionResponseType.UpdateMessage ? interaction : null;
+            var callback = new SelectionCallback<TOption>(selection, message, timeoutTaskSource, DateTimeOffset.UtcNow, initialInteraction);
 
             return await WaitForSelectionResultAsync(callback).ConfigureAwait(false);
         }
@@ -529,7 +550,7 @@ namespace Fergun.Interactive
             return new InteractiveResult<T?>(result, elapsed, status);
         }
 
-        private async Task<InteractiveMessageResult> WaitPaginatorResultAsync(PaginatorCallback callback)
+        private async Task<InteractiveMessageResult> WaitForPaginatorResultAsync(PaginatorCallback callback)
         {
             _callbacks[callback.Message.Id] = callback;
 
@@ -548,7 +569,7 @@ namespace Fergun.Interactive
 
             if (_callbacks.TryRemove(callback.Message.Id, out _))
             {
-                await ApplyActionOnStopAsync(callback.Paginator, result).ConfigureAwait(false);
+                await ApplyActionOnStopAsync(callback.Paginator, result, callback.LastInteraction, callback.StopInteraction).ConfigureAwait(false);
             }
 
             callback.Dispose();
@@ -593,7 +614,7 @@ namespace Fergun.Interactive
 
             if (_callbacks.TryRemove(callback.Message.Id, out _))
             {
-                await ApplyActionOnStopAsync(callback.Selection, result).ConfigureAwait(false);
+                await ApplyActionOnStopAsync(callback.Selection, result, callback.LastInteraction, callback.StopInteraction).ConfigureAwait(false);
             }
 
             callback.TimeoutTaskSource.TryDispose();
@@ -604,12 +625,7 @@ namespace Fergun.Interactive
         private static async Task<IUserMessage> SendOrModifyMessageAsync<TOption>(IInteractiveElement<TOption> element,
             IUserMessage? message, IMessageChannel channel)
         {
-            var page = element switch
-            {
-                Paginator paginator => await paginator.GetOrLoadCurrentPageAsync().ConfigureAwait(false),
-                BaseSelection<TOption> selection => selection.SelectionPage,
-                _ => throw new ArgumentException("Unknown interactive element.", nameof(element))
-            };
+            var page = await element.GetCurrentPageAsync().ConfigureAwait(false);
 
 #if DNETLABS
             MessageComponent? component = null;
@@ -649,12 +665,7 @@ namespace Fergun.Interactive
         private static async Task<IUserMessage> SendOrModifyMessageAsync<TOption>(IInteractiveElement<TOption> element, SocketInteraction interaction,
             InteractionResponseType responseType, bool ephemeral)
         {
-            var page = element switch
-            {
-                Paginator paginator => await paginator.GetOrLoadCurrentPageAsync().ConfigureAwait(false),
-                BaseSelection<TOption> selection => selection.SelectionPage,
-                _ => throw new ArgumentException("Unknown interactive element.", nameof(element))
-            };
+            var page = await element.GetCurrentPageAsync().ConfigureAwait(false);
 
             MessageComponent? component = null;
             bool moreThanOnePage = element is not Paginator pag || pag.MaxPageIndex > 0;
@@ -694,14 +705,10 @@ namespace Fergun.Interactive
         }
 #endif
 
-        private static async Task ApplyActionOnStopAsync<TOption>(IInteractiveElement<TOption> element, IInteractiveMessageResult result)
+        private async Task ApplyActionOnStopAsync<TOption>(IInteractiveElement<TOption> element, IInteractiveMessageResult result,
+            SocketInteraction? lastInteraction, SocketMessageComponent? stopInteraction)
         {
-#if DNETLABS
-            if (result.Message.Flags.GetValueOrDefault().HasFlag(MessageFlags.Ephemeral))
-            {
-                return;
-            }
-#endif
+            bool ephemeral = ((int)result.Message.Flags.GetValueOrDefault() & 64) == 64;
 
             var action = result.Status switch
             {
@@ -714,19 +721,34 @@ namespace Fergun.Interactive
 
             if (action == ActionOnStop.None)
             {
+                if (stopInteraction != null && !_alwaysAck)
+                {
+                    await stopInteraction.DeferAsync().ConfigureAwait(false);
+                }
+
                 return;
             }
 
             if (action.HasFlag(ActionOnStop.DeleteMessage))
             {
-                try
+                // Ephemeral messages cannot be deleted through the API
+                // https://github.com/discord/discord-api-docs/discussions/3806
+                if (!ephemeral)
                 {
-                    await result.Message.DeleteAsync().ConfigureAwait(false);
+                    try
+                    {
+                        await result.Message.DeleteAsync().ConfigureAwait(false);
+                    }
+                    catch (HttpException e) when (e.HttpCode == HttpStatusCode.NotFound)
+                    {
+                        // We want to delete the message so we don't care if the message has been already deleted.
+                    }
                 }
-                catch (HttpException e) when (e.HttpCode == HttpStatusCode.NotFound)
+                else if (stopInteraction != null && !_alwaysAck)
                 {
-                    // We want to delete the message so we don't care if the message has been already deleted.
+                    await stopInteraction.DeferAsync().ConfigureAwait(false);
                 }
+
                 return;
             }
 
@@ -757,30 +779,64 @@ namespace Fergun.Interactive
                 components = new ComponentBuilder().Build();
             }
 
-            if (page?.Text != null || page?.Embed != null || components != null)
+            bool modifyMessage = page?.Text != null || page?.Embed != null || components != null;
 #else
-            if (page?.Text != null || page?.Embed != null)
+            bool modifyMessage = page?.Text != null || page?.Embed != null;
 #endif
+
+            if (modifyMessage)
             {
                 try
                 {
-                    await result.Message.ModifyAsync(x =>
+                    Page? currentPage;
+
+                    if (stopInteraction != null) // An interaction to stop the element has been received
                     {
-                        x.Embed = page?.Embed ?? new Optional<Embed>();
-                        x.Content = page?.Text ?? new Optional<string>();
+                        currentPage = await element.GetCurrentPageAsync().ConfigureAwait(false);
+                        if (_alwaysAck)
+                        {
+                            await stopInteraction.ModifyOriginalResponseAsync(UpdateMessageWithCurrentPage).ConfigureAwait(false);
+                        }
+                        else
+                        {
+                            await stopInteraction.UpdateAsync(UpdateMessageWithCurrentPage).ConfigureAwait(false);
+                        }
+                    }
+                    else if (lastInteraction?.IsValidToken == true) // The element is from a message that was updated using an interaction, and its token is still valid
+                    {
+                        currentPage = await element.GetCurrentPageAsync().ConfigureAwait(false);
+                        await lastInteraction.ModifyOriginalResponseAsync(UpdateMessageWithCurrentPage).ConfigureAwait(false);
+                    }
+                    else if (!ephemeral) // Fallback for normal messages that don't use interactions or the token is no longer valid, only works for non-ephemeral messages
+                    {
+                        await result.Message.ModifyAsync(UpdateMessage).ConfigureAwait(false);
+                    }
+
+                    // Temporary workaround for the bug that occurs when updating an interaction passing only components
+                    void UpdateMessageWithCurrentPage(MessageProperties x)
+                    {
+                        var pageToUse = page ?? currentPage;
+                        x.Content = pageToUse?.Text;
+                        x.Embed = pageToUse?.Embed;
 #if DNETLABS
                         x.Components = components ?? new Optional<MessageComponent>();
 #endif
-                    }).ConfigureAwait(false);
+                    }
                 }
                 catch (HttpException ex) when (ex.DiscordCode == 10008)
                 {
                     // Ignore 10008 (Unknown Message) error.
                 }
             }
+            else if (stopInteraction != null && !_alwaysAck)
+            {
+                await stopInteraction.DeferAsync().ConfigureAwait(false);
+            }
 
             if (action.HasFlag(ActionOnStop.DeleteInput) && element.InputType == InputType.Reactions)
             {
+                Debug.Assert(!ephemeral, "Ephemeral messages cannot have InputType.Reactions");
+
                 bool manageMessages = result.Message.Channel is SocketGuildChannel guildChannel
                                       && guildChannel.Guild.CurrentUser.GetPermissions(guildChannel).ManageMessages;
 
@@ -788,6 +844,15 @@ namespace Fergun.Interactive
                 {
                     await result.Message.RemoveAllReactionsAsync().ConfigureAwait(false);
                 }
+            }
+
+            void UpdateMessage(MessageProperties props)
+            {
+                props.Content = page?.Text ?? new Optional<string>();
+                props.Embed = page?.Embed ?? new Optional<Embed>();
+#if DNETLABS
+                props.Components = components ?? new Optional<MessageComponent>();
+#endif
             }
         }
 

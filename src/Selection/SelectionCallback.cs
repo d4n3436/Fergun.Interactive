@@ -16,13 +16,13 @@ namespace Fergun.Interactive.Selection
 
         public SelectionCallback(BaseSelection<TOption> selection, IUserMessage message,
             TimeoutTaskCompletionSource<(TOption?, InteractiveStatus)> timeoutTaskSource,
-            DateTimeOffset startTime, bool alwaysAck = false)
+            DateTimeOffset startTime, SocketInteraction? initialInteraction = null)
         {
             Selection = selection;
             Message = message;
             TimeoutTaskSource = timeoutTaskSource;
             StartTime = startTime;
-            AlwaysAck = alwaysAck;
+            LastInteraction = initialInteraction;
         }
 
         /// <summary>
@@ -44,9 +44,15 @@ namespace Fergun.Interactive.Selection
         public DateTimeOffset StartTime { get; }
 
         /// <summary>
-        /// Whether the client always acknowledges interactions.
+        /// Gets the last received interaction that is not <see cref="StopInteraction"/>.
         /// </summary>
-        public bool AlwaysAck { get; }
+        /// <remarks>For selections, this is the interaction that was received to update a message to a selection.</remarks>
+        public SocketInteraction? LastInteraction { get; }
+
+        /// <summary>
+        /// Gets or sets the interaction that was received to stop the selection.
+        /// </summary>
+        public SocketMessageComponent? StopInteraction { get; private set; }
 
         /// <inheritdoc/>
         public void Cancel() => TimeoutTaskSource.TryCancel();
@@ -152,13 +158,13 @@ namespace Fergun.Interactive.Selection
             if (Selection.InputType is InputType.Buttons or InputType.SelectMenus
                 && interaction is SocketMessageComponent componentInteraction)
             {
-                return ExecuteAsync(componentInteraction);
+                Execute(componentInteraction);
             }
 
             return Task.CompletedTask;
         }
 
-        public async Task ExecuteAsync(SocketMessageComponent interaction)
+        public void Execute(SocketMessageComponent interaction)
         {
             if (interaction.Message.Id != Message.Id || !Selection.CanInteract(interaction.User))
             {
@@ -201,10 +207,7 @@ namespace Fergun.Interactive.Selection
                 return;
             }
 
-            if (!AlwaysAck)
-            {
-                await interaction.DeferAsync().ConfigureAwait(false);
-            }
+            StopInteraction = interaction;
 
             bool isCanceled = Selection.AllowCancel
                 && (Selection.EmoteConverter?.Invoke(Selection.CancelOption)?.ToString()
