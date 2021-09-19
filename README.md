@@ -71,11 +71,16 @@ A: Discord doesn't support support reactions in ephemeral messages. Why would yo
 
 ### Q: When sending ephemeral messages, the cancellation/timeout/success action is not executed. Why?
 
-A: Currently these actions are not supported with ephemeral messages. More info [here](https://github.com/d4n3436/Fergun.Interactive/issues/1).
+~~A: Currently these actions are not supported with ephemeral messages. More info [here](https://github.com/d4n3436/Fergun.Interactive/issues/1).~~
+
+A: Ephemeral messages now support the cancellation/timeout/success actions with some limitations.
+There's more info about the limitations in the description of the `ephemeral` parameter, in `SendPaginatorAsync()` and `SendSelectionAsync()`.
 
 ### Q: Can I use reactions and buttons simultaneously in a paginator/selection?
 
-A: Currently no, but I'm planning to add support for multiple input types.
+~~A: Currently no, but I'm planning to add support for multiple input types.~~
+
+A: Yes, update to the latest version.
 
 ## Additions/Changes from Discord.InteractivityAddon
 
@@ -89,6 +94,7 @@ A: Currently no, but I'm planning to add support for multiple input types.
  - In `PaginatorBuilder`, now `Emotes`, `WithEmotes()` and `AddEmote()` are named `Options`, `WithOptions()` and `AddOption()`, respectively.
  - In the methods that waits for a socket entity (`NextMessageAsync`, `NextReactionAsync`, etc.), now the `bool` parameter in `action` returns whether the entity *passed* the filter (the previous behavior was the same but inverted, not sure if this was intended).
  - Now the paginator/selection builders implement the fluent builder pattern using recursive generics. This makes creating custom builders much easier.
+ - Now multiple input types (messages, reactions, buttons, etc.) can be used in a single paginator/selection.
  - Now `SendPaginatorAsync()` and `SendSelectionAsync()` returns an `InteractiveMessageResult`. This is the same as `InteractiveResult` but contains the message that has the paginator/selection.
  - Added a `messageAction` parameter to `SendPaginatorAsync()` and `SendSelectionAsync()`. This allows to execute any action after the message containing the paginator/selection is sent or modified.
  - Now the paginators don't reset their internal timeout timer when a valid input is received. This option can be enabled again using the `resetTimeoutOnInput` parameter.
