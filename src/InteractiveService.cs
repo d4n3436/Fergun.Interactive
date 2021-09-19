@@ -347,10 +347,7 @@ namespace Fergun.Interactive
             InteractiveGuards.MessageFromCurrentUser(_client, message, nameof(message));
             InteractiveGuards.DeleteAndDisableInputNotSet(paginator.ActionOnTimeout, nameof(paginator.ActionOnTimeout));
             InteractiveGuards.DeleteAndDisableInputNotSet(paginator.ActionOnCancellation, nameof(paginator.ActionOnCancellation));
-            InteractiveGuards.SupportedInputType(paginator);
-#if !DNETLABS
-            InteractiveGuards.CanUseComponents(paginator);
-#endif
+            InteractiveGuards.SupportedInputType(paginator, false);
 
             message = await SendOrModifyMessageAsync(paginator, message, channel).ConfigureAwait(false);
             messageAction?.Invoke(message);
@@ -406,7 +403,6 @@ namespace Fergun.Interactive
             InteractiveGuards.NotNull(interaction, nameof(interaction));
             InteractiveGuards.DeleteAndDisableInputNotSet(paginator.ActionOnTimeout, nameof(paginator.ActionOnTimeout));
             InteractiveGuards.DeleteAndDisableInputNotSet(paginator.ActionOnCancellation, nameof(paginator.ActionOnCancellation));
-            InteractiveGuards.SupportedInputType(paginator);
             InteractiveGuards.SupportedInputType(paginator, ephemeral);
             InteractiveGuards.ValidResponseType(responseType, nameof(responseType));
 
@@ -455,9 +451,7 @@ namespace Fergun.Interactive
             InteractiveGuards.DeleteAndDisableInputNotSet(selection.ActionOnTimeout, nameof(selection.ActionOnTimeout));
             InteractiveGuards.DeleteAndDisableInputNotSet(selection.ActionOnCancellation, nameof(selection.ActionOnCancellation));
             InteractiveGuards.DeleteAndDisableInputNotSet(selection.ActionOnSuccess, nameof(selection.ActionOnSuccess));
-#if !DNETLABS
-            InteractiveGuards.CanUseComponents(selection);
-#endif
+            InteractiveGuards.SupportedInputType(selection, false);
 
             message = await SendOrModifyMessageAsync(selection, message, channel).ConfigureAwait(false);
             messageAction?.Invoke(message);
@@ -555,7 +549,7 @@ namespace Fergun.Interactive
             _callbacks[callback.Message.Id] = callback;
 
             // A CancellationTokenSource is used here to cancel InitializeMessageAsync() to avoid adding reactions after TimeoutTaskSource.Task has returned.
-            var cts = callback.Paginator.InputType == InputType.Reactions ? new CancellationTokenSource() : null;
+            var cts = callback.Paginator.InputType.HasFlag(InputType.Reactions) ? new CancellationTokenSource() : null;
 
             _ = callback.Paginator.InitializeMessageAsync(callback.Message, cts?.Token ?? default).ConfigureAwait(false);
 
@@ -584,11 +578,13 @@ namespace Fergun.Interactive
             // A CancellationTokenSource is used here for 2 things:
             // 1. To cancel NextMessageAsync() to avoid memory leaks
             // 2. To cancel InitializeMessageAsync() to avoid adding reactions after TimeoutTaskSource.Task has returned.
-            var cts = callback.Selection.InputType is InputType.Messages or InputType.Reactions ? new CancellationTokenSource() : null;
+            var cts = callback.Selection.InputType.HasFlag(InputType.Messages) || callback.Selection.InputType.HasFlag(InputType.Reactions)
+                ? new CancellationTokenSource()
+                : null;
 
             _ = callback.Selection.InitializeMessageAsync(callback.Message, cts?.Token ?? default).ConfigureAwait(false);
 
-            if (callback.Selection.InputType == InputType.Messages)
+            if (callback.Selection.InputType.HasFlag(InputType.Messages))
             {
                 _ = NextMessageAsync(_ => false, async (msg, _) =>
                 {
@@ -630,7 +626,7 @@ namespace Fergun.Interactive
 #if DNETLABS
             MessageComponent? component = null;
             bool moreThanOnePage = element is not Paginator pag || pag.MaxPageIndex > 0;
-            if (element.InputType is InputType.Buttons or InputType.SelectMenus && moreThanOnePage)
+            if ((element.InputType.HasFlag(InputType.Buttons) || element.InputType.HasFlag(InputType.SelectMenus)) && moreThanOnePage)
             {
                 component = element.BuildComponents(false);
             }
@@ -669,7 +665,7 @@ namespace Fergun.Interactive
 
             MessageComponent? component = null;
             bool moreThanOnePage = element is not Paginator pag || pag.MaxPageIndex > 0;
-            if (element.InputType is InputType.Buttons or InputType.SelectMenus && moreThanOnePage)
+            if ((element.InputType.HasFlag(InputType.Buttons) || element.InputType.HasFlag(InputType.SelectMenus)) && moreThanOnePage)
             {
                 component = element.BuildComponents(false);
             }
@@ -767,16 +763,16 @@ namespace Fergun.Interactive
 
 #if DNETLABS
             MessageComponent? components = null;
-            if (action.HasFlag(ActionOnStop.DisableInput))
+            if (element.InputType.HasFlag(InputType.Buttons) || element.InputType.HasFlag(InputType.SelectMenus))
             {
-                if (element.InputType is InputType.Buttons or InputType.SelectMenus)
+                if (action.HasFlag(ActionOnStop.DisableInput))
                 {
                     components = element.BuildComponents(true);
                 }
-            }
-            else if (action.HasFlag(ActionOnStop.DeleteInput) && element.InputType != InputType.Reactions)
-            {
-                components = new ComponentBuilder().Build();
+                else if (action.HasFlag(ActionOnStop.DeleteInput))
+                {
+                    components = new ComponentBuilder().Build();
+                }
             }
 
             bool modifyMessage = page?.Text != null || page?.Embed != null || components != null;
@@ -833,7 +829,7 @@ namespace Fergun.Interactive
                 await stopInteraction.DeferAsync().ConfigureAwait(false);
             }
 
-            if (action.HasFlag(ActionOnStop.DeleteInput) && element.InputType == InputType.Reactions)
+            if (action.HasFlag(ActionOnStop.DeleteInput) && element.InputType.HasFlag(InputType.Reactions))
             {
                 Debug.Assert(!ephemeral, "Ephemeral messages cannot have InputType.Reactions");
 

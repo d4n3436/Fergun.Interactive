@@ -45,7 +45,7 @@ namespace ExampleBot.Modules
             string selected = result.Value;
 
             // You can check whether a selection failed or ended successfully with the Status property.
-            var status = result.Status;
+            // var status = result.Status;
 
             // You can also use the IsSuccess, IsCanceled and IsTimeout properties.
             bool isSuccess = result.IsSuccess;
@@ -177,11 +177,11 @@ namespace ExampleBot.Modules
                 .WithStringConverter(item => item.Name)
                 // The Emote property is used to get an emote representation of an item. This is required in selections using reactions as input.
                 .WithEmoteConverter(item => item.Emote)
-                // Since we have set both string and emote converter, we can use all 4 input types.
+                // Since we have set both string and emote converters, we can use all 4 input types (when using Discord.Net.Labs).
 #if DNETLABS
-                .WithInputType(InputType.SelectMenus) // Use select menus if possible
+                .WithInputType(InputType.Reactions | InputType.Messages | InputType.Buttons | InputType.SelectMenus)
 #else
-                .WithInputType(InputType.Reactions)
+                .WithInputType(InputType.Reactions | InputType.Messages)
 #endif
                 .Build();
 

@@ -53,7 +53,7 @@ namespace Fergun.Interactive
         /// <summary>
         /// Builds the components that a message that represents this element would have.
         /// </summary>
-        /// <remarks>This is only used when <see cref="InputType"/> is <see cref="InputType.Buttons"/> or <see cref="InputType.SelectMenus"/>.</remarks>
+        /// <remarks>This is only used when <see cref="InputType"/> has <see cref="InputType.Buttons"/> or <see cref="InputType.SelectMenus"/>.</remarks>
         /// <param name="disableAll">Whether to disable all the components.</param>
         /// <returns>A message component.</returns>
         MessageComponent BuildComponents(bool disableAll);

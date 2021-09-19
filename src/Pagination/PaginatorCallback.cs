@@ -70,7 +70,7 @@ namespace Fergun.Interactive.Pagination
         /// <inheritdoc/>
         public async Task ExecuteAsync(SocketReaction reaction)
         {
-            if (Paginator.InputType != InputType.Reactions || reaction.MessageId != Message.Id)
+            if (!Paginator.InputType.HasFlag(InputType.Reactions) || reaction.MessageId != Message.Id)
             {
                 return;
             }
@@ -117,7 +117,7 @@ namespace Fergun.Interactive.Pagination
         /// <inheritdoc/>
         public Task ExecuteAsync(SocketInteraction interaction)
         {
-            if (Paginator.InputType == InputType.Buttons && interaction is SocketMessageComponent componentInteraction)
+            if (Paginator.InputType.HasFlag(InputType.Buttons) && interaction is SocketMessageComponent componentInteraction)
             {
                 return ExecuteAsync(componentInteraction);
             }

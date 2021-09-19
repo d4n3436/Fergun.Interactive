@@ -94,12 +94,17 @@ namespace Fergun.Interactive.Selection
             Page? timeoutPage, Page? successPage, DeletionOptions deletion, InputType inputType, ActionOnStop actionOnCancellation,
             ActionOnStop actionOnTimeout, ActionOnStop actionOnSuccess)
         {
-            if (inputType == InputType.Reactions && emoteConverter is null)
+            if (inputType == 0)
             {
-                throw new ArgumentNullException(nameof(emoteConverter), $"{nameof(emoteConverter)} is required when {nameof(inputType)} is Reactions.");
+                throw new ArgumentException("At least one input type must be set.", nameof(inputType));
             }
 
-            if (stringConverter is null && (inputType != InputType.Buttons || emoteConverter is null))
+            if (inputType.HasFlag(InputType.Reactions) && emoteConverter is null)
+            {
+                throw new ArgumentNullException(nameof(emoteConverter), $"{nameof(emoteConverter)} is required when {nameof(inputType)} has InputType.Reactions.");
+            }
+
+            if (stringConverter is null && (!inputType.HasFlag(InputType.Buttons) || emoteConverter is null))
             {
                 stringConverter = x => x?.ToString()!;
             }
@@ -141,12 +146,12 @@ namespace Fergun.Interactive.Selection
         /// <summary>
         /// Initializes a message based on this selection.
         /// </summary>
-        /// <remarks>By default this method adds the reactions to a message when <see cref="InputType"/> is <see cref="InputType.Reactions"/>.</remarks>
+        /// <remarks>By default this method adds the reactions to a message when <see cref="InputType"/> has <see cref="InputType.Reactions"/>.</remarks>
         /// <param name="message">The message to initialize.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> to cancel this request.</param>
         internal virtual async Task InitializeMessageAsync(IUserMessage message, CancellationToken cancellationToken = default)
         {
-            if (InputType != InputType.Reactions) return;
+            if (!InputType.HasFlag(InputType.Reactions)) return;
             if (EmoteConverter is null)
             {
                 throw new InvalidOperationException($"Reaction-based selections must have a valid {nameof(EmoteConverter)}.");
@@ -173,27 +178,13 @@ namespace Fergun.Interactive.Selection
         /// <inheritdoc/>
         public virtual MessageComponent BuildComponents(bool disableAll)
         {
-            if (InputType != InputType.Buttons && InputType != InputType.SelectMenus)
+            if (!(InputType.HasFlag(InputType.Buttons) || InputType.HasFlag(InputType.SelectMenus)))
             {
-                throw new InvalidOperationException($"{nameof(InputType)} must be either {InputType.Buttons} or {InputType.SelectMenus}.");
+                throw new InvalidOperationException($"{nameof(InputType)} must have either {InputType.Buttons} or {InputType.SelectMenus}.");
             }
 
             var builder = new ComponentBuilder();
-            if (InputType == InputType.Buttons)
-            {
-                foreach (var selection in Options)
-                {
-                    var emote = EmoteConverter?.Invoke(selection);
-                    string? label = StringConverter?.Invoke(selection);
-                    if (emote is null && label is null)
-                    {
-                        throw new InvalidOperationException($"Neither {nameof(EmoteConverter)} nor {nameof(StringConverter)} returned a valid emote or string.");
-                    }
-
-                    builder.WithButton(label, emote?.ToString() ?? label, ButtonStyle.Primary, emote, null, disableAll);
-                }
-            }
-            else
+            if (InputType.HasFlag(InputType.SelectMenus))
             {
                 var options = new List<SelectMenuOptionBuilder>();
 
@@ -214,7 +205,21 @@ namespace Fergun.Interactive.Selection
                     options.Add(option);
                 }
 
-                builder.WithSelectMenu(null, "foobar", options);
+                builder.WithSelectMenu(null, "foobar", options, disabled: disableAll);
+            }
+            if (InputType.HasFlag(InputType.Buttons))
+            {
+                foreach (var selection in Options)
+                {
+                    var emote = EmoteConverter?.Invoke(selection);
+                    string? label = StringConverter?.Invoke(selection);
+                    if (emote is null && label is null)
+                    {
+                        throw new InvalidOperationException($"Neither {nameof(EmoteConverter)} nor {nameof(StringConverter)} returned a valid emote or string.");
+                    }
+
+                    builder.WithButton(label, emote?.ToString() ?? label, ButtonStyle.Primary, emote, null, disableAll);
+                }
             }
 
             return builder.Build();

@@ -43,7 +43,7 @@ namespace Fergun.Interactive.Pagination
         public Page? TimeoutPage { get; }
 
         /// <summary>
-        /// Gets or sets what type of inputs this paginator should delete.
+        /// Gets what type of inputs this paginator should delete.
         /// </summary>
         /// <remarks>This property is ignored in button-based paginators.</remarks>
         public DeletionOptions Deletion { get; }
@@ -54,12 +54,12 @@ namespace Fergun.Interactive.Pagination
         public InputType InputType { get; }
 
         /// <summary>
-        /// Gets or sets the action that will be done after a cancellation.
+        /// Gets the action that will be done after a cancellation.
         /// </summary>
         public ActionOnStop ActionOnCancellation { get; }
 
         /// <summary>
-        /// Gets or sets the action that will be done after a timeout.
+        /// Gets the action that will be done after a timeout.
         /// </summary>
         public ActionOnStop ActionOnTimeout { get; }
 
@@ -74,6 +74,11 @@ namespace Fergun.Interactive.Pagination
             ActionOnStop actionOnCancellation, ActionOnStop actionOnTimeout, int startPageIndex)
         {
             Users = users ?? throw new ArgumentNullException(nameof(users));
+
+            if (inputType == 0)
+            {
+                throw new ArgumentException("At least one input type must be set.", nameof(inputType));
+            }
 
             if (emotes is null)
             {
@@ -98,12 +103,12 @@ namespace Fergun.Interactive.Pagination
         /// <summary>
         /// Initializes a message based on this paginator.
         /// </summary>
-        /// <remarks>By default this method adds the reactions to a message when <see cref="InputType"/> is <see cref="InputType.Reactions"/>.</remarks>
+        /// <remarks>By default this method adds the reactions to a message when <see cref="InputType"/> has <see cref="InputType.Reactions"/>.</remarks>
         /// <param name="message">The message to initialize.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> to cancel this request.</param>
         internal virtual async Task InitializeMessageAsync(IUserMessage message, CancellationToken cancellationToken = default)
         {
-            if (InputType != InputType.Reactions) return;
+            if (!InputType.HasFlag(InputType.Reactions)) return;
 
             foreach (var emote in Emotes.Keys)
             {

@@ -17,9 +17,7 @@ namespace Fergun.Interactive
 
         public static void MessageFromCurrentUser(IDiscordClient client, IUserMessage? message, string parameterName)
         {
-            if (message is null) return;
-
-            if (message.Author.Id != client.CurrentUser.Id)
+            if (message != null && message.Author.Id != client.CurrentUser.Id)
             {
                 throw new ArgumentException("Message author must be the current user.", parameterName);
             }
@@ -38,24 +36,36 @@ namespace Fergun.Interactive
             }
         }
 
-        public static void SupportedInputType(Paginator paginator)
-        {
-            if (paginator.InputType == InputType.Messages)
-            {
-                throw new NotSupportedException("Paginators using messages as input are not supported (yet).");
-            }
-
-            if (paginator.InputType == InputType.SelectMenus)
-            {
-                throw new NotSupportedException("Paginators using select menus as input are not supported (yet).");
-            }
-        }
-
         public static void SupportedInputType<TOption>(IInteractiveElement<TOption> element, bool ephemeral)
         {
-            if (ephemeral && element.InputType == InputType.Reactions)
+            if (element.InputType == 0)
+            {
+                throw new ArgumentException("At least one input type must be set.");
+            }
+
+            if (ephemeral && element.InputType.HasFlag(InputType.Reactions))
             {
                 throw new NotSupportedException("Ephemeral messages cannot use reactions as input.");
+            }
+
+#if !DNETLABS
+            if (element.InputType.HasFlag(InputType.Buttons) || element.InputType.HasFlag(InputType.SelectMenus))
+            {
+                throw new NotSupportedException("Discord.Net does not support components (yet). Use Discord.Net.Labs and Fergun.Interactive.Labs.");
+            }
+#endif
+
+            if (element is Paginator paginator)
+            {
+                if (paginator.InputType.HasFlag(InputType.Messages))
+                {
+                    throw new NotSupportedException("Paginators using messages as input are not supported (yet).");
+                }
+
+                if (paginator.InputType.HasFlag(InputType.SelectMenus))
+                {
+                    throw new NotSupportedException("Paginators using select menus as input are not supported (yet).");
+                }
             }
         }
 
@@ -75,14 +85,6 @@ namespace Fergun.Interactive
                 responseType is InteractionResponseType.DeferredUpdateMessage or InteractionResponseType.UpdateMessage)
             {
                 throw new ArgumentException($"Interaction response type {responseType} can only be used on component interactions.", parameterName);
-            }
-        }
-#else
-        public static void CanUseComponents<TOption>(IInteractiveElement<TOption> element)
-        {
-            if (element.InputType is InputType.Buttons or InputType.SelectMenus)
-            {
-                throw new NotSupportedException("Discord.Net does not support components (yet). Use Discord.Net.Labs and Fergun.Interactive.Labs.");
             }
         }
 #endif

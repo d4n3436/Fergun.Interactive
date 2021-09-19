@@ -1,25 +1,28 @@
+using System;
+
 namespace Fergun.Interactive
 {
     /// <summary>
     /// Specifies the types of inputs that are used to interact with the interactive elements.
     /// </summary>
+    [Flags]
     public enum InputType
     {
         /// <summary>
         /// Use reactions as input.
         /// </summary>
-        Reactions,
+        Reactions = 1 << 0,
         /// <summary>
         /// Use messages as input.
         /// </summary>
-        Messages,
+        Messages = 1 << 1,
         /// <summary>
         /// Use buttons as input. Only valid when using Discord.Net Labs.
         /// </summary>
-        Buttons,
+        Buttons = 1 << 2,
         /// <summary>
         /// Use select menus as input. Only valid when using Discord.Net Labs.
         /// </summary>
-        SelectMenus
+        SelectMenus = 1 << 3
     }
 }

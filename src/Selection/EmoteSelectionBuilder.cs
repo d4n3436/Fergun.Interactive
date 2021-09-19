@@ -42,6 +42,7 @@ namespace Fergun.Interactive.Selection
         /// Sets the options.
         /// </summary>
         /// <param name="options">The options.</param>
+        /// <returns>This builder.</returns>
         public EmoteSelectionBuilder<TValue> WithOptions(IDictionary<IEmote, TValue> options)
         {
             Options = options ?? throw new ArgumentNullException(nameof(options));
@@ -53,6 +54,7 @@ namespace Fergun.Interactive.Selection
         /// </summary>
         /// <param name="emote">The emote.</param>
         /// <param name="value">The value.</param>
+        /// <returns>This builder.</returns>
         public EmoteSelectionBuilder<TValue> AddOption(IEmote emote, TValue value)
         {
             Options.Add(emote, value);

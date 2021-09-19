@@ -60,7 +60,7 @@ namespace Fergun.Interactive.Selection
         /// <inheritdoc/>
         public async Task ExecuteAsync(SocketMessage message)
         {
-            if (Selection.InputType != InputType.Messages || !Selection.CanInteract(message.Author))
+            if (!Selection.InputType.HasFlag(InputType.Messages) || !Selection.CanInteract(message.Author))
             {
                 return;
             }
@@ -107,7 +107,7 @@ namespace Fergun.Interactive.Selection
         /// <inheritdoc/>
         public async Task ExecuteAsync(SocketReaction reaction)
         {
-            if (Selection.InputType != InputType.Reactions || !Selection.CanInteract(reaction.UserId))
+            if (!Selection.InputType.HasFlag(InputType.Reactions) || !Selection.CanInteract(reaction.UserId))
             {
                 return;
             }
@@ -155,7 +155,7 @@ namespace Fergun.Interactive.Selection
         /// <inheritdoc/>
         public Task ExecuteAsync(SocketInteraction interaction)
         {
-            if (Selection.InputType is InputType.Buttons or InputType.SelectMenus
+            if ((Selection.InputType.HasFlag(InputType.Buttons) || Selection.InputType.HasFlag(InputType.SelectMenus))
                 && interaction is SocketMessageComponent componentInteraction)
             {
                 Execute(componentInteraction);
@@ -173,13 +173,13 @@ namespace Fergun.Interactive.Selection
 
             TOption? selected = default;
             string? selectedString = null;
-            string? customId = Selection.InputType switch
+            string? customId = interaction.Data.Type switch
             {
-                InputType.Buttons => interaction.Data.CustomId,
-                InputType.SelectMenus => (interaction
+                ComponentType.Button => interaction.Data.CustomId,
+                ComponentType.SelectMenu => (interaction
                     .Message
                     .Components
-                    .FirstOrDefault()?
+                    .FirstOrDefault(x => x.Components.Any(y => y.Type == ComponentType.SelectMenu))?
                     .Components
                     .FirstOrDefault() as SelectMenu)?
                     .Options
