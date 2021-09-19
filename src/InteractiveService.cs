@@ -163,7 +163,7 @@ namespace Fergun.Interactive
                     x.Content = text;
                     x.Embed = embed;
                     x.AllowedMentions = allowedMentions;
-                }).ConfigureAwait(false);
+                }, options).ConfigureAwait(false);
             }
 
             await DelayedDeleteMessageAsync(message, deleteDelay).ConfigureAwait(false);
