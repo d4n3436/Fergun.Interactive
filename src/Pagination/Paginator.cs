@@ -190,13 +190,14 @@ namespace Fergun.Interactive.Pagination
                     _ => false
                 };
 
-                builder.WithButton(
-                    null,
-                    pair.Key.ToString(),
-                    pair.Value == PaginatorAction.Exit ? ButtonStyle.Danger : ButtonStyle.Primary,
-                    pair.Key,
-                    null,
-                    isDisabled);
+                var button = new ButtonBuilder()
+                    .WithCustomId(pair.Key.ToString())
+                    .WithStyle(pair.Value == PaginatorAction.Exit ? ButtonStyle.Danger : ButtonStyle.Primary)
+                    .WithEmote(pair.Key)
+                    .WithDisabled(isDisabled);
+
+
+                builder.WithButton(button);
             }
 
             return builder.Build();

@@ -205,7 +205,12 @@ namespace Fergun.Interactive.Selection
                     options.Add(option);
                 }
 
-                builder.WithSelectMenu(null, "foobar", options, disabled: disableAll);
+                var selectMenu = new SelectMenuBuilder()
+                    .WithCustomId("foobar")
+                    .WithOptions(options)
+                    .WithDisabled(disableAll);
+
+                builder.WithSelectMenu(selectMenu);
             }
             if (InputType.HasFlag(InputType.Buttons))
             {
@@ -218,7 +223,16 @@ namespace Fergun.Interactive.Selection
                         throw new InvalidOperationException($"Neither {nameof(EmoteConverter)} nor {nameof(StringConverter)} returned a valid emote or string.");
                     }
 
-                    builder.WithButton(label, emote?.ToString() ?? label, ButtonStyle.Primary, emote, null, disableAll);
+                    var button = new ButtonBuilder()
+                        .WithCustomId(emote?.ToString() ?? label)
+                        .WithStyle(ButtonStyle.Primary)
+                        .WithEmote(emote)
+                        .WithDisabled(disableAll);
+
+                    if (label != null)
+                        button.Label = label;
+
+                    builder.WithButton(button);
                 }
             }
 
