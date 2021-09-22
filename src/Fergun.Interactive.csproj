@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <Version>1.2</Version>
+    <Version>1.2.1</Version>
     <LangVersion>9</LangVersion>
     <Nullable>enable</Nullable>
     <Authors>d4n3436</Authors>
@@ -21,11 +21,7 @@ An addon that adds interactive functionality to commands.
 This is a fork of Discord.InteractivityAddon that adds several features like more customization and support for interactions.
     </Description>
     <PackageReleaseNotes>
-- Added support for multiple input types in a single paginator/selection.
-- [Labs] Added support for "actions on stop" (Timeout/Cancellation/Success) in ephemeral paginators/selections.
-- [Labs] Now interactions will be directly used to modify a message instead of deferring and modifying, saving one API call.
-- Enabled nullable annotations.
-- Minor bug fixes.
+- Updated Discord.Net.Labs.WebSocket to 3.1.0
     </PackageReleaseNotes>
   </PropertyGroup>
 
