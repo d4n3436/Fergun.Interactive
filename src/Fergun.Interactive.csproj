@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <Version>1.2.1</Version>
+    <Version>1.2.2</Version>
     <LangVersion>9</LangVersion>
     <Nullable>enable</Nullable>
     <Authors>d4n3436</Authors>
@@ -21,7 +21,7 @@ An addon that adds interactive functionality to commands.
 This is a fork of Discord.InteractivityAddon that adds several features like more customization and support for interactions.
     </Description>
     <PackageReleaseNotes>
-- Updated Discord.Net.Labs.WebSocket to 3.1.0
+- Workaround for ArgumentException bug from Labs.
     </PackageReleaseNotes>
   </PropertyGroup>
 
