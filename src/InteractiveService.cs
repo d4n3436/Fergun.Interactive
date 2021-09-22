@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Net;
-using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using Discord;
@@ -24,7 +23,6 @@ namespace Fergun.Interactive
     public class InteractiveService
     {
         private readonly BaseSocketClient _client;
-        private readonly bool _alwaysAck;
         private readonly ConcurrentDictionary<ulong, IInteractiveCallback> _callbacks = new();
         private readonly ConcurrentDictionary<Guid, IInteractiveCallback> _filteredCallbacks = new();
 
@@ -50,13 +48,8 @@ namespace Fergun.Interactive
 #if DNETLABS
             _client.ReactionAdded += ReactionAddedNew;
             _client.InteractionCreated += InteractionCreated;
-            _alwaysAck = (typeof(BaseSocketClient)
-                .GetField("BaseConfig", BindingFlags.Instance | BindingFlags.NonPublic)?
-                .GetValue(client) as DiscordSocketConfig)?
-                .AlwaysAcknowledgeInteractions ?? false;
 #else
             DynamicSubscribeReactionAdded();
-            _alwaysAck = false;
 #endif
         }
 
@@ -360,7 +353,7 @@ namespace Fergun.Interactive
             var timeoutTaskSource = new TimeoutTaskCompletionSource<InteractiveStatus>(timeout ?? DefaultTimeout,
                 resetTimeoutOnInput, InteractiveStatus.Timeout, InteractiveStatus.Canceled, cancellationToken);
 
-            var callback = new PaginatorCallback(paginator, message, timeoutTaskSource, DateTimeOffset.UtcNow, _alwaysAck);
+            var callback = new PaginatorCallback(paginator, message, timeoutTaskSource, DateTimeOffset.UtcNow);
 
             return await WaitForPaginatorResultAsync(callback).ConfigureAwait(false);
         }
@@ -418,7 +411,7 @@ namespace Fergun.Interactive
                 resetTimeoutOnInput, InteractiveStatus.Timeout, InteractiveStatus.Canceled, cancellationToken);
 
             var initialInteraction = responseType is InteractionResponseType.DeferredUpdateMessage or InteractionResponseType.UpdateMessage ? interaction : null;
-            var callback = new PaginatorCallback(paginator, message, timeoutTaskSource, DateTimeOffset.UtcNow, _alwaysAck, initialInteraction);
+            var callback = new PaginatorCallback(paginator, message, timeoutTaskSource, DateTimeOffset.UtcNow, initialInteraction);
 
             return await WaitForPaginatorResultAsync(callback).ConfigureAwait(false);
         }
@@ -717,7 +710,7 @@ namespace Fergun.Interactive
 
             if (action == ActionOnStop.None)
             {
-                if (stopInteraction != null && !_alwaysAck)
+                if (stopInteraction != null)
                 {
                     await stopInteraction.DeferAsync().ConfigureAwait(false);
                 }
@@ -740,7 +733,7 @@ namespace Fergun.Interactive
                         // We want to delete the message so we don't care if the message has been already deleted.
                     }
                 }
-                else if (stopInteraction != null && !_alwaysAck)
+                else if (stopInteraction != null)
                 {
                     await stopInteraction.DeferAsync().ConfigureAwait(false);
                 }
@@ -789,14 +782,7 @@ namespace Fergun.Interactive
                     if (stopInteraction != null) // An interaction to stop the element has been received
                     {
                         currentPage = await element.GetCurrentPageAsync().ConfigureAwait(false);
-                        if (_alwaysAck)
-                        {
-                            await stopInteraction.ModifyOriginalResponseAsync(UpdateMessageWithCurrentPage).ConfigureAwait(false);
-                        }
-                        else
-                        {
-                            await stopInteraction.UpdateAsync(UpdateMessageWithCurrentPage).ConfigureAwait(false);
-                        }
+                        await stopInteraction.UpdateAsync(UpdateMessageWithCurrentPage).ConfigureAwait(false);
                     }
                     else if (lastInteraction?.IsValidToken == true) // The element is from a message that was updated using an interaction, and its token is still valid
                     {
@@ -824,7 +810,7 @@ namespace Fergun.Interactive
                     // Ignore 10008 (Unknown Message) error.
                 }
             }
-            else if (stopInteraction != null && !_alwaysAck)
+            else if (stopInteraction != null)
             {
                 await stopInteraction.DeferAsync().ConfigureAwait(false);
             }

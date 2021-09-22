@@ -15,14 +15,12 @@ namespace Fergun.Interactive.Pagination
 
         public PaginatorCallback(Paginator paginator, IUserMessage message,
             TimeoutTaskCompletionSource<InteractiveStatus> timeoutTaskSource,
-            DateTimeOffset startTime, bool alwaysAck = false,
-            SocketInteraction? initialInteraction = null)
+            DateTimeOffset startTime, SocketInteraction? initialInteraction = null)
         {
             Paginator = paginator;
             Message = message;
             TimeoutTaskSource = timeoutTaskSource;
             StartTime = startTime;
-            AlwaysAck = alwaysAck;
             LastInteraction = initialInteraction;
         }
 
@@ -43,11 +41,6 @@ namespace Fergun.Interactive.Pagination
 
         /// <inheritdoc/>
         public DateTimeOffset StartTime { get; }
-
-        /// <summary>
-        /// Gets whether the client always acknowledges interactions.
-        /// </summary>
-        public bool AlwaysAck { get; }
 
         /// <summary>
         /// Gets or sets the last received interaction that is not <see cref="StopInteraction"/>.
@@ -161,21 +154,12 @@ namespace Fergun.Interactive.Pagination
                 var currentPage = await Paginator.GetOrLoadCurrentPageAsync().ConfigureAwait(false);
                 var buttons = Paginator.BuildComponents(false);
 
-                if (AlwaysAck)
+                await interaction.UpdateAsync(x =>
                 {
-                    await interaction.ModifyOriginalResponseAsync(UpdateMessage).ConfigureAwait(false);
-                }
-                else
-                {
-                    await interaction.UpdateAsync(UpdateMessage).ConfigureAwait(false);
-                }
-
-                void UpdateMessage(MessageProperties props)
-                {
-                    props.Content = currentPage.Text;
-                    props.Embed = currentPage.Embed;
-                    props.Components = buttons;
-                }
+                    x.Content = currentPage.Text;
+                    x.Embed = currentPage.Embed;
+                    x.Components = buttons;
+                }).ConfigureAwait(false);
             }
         }
 #endif
