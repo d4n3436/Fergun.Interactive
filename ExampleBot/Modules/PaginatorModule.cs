@@ -1,10 +1,11 @@
 ﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
 using Discord;
 using Discord.Commands;
 using Fergun.Interactive;
 using Fergun.Interactive.Pagination;
-using GScraper;
+using GScraper.Google;
 
 namespace ExampleBot.Modules
 {
@@ -67,7 +68,7 @@ namespace ExampleBot.Modules
         public async Task ImgAsync(string query = "discord")
         {
             // Get images from Google Images.
-            var images = await _scraper.GetImagesAsync(query);
+            var images = (await _scraper.GetImagesAsync(query)).ToList();
 
             // If we can use interactions, prefer disabling the input (buttons, select menus) instead of removing them from the message.
             var actionOnTimeout = Program.CanUseInteractions ? ActionOnStop.DisableInput : ActionOnStop.DeleteInput;
@@ -94,9 +95,9 @@ namespace ExampleBot.Modules
                 var page = new PageBuilder()
                     .WithAuthor(Context.User)
                     .WithTitle(images[index].Title)
-                    .WithUrl(images[index].ContextLink)
+                    .WithUrl(images[index].SourceUrl)
                     .WithDescription("Image paginator example")
-                    .WithImageUrl(images[index].Link)
+                    .WithImageUrl(images[index].Url)
                     .WithFooter($"Page {index + 1}/{images.Count}")
                     .WithColor(GetRandomColor());
 
