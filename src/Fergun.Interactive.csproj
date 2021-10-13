@@ -42,7 +42,7 @@ This is a fork of Discord.InteractivityAddon that adds several features like mor
     </When>
     <Otherwise>
       <ItemGroup>
-        <PackageReference Include="Discord.Net.Labs.WebSocket" Version="3.1.0" />
+        <PackageReference Include="Discord.Net.Labs.WebSocket" Version="3.1.4" />
       </ItemGroup>
     </Otherwise>
   </Choose>
