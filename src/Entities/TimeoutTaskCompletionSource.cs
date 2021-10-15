@@ -7,6 +7,7 @@ namespace Fergun.Interactive
     /// <summary>
     /// Represents a <see cref="TaskCompletionSource{TResult}"/> with a timeout timer which can be reset.
     /// </summary>
+    /// <typeparam name="TResult">The type of the result value associated with this <see cref="TimeoutTaskCompletionSource{TResult}"/>.</typeparam>
     internal sealed class TimeoutTaskCompletionSource<TResult>
     {
         /// <summary>
@@ -19,10 +20,19 @@ namespace Fergun.Interactive
         /// </summary>
         public bool CanReset { get; }
 
+        /// <summary>
+        /// Gets the timeout result.
+        /// </summary>
         public TResult? TimeoutResult => _timeoutAction is null ? _timeoutResult : _timeoutAction();
 
+        /// <summary>
+        /// Gets the cancel result.
+        /// </summary>
         public TResult? CancelResult => _cancelAction is null ? _cancelResult : _cancelAction();
 
+        /// <summary>
+        /// Gets the <see cref="Task{TResult}"/> created by this <see cref="TimeoutTaskCompletionSource{TResult}"/>.
+        /// </summary>
         public Task<TResult> Task => _taskSource.Task;
 
         private bool _disposed;
@@ -32,7 +42,7 @@ namespace Fergun.Interactive
         private readonly TResult? _cancelResult;
         private readonly Func<TResult>? _timeoutAction;
         private readonly Func<TResult>? _cancelAction;
-        private CancellationTokenRegistration _tokenRegistration;
+        private CancellationTokenRegistration _tokenRegistration; // Do not make readonly
 
         private TimeoutTaskCompletionSource(TimeSpan delay, bool canReset = true, CancellationToken cancellationToken = default)
         {
@@ -67,21 +77,29 @@ namespace Fergun.Interactive
             _tokenRegistration.Dispose();
         }
 
-        public bool TryReset()
-        {
-            if (_disposed || !CanReset)
-            {
-                return false;
-            }
+        /// <summary>
+        /// Attempts to reset the internal <see cref="Timer"/>.
+        /// </summary>
+        /// <returns><see langword="true"/> if the operation was successful; otherwise, <see langword="false"/>.</returns>
+        public bool TryReset() => !_disposed && CanReset && _timer.Change(Delay, Timeout.InfiniteTimeSpan);
 
-            _timer.Change(Delay, Timeout.InfiniteTimeSpan);
-            return true;
-        }
-
+        /// <summary>
+        /// Attempts to cancel the underlying <see cref="TaskCompletionSource{TResult}"/> using <see cref="CancelResult"/>.
+        /// </summary>
+        /// <returns><see langword="true"/> if the operation was successful; otherwise, <see langword="false"/>.</returns>
         public bool TryCancel() => !_disposed && TrySetResult(CancelResult);
 
+        /// <summary>
+        /// Attempts to set the result of the underlying <see cref="TaskCompletionSource{TResult}"/>.
+        /// </summary>
+        /// <param name="result">The result to set.</param>
+        /// <returns><see langword="true"/> if the operation was successful; otherwise, <see langword="false"/>.</returns>
         public bool TrySetResult(TResult? result) => _taskSource.TrySetResult(result!);
 
+        /// <summary>
+        /// Attempts to dispose the internal <see cref="Timer"/> and cancel the underlying <see cref="TaskCompletionSource{TResult}"/>.
+        /// </summary>
+        /// <returns><see langword="true"/> if the operation was successful; otherwise, <see langword="false"/>.</returns>
         public bool TryDispose()
         {
             if (_disposed)

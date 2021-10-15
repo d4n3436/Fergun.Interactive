@@ -196,7 +196,6 @@ namespace Fergun.Interactive.Pagination
                     .WithEmote(pair.Key)
                     .WithDisabled(isDisabled);
 
-
                 builder.WithButton(button);
             }
 

@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 
 namespace Discord.WebSocket
 {
+    // Created to avoid overusing #ifs
     internal abstract class SocketInteraction
     {
         public virtual Task ModifyOriginalResponseAsync(Action<MessageProperties> _1, RequestOptions? _2 = null)

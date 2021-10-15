@@ -101,8 +101,11 @@ namespace Fergun.Interactive.Pagination
             if (refreshPage)
             {
                 var currentPage = await Paginator.GetOrLoadCurrentPageAsync().ConfigureAwait(false);
-                await Message.ModifyAsync(x => { x.Embed = currentPage.Embed; x.Content = currentPage.Text; })
-                    .ConfigureAwait(false);
+                await Message.ModifyAsync(x =>
+                {
+                    x.Embed = currentPage.Embed;
+                    x.Content = currentPage.Text;
+                }).ConfigureAwait(false);
             }
         }
 

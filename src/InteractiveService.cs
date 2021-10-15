@@ -589,7 +589,7 @@ namespace Fergun.Interactive
             }
 
             var (selected, status) = await callback.TimeoutTaskSource.Task.ConfigureAwait(false);
-            if (cts != null)
+            if (cts is not null)
             {
                 cts.Cancel();
                 cts.Dispose();
@@ -625,7 +625,7 @@ namespace Fergun.Interactive
             }
 #endif
 
-            if (message != null)
+            if (message is not null)
             {
                 await message.ModifyAsync(x =>
                 {
@@ -694,7 +694,7 @@ namespace Fergun.Interactive
         }
 #endif
 
-        private async Task ApplyActionOnStopAsync<TOption>(IInteractiveElement<TOption> element, IInteractiveMessageResult result,
+        private static async Task ApplyActionOnStopAsync<TOption>(IInteractiveElement<TOption> element, IInteractiveMessageResult result,
             SocketInteraction? lastInteraction, SocketMessageComponent? stopInteraction)
         {
             bool ephemeral = ((int)result.Message.Flags.GetValueOrDefault() & 64) == 64;
@@ -710,7 +710,7 @@ namespace Fergun.Interactive
 
             if (action == ActionOnStop.None)
             {
-                if (stopInteraction != null)
+                if (stopInteraction is not null)
                 {
                     await stopInteraction.DeferAsync().ConfigureAwait(false);
                 }
@@ -733,7 +733,7 @@ namespace Fergun.Interactive
                         // We want to delete the message so we don't care if the message has been already deleted.
                     }
                 }
-                else if (stopInteraction != null)
+                else if (stopInteraction is not null)
                 {
                     await stopInteraction.DeferAsync().ConfigureAwait(false);
                 }
@@ -768,16 +768,16 @@ namespace Fergun.Interactive
                 }
             }
 
-            bool modifyMessage = page?.Text != null || page?.Embed != null || components != null;
+            bool modifyMessage = page?.Text is not null || page?.Embed is not null || components is not null;
 #else
-            bool modifyMessage = page?.Text != null || page?.Embed != null;
+            bool modifyMessage = page?.Text is not null || page?.Embed is not null;
 #endif
 
             if (modifyMessage)
             {
                 try
                 {
-                    if (stopInteraction != null) // An interaction to stop the element has been received
+                    if (stopInteraction is not null) // An interaction to stop the element has been received
                     {
                         await stopInteraction.UpdateAsync(UpdateMessage).ConfigureAwait(false);
                     }
@@ -795,7 +795,7 @@ namespace Fergun.Interactive
                     // Ignore 10008 (Unknown Message) error.
                 }
             }
-            else if (stopInteraction != null)
+            else if (stopInteraction is not null)
             {
                 await stopInteraction.DeferAsync().ConfigureAwait(false);
             }

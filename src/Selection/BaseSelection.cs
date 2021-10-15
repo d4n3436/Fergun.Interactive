@@ -229,7 +229,7 @@ namespace Fergun.Interactive.Selection
                         .WithEmote(emote)
                         .WithDisabled(disableAll);
 
-                    if (label != null)
+                    if (label is not null)
                         button.Label = label;
 
                     builder.WithButton(button);

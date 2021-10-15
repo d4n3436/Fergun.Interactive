@@ -277,6 +277,5 @@ namespace ExampleBot.Modules
 
             public IEmote Emote { get; }
         }
-
     }
 }

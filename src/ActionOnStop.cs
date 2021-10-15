@@ -27,7 +27,7 @@ namespace Fergun.Interactive
         /// </remarks>
         DeleteInput = 1 << 1,
         /// <summary>
-        /// Disable the buttons or the selection menu from the message. Only applicable to messages using buttons or select menus.
+        /// Disable the buttons or the select menu from the message. Only applicable to messages using buttons or select menus.
         /// </summary>
         /// <remarks>This action is mutually exclusive with <see cref="DeleteInput"/>.</remarks>
         DisableInput = 1 << 2,

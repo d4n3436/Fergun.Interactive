@@ -22,7 +22,8 @@ namespace ExampleBot.Modules
         [Command(RunMode = RunMode.Async)]
         public async Task PaginatorAsync()
         {
-            var pages = new[] {
+            var pages = new[]
+            {
                 new PageBuilder().WithDescription("Lorem ipsum dolor sit amet, consectetur adipiscing elit."),
                 new PageBuilder().WithDescription("Praesent eu est vitae dui sollicitudin volutpat."),
                 new PageBuilder().WithDescription("Etiam in ex sed turpis imperdiet viverra id eget nunc."),

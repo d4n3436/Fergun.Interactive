@@ -17,7 +17,7 @@ namespace Fergun.Interactive
 
         public static void MessageFromCurrentUser(BaseSocketClient client, IUserMessage? message, string parameterName)
         {
-            if (message != null && message.Author.Id != client.CurrentUser.Id)
+            if (message is not null && message.Author.Id != client.CurrentUser.Id)
             {
                 throw new ArgumentException("Message author must be the current user.", parameterName);
             }
