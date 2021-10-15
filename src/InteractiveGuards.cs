@@ -15,7 +15,7 @@ namespace Fergun.Interactive
             }
         }
 
-        public static void MessageFromCurrentUser(IDiscordClient client, IUserMessage? message, string parameterName)
+        public static void MessageFromCurrentUser(BaseSocketClient client, IUserMessage? message, string parameterName)
         {
             if (message != null && message.Author.Id != client.CurrentUser.Id)
             {
