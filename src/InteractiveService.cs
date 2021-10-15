@@ -777,32 +777,17 @@ namespace Fergun.Interactive
             {
                 try
                 {
-                    Page? currentPage;
-
                     if (stopInteraction != null) // An interaction to stop the element has been received
                     {
-                        currentPage = await element.GetCurrentPageAsync().ConfigureAwait(false);
-                        await stopInteraction.UpdateAsync(UpdateMessageWithCurrentPage).ConfigureAwait(false);
+                        await stopInteraction.UpdateAsync(UpdateMessage).ConfigureAwait(false);
                     }
                     else if (lastInteraction?.IsValidToken == true) // The element is from a message that was updated using an interaction, and its token is still valid
                     {
-                        currentPage = await element.GetCurrentPageAsync().ConfigureAwait(false);
-                        await lastInteraction.ModifyOriginalResponseAsync(UpdateMessageWithCurrentPage).ConfigureAwait(false);
+                        await lastInteraction.ModifyOriginalResponseAsync(UpdateMessage).ConfigureAwait(false);
                     }
                     else if (!ephemeral) // Fallback for normal messages that don't use interactions or the token is no longer valid, only works for non-ephemeral messages
                     {
                         await result.Message.ModifyAsync(UpdateMessage).ConfigureAwait(false);
-                    }
-
-                    // Temporary workaround for the bug that occurs when updating an interaction passing only components
-                    void UpdateMessageWithCurrentPage(MessageProperties x)
-                    {
-                        var pageToUse = page ?? currentPage;
-                        x.Content = pageToUse?.Text;
-                        x.Embed = pageToUse?.Embed;
-#if DNETLABS
-                        x.Components = components ?? new Optional<MessageComponent>();
-#endif
                     }
                 }
                 catch (HttpException ex) when (ex.DiscordCode == 10008)
