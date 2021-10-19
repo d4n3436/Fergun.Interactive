@@ -50,7 +50,7 @@ namespace Fergun.Interactive.Pagination
                 InputType,
                 ActionOnCancellation,
                 ActionOnTimeout,
-                PageFactory is not null! ? AddPaginatorFooterAsync : null!,
+                PageFactory != null! ? AddPaginatorFooterAsync : null!,
                 startPageIndex,
                 MaxPageIndex,
                 CacheLoadedPages);
