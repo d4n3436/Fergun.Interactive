@@ -179,7 +179,7 @@ namespace Fergun.Interactive.Selection
                 ComponentType.SelectMenu => (interaction
                     .Message
                     .Components
-                    .FirstOrDefault(x => x.Components.Any(y => y.Type == ComponentType.SelectMenu))?
+                    .FirstOrDefault(x => x.Components.Any(y => y.Type == ComponentType.SelectMenu && y.CustomId == interaction.Data.CustomId))?
                     .Components
                     .FirstOrDefault() as SelectMenuComponent)?
                     .Options
