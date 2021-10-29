@@ -24,7 +24,7 @@
     </When>
     <Otherwise>
       <ItemGroup>
-        <PackageReference Include="Discord.Net.Labs.Commands" Version="2.3.5" />
+        <PackageReference Include="Discord.Net.Labs.Commands" Version="3.1.4" />
       </ItemGroup>
     </Otherwise>
   </Choose>
