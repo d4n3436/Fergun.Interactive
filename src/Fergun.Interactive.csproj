@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <Version>1.2.3</Version>
+    <Version>1.2.4</Version>
     <LangVersion>9</LangVersion>
     <Nullable>enable</Nullable>
     <Authors>d4n3436</Authors>
@@ -20,7 +20,8 @@ An addon that adds interactive functionality to commands.
 This is a fork of Discord.InteractivityAddon that adds several features like more customization and support for interactions.
     </Description>
     <PackageReleaseNotes>
-- Updated Discord.Net.Labs.WebSocket to 3.1.4
+- Fixed a nullref when passing a message to DelayedSendMessageAndDeleteAsync, SendPaginatorAsync and SendSelectionAsync, and the client is a DiscordShardedClient.
+- Improved the support for multiple select menus in a single message.
     </PackageReleaseNotes>
   </PropertyGroup>
 
