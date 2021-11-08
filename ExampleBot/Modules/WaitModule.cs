@@ -48,7 +48,7 @@ namespace ExampleBot.Modules
             var msg = await ReplyAsync("Press this button!", component: builder.Build());
 
             // Wait for a user to press the button
-            var result = await Interactive.NextInteractionAsync(x => x is SocketMessageComponent c && c.Message.Id == msg.Id,
+            var result = await Interactive.NextMessageComponentAsync(x => x.Message.Id == msg.Id,
                 timeout: TimeSpan.FromSeconds(30));
 
             if (result.IsSuccess)

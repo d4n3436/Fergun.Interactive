@@ -267,9 +267,9 @@ namespace Fergun.Interactive
         /// The task result contains an <see cref="InteractiveResult{T}"/> with the
         /// message (if successful), the elapsed time and the status.
         /// </returns>
-        public Task<InteractiveResult<SocketMessage?>> NextMessageAsync(Func<SocketMessage, bool>? filter = null,
+        public async Task<InteractiveResult<SocketMessage?>> NextMessageAsync(Func<SocketMessage, bool>? filter = null,
             Func<SocketMessage, bool, Task>? action = null, TimeSpan? timeout = null, CancellationToken cancellationToken = default)
-            => NextEntityAsync(filter, action, timeout, cancellationToken);
+            => await NextEntityAsync(filter, action, timeout, cancellationToken).ConfigureAwait(false);
 
         /// <summary>
         /// Gets the next incoming reaction that passes the <paramref name="filter"/>.
@@ -286,9 +286,9 @@ namespace Fergun.Interactive
         /// The task result contains an <see cref="InteractiveResult{T}"/> with the
         /// reaction (if successful), the elapsed time and the status.
         /// </returns>
-        public Task<InteractiveResult<SocketReaction?>> NextReactionAsync(Func<SocketReaction, bool>? filter = null,
+        public async Task<InteractiveResult<SocketReaction?>> NextReactionAsync(Func<SocketReaction, bool>? filter = null,
             Func<SocketReaction, bool, Task>? action = null, TimeSpan? timeout = null, CancellationToken cancellationToken = default)
-            => NextEntityAsync(filter, action, timeout, cancellationToken);
+            => await NextEntityAsync(filter, action, timeout, cancellationToken).ConfigureAwait(false);
 
 #if DNETLABS
         /// <summary>
@@ -307,9 +307,109 @@ namespace Fergun.Interactive
         /// The task result contains an <see cref="InteractiveResult{T}"/> with the
         /// interaction (if successful), the elapsed time and the status.
         /// </returns>
-        public Task<InteractiveResult<SocketInteraction?>> NextInteractionAsync(Func<SocketInteraction, bool>? filter = null,
+        public async Task<InteractiveResult<SocketInteraction?>> NextInteractionAsync(Func<SocketInteraction, bool>? filter = null,
             Func<SocketInteraction, bool, Task>? action = null, TimeSpan? timeout = null, CancellationToken cancellationToken = default)
-            => NextEntityAsync(filter, action, timeout, cancellationToken);
+            => await NextEntityAsync(filter, action, timeout, cancellationToken).ConfigureAwait(false);
+
+        /// <summary>
+        /// Gets the next message component that passes the <paramref name="filter"/>.
+        /// </summary>
+        /// <param name="filter">A filter which the message component has to pass.</param>
+        /// <param name="action">
+        /// An action which gets executed to incoming interactions,
+        /// where <see cref="SocketMessageComponent"/> is the incoming message component and <see cref="bool"/>
+        /// is whether the message component passed the <paramref name="filter"/>.
+        /// </param>
+        /// <param name="timeout">The time to wait before the methods returns a timeout result.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> to cancel the request.</param>
+        /// <returns>
+        /// A task that represents the asynchronous wait operation for the next message component.
+        /// The task result contains an <see cref="InteractiveResult{T}"/> with the
+        /// message component (if successful), the elapsed time and the status.
+        /// </returns>
+        public async Task<InteractiveResult<SocketMessageComponent?>> NextMessageComponentAsync(Func<SocketMessageComponent, bool>? filter = null,
+            Func<SocketMessageComponent, bool, Task>? action = null, TimeSpan? timeout = null, CancellationToken cancellationToken = default)
+            => await NextEntityAsync(filter, action, timeout, cancellationToken).ConfigureAwait(false);
+
+        /// <summary>
+        /// Gets the next slash command that passes the <paramref name="filter"/>.
+        /// </summary>
+        /// <param name="filter">A filter which the slash command has to pass.</param>
+        /// <param name="action">
+        /// An action which gets executed to incoming interactions,
+        /// where <see cref="SocketSlashCommand"/> is the incoming slash command and <see cref="bool"/>
+        /// is whether the slash command passed the <paramref name="filter"/>.
+        /// </param>
+        /// <param name="timeout">The time to wait before the methods returns a timeout result.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> to cancel the request.</param>
+        /// <returns>
+        /// A task that represents the asynchronous wait operation for the next slash command.
+        /// The task result contains an <see cref="InteractiveResult{T}"/> with the
+        /// slash command (if successful), the elapsed time and the status.
+        /// </returns>
+        public async Task<InteractiveResult<SocketSlashCommand?>> NextSlashCommandAsync(Func<SocketSlashCommand, bool>? filter = null,
+            Func<SocketSlashCommand, bool, Task>? action = null, TimeSpan? timeout = null, CancellationToken cancellationToken = default)
+            => await NextEntityAsync(filter, action, timeout, cancellationToken).ConfigureAwait(false);
+
+        /// <summary>
+        /// Gets the next user command that passes the <paramref name="filter"/>.
+        /// </summary>
+        /// <param name="filter">A filter which the user command has to pass.</param>
+        /// <param name="action">
+        /// An action which gets executed to incoming interactions,
+        /// where <see cref="SocketUserCommand"/> is the incoming user command and <see cref="bool"/>
+        /// is whether the user command passed the <paramref name="filter"/>.
+        /// </param>
+        /// <param name="timeout">The time to wait before the methods returns a timeout result.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> to cancel the request.</param>
+        /// <returns>
+        /// A task that represents the asynchronous wait operation for the next user command.
+        /// The task result contains an <see cref="InteractiveResult{T}"/> with the
+        /// user command (if successful), the elapsed time and the status.
+        /// </returns>
+        public async Task<InteractiveResult<SocketUserCommand?>> NextUserCommandAsync(Func<SocketUserCommand, bool>? filter = null,
+            Func<SocketUserCommand, bool, Task>? action = null, TimeSpan? timeout = null, CancellationToken cancellationToken = default)
+            => await NextEntityAsync(filter, action, timeout, cancellationToken).ConfigureAwait(false);
+
+        /// <summary>
+        /// Gets the next message command that passes the <paramref name="filter"/>.
+        /// </summary>
+        /// <param name="filter">A filter which the message command has to pass.</param>
+        /// <param name="action">
+        /// An action which gets executed to incoming interactions,
+        /// where <see cref="SocketMessageCommand"/> is the incoming message command and <see cref="bool"/>
+        /// is whether the message command passed the <paramref name="filter"/>.
+        /// </param>
+        /// <param name="timeout">The time to wait before the methods returns a timeout result.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> to cancel the request.</param>
+        /// <returns>
+        /// A task that represents the asynchronous wait operation for the next message command.
+        /// The task result contains an <see cref="InteractiveResult{T}"/> with the
+        /// message command (if successful), the elapsed time and the status.
+        /// </returns>
+        public async Task<InteractiveResult<SocketMessageCommand?>> NextMessageCommandAsync(Func<SocketMessageCommand, bool>? filter = null,
+            Func<SocketMessageCommand, bool, Task>? action = null, TimeSpan? timeout = null, CancellationToken cancellationToken = default)
+            => await NextEntityAsync(filter, action, timeout, cancellationToken).ConfigureAwait(false);
+
+        /// <summary>
+        /// Gets the next autocomplete interaction that passes the <paramref name="filter"/>.
+        /// </summary>
+        /// <param name="filter">A filter which the autocomplete interaction has to pass.</param>
+        /// <param name="action">
+        /// An action which gets executed to incoming interactions,
+        /// where <see cref="SocketAutocompleteInteraction"/> is the incoming autocomplete interaction and <see cref="bool"/>
+        /// is whether the autocomplete interaction passed the <paramref name="filter"/>.
+        /// </param>
+        /// <param name="timeout">The time to wait before the methods returns a timeout result.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> to cancel the request.</param>
+        /// <returns>
+        /// A task that represents the asynchronous wait operation for the next autocomplete interaction.
+        /// The task result contains an <see cref="InteractiveResult{T}"/> with the
+        /// autocomplete interaction (if successful), the elapsed time and the status.
+        /// </returns>
+        public async Task<InteractiveResult<SocketAutocompleteInteraction?>> NextAutocompleteInteractionAsync(Func<SocketAutocompleteInteraction, bool>? filter = null,
+            Func<SocketAutocompleteInteraction, bool, Task>? action = null, TimeSpan? timeout = null, CancellationToken cancellationToken = default)
+            => await NextEntityAsync(filter, action, timeout, cancellationToken).ConfigureAwait(false);
 #endif
 
         /// <summary>
@@ -904,9 +1004,12 @@ namespace Fergun.Interactive
 
             foreach (var pair in _filteredCallbacks)
             {
-                if (pair.Value is FilteredCallback<SocketInteraction> filteredCallback)
+                // Ugly but works
+                if (pair.Value is FilteredCallback<SocketInteraction> or FilteredCallback<SocketMessageComponent>
+                    or FilteredCallback<SocketSlashCommand> or FilteredCallback<SocketUserCommand>
+                    or FilteredCallback<SocketMessageCommand> or FilteredCallback<SocketAutocompleteInteraction>)
                 {
-                    _ = Task.Run(async () => await filteredCallback.ExecuteAsync(interaction).ConfigureAwait(false));
+                    _ = Task.Run(async () => await pair.Value.ExecuteAsync(interaction).ConfigureAwait(false));
                 }
             }
 
