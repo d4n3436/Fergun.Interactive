@@ -848,7 +848,6 @@ namespace Fergun.Interactive
                     InteractiveStatus.Timeout => element.TimeoutPage,
                     InteractiveStatus.Canceled => element.CanceledPage,
                     InteractiveStatus.Success when element is BaseSelection<TOption> selection => selection.SuccessPage,
-                    InteractiveStatus.Unknown => throw new ArgumentException("Unknown action.", nameof(result)),
                     _ => throw new ArgumentException("Unknown action.", nameof(result))
                 };
             }
