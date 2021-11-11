@@ -136,9 +136,9 @@ namespace Fergun.Interactive.Pagination
         /// <summary>
         /// Adds an emote related to a paginator action.
         /// </summary>
-        /// <param name="pair">The pair of emote and action.</param>
-        public virtual TBuilder AddOption(KeyValuePair<IEmote, PaginatorAction> pair)
-            => AddOption(pair.Key, pair.Value);
+        /// <param name="option">The pair of emote and action.</param>
+        public virtual TBuilder AddOption(KeyValuePair<IEmote, PaginatorAction> option)
+            => AddOption(option.Key, option.Value);
 
         /// <summary>
         /// Adds an emote related to a paginator action.
