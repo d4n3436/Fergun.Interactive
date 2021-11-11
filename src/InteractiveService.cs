@@ -647,6 +647,8 @@ namespace Fergun.Interactive
             _ = callback.Paginator.InitializeMessageAsync(callback.Message, cts?.Token ?? default).ConfigureAwait(false);
 
             var taskResult = await callback.TimeoutTaskSource.Task.ConfigureAwait(false);
+            cts?.Cancel();
+            cts?.Dispose();
 
             var elapsed = taskResult == InteractiveStatus.Canceled
                 ? DateTimeOffset.UtcNow - callback.StartTime
@@ -689,11 +691,8 @@ namespace Fergun.Interactive
             }
 
             var (selected, status) = await callback.TimeoutTaskSource.Task.ConfigureAwait(false);
-            if (cts is not null)
-            {
-                cts.Cancel();
-                cts.Dispose();
-            }
+            cts?.Cancel();
+            cts?.Dispose();
 
             var elapsed = status == InteractiveStatus.Timeout
                 ? callback.TimeoutTaskSource.Delay
