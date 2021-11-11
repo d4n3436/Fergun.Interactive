@@ -627,14 +627,10 @@ namespace Fergun.Interactive
 
             var (result, status) = await callback.TimeoutTaskSource.Task.ConfigureAwait(false);
 
-            var elapsed = status == InteractiveStatus.Timeout
-                ? callback.TimeoutTaskSource.Delay
-                : DateTimeOffset.UtcNow - callback.StartTime;
-
             _filteredCallbacks.TryRemove(guid, out _);
             callback.Dispose();
 
-            return new InteractiveResult<T?>(result, elapsed, status);
+            return new InteractiveResult<T?>(result, callback.GetElapsedTime(status), status);
         }
 
         private async Task<InteractiveMessageResult> WaitForPaginatorResultAsync(PaginatorCallback callback)
@@ -646,15 +642,11 @@ namespace Fergun.Interactive
 
             _ = callback.Paginator.InitializeMessageAsync(callback.Message, cts?.Token ?? default).ConfigureAwait(false);
 
-            var taskResult = await callback.TimeoutTaskSource.Task.ConfigureAwait(false);
+            var status = await callback.TimeoutTaskSource.Task.ConfigureAwait(false);
             cts?.Cancel();
             cts?.Dispose();
 
-            var elapsed = taskResult == InteractiveStatus.Canceled
-                ? DateTimeOffset.UtcNow - callback.StartTime
-                : callback.TimeoutTaskSource.Delay;
-
-            var result = new InteractiveMessageResult(elapsed, callback.Message, taskResult);
+            var result = new InteractiveMessageResult(callback.GetElapsedTime(status), callback.Message, status);
 
             if (_callbacks.TryRemove(callback.Message.Id, out _))
             {
@@ -694,11 +686,7 @@ namespace Fergun.Interactive
             cts?.Cancel();
             cts?.Dispose();
 
-            var elapsed = status == InteractiveStatus.Timeout
-                ? callback.TimeoutTaskSource.Delay
-                : DateTimeOffset.UtcNow - callback.StartTime;
-
-            var result = new InteractiveMessageResult<TOption?>(selected, elapsed, callback.Message, status);
+            var result = new InteractiveMessageResult<TOption?>(selected, callback.GetElapsedTime(status), callback.Message, status);
 
             if (_callbacks.TryRemove(callback.Message.Id, out _))
             {

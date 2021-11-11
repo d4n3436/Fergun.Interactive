@@ -36,5 +36,21 @@ namespace Fergun.Interactive
                 BaseSelection<TOption> selection => selection.SelectionPage,
                 _ => throw new ArgumentException("Unknown interactive element.", nameof(element))
             };
+
+        public static TimeSpan GetElapsedTime(this PaginatorCallback callback, InteractiveStatus status)
+            => status.GetElapsedTime(callback.StartTime, callback.TimeoutTaskSource.Delay);
+
+        public static TimeSpan GetElapsedTime<TOption>(this SelectionCallback<TOption> callback, InteractiveStatus status)
+            => status.GetElapsedTime(callback.StartTime, callback.TimeoutTaskSource.Delay);
+
+        public static TimeSpan GetElapsedTime<TInput>(this FilteredCallback<TInput> callback, InteractiveStatus status)
+            => status.GetElapsedTime(callback.StartTime, callback.TimeoutTaskSource.Delay);
+
+        public static TimeSpan GetElapsedTime(this DateTimeOffset startTime)
+            => DateTimeOffset.UtcNow - startTime;
+
+        // Using just startTime.GetElapsedTime() would return a slightly incorrect elapsed time if the status is Timeout
+        public static TimeSpan GetElapsedTime(this InteractiveStatus status, DateTimeOffset startTime, TimeSpan timeoutDelay)
+            => status == InteractiveStatus.Timeout ? timeoutDelay : startTime.GetElapsedTime();
     }
 }
