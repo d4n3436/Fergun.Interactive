@@ -48,7 +48,7 @@ namespace Fergun.Interactive
         {
             Delay = delay;
             CanReset = canReset;
-            _taskSource = new TaskCompletionSource<TResult>();
+            _taskSource = new TaskCompletionSource<TResult>(TaskCreationOptions.RunContinuationsAsynchronously);
             _timer = new Timer(OnTimerFired, null, delay, Timeout.InfiniteTimeSpan);
             _tokenRegistration = cancellationToken.Register(() => TryCancel());
         }
