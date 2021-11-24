@@ -5,6 +5,7 @@
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <LangVersion>latest</LangVersion>
     <Configurations>Debug;Release;DebugLabs;ReleaseLabs</Configurations>
+    <RestoreAdditionalProjectSources>https://www.myget.org/F/discord-net/api/v3/index.json</RestoreAdditionalProjectSources>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)'=='ReleaseLabs' Or '$(Configuration)'=='DebugLabs'">
@@ -19,7 +20,7 @@
   <Choose>
     <When Condition="'$(Configuration)'=='Release' Or '$(Configuration)'=='Debug'">
       <ItemGroup>
-        <PackageReference Include="Discord.Net.Commands" Version="2.4.0" />
+        <PackageReference Include="Discord.Net.Commands" Version="3.0.0-dev-20211124.17" />
       </ItemGroup>
     </When>
     <Otherwise>

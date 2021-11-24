@@ -48,13 +48,6 @@ namespace Fergun.Interactive
                 throw new NotSupportedException("Ephemeral messages cannot use reactions as input.");
             }
 
-#if !DNETLABS
-            if (element.InputType.HasFlag(InputType.Buttons) || element.InputType.HasFlag(InputType.SelectMenus))
-            {
-                throw new NotSupportedException("Discord.Net does not support components (yet). Use Discord.Net.Labs and Fergun.Interactive.Labs.");
-            }
-#endif
-
             if (element is Paginator paginator)
             {
                 if (paginator.InputType.HasFlag(InputType.Messages))
@@ -69,7 +62,6 @@ namespace Fergun.Interactive
             }
         }
 
-#if DNETLABS
         public static void ValidResponseType(InteractionResponseType responseType, string parameterName)
         {
             int value = (int)responseType;
@@ -87,6 +79,5 @@ namespace Fergun.Interactive
                 throw new ArgumentException($"Interaction response type {responseType} can only be used on component interactions.", parameterName);
             }
         }
-#endif
     }
 }

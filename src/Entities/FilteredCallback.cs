@@ -77,7 +77,6 @@ namespace Fergun.Interactive
             throw new ArgumentException("Cannot execute this callback using a reaction.", nameof(reaction));
         }
 
-#if DNETLABS
         /// <inheritdoc/>
         public Task ExecuteAsync(SocketInteraction interaction)
         {
@@ -88,7 +87,6 @@ namespace Fergun.Interactive
 
             throw new ArgumentException("Cannot execute this callback using an interaction.", nameof(interaction));
         }
-#endif
 
         private void Dispose(bool disposing)
         {

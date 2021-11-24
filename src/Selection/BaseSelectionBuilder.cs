@@ -87,12 +87,7 @@ namespace Fergun.Interactive.Selection
         public virtual DeletionOptions Deletion { get; set; } = DeletionOptions.Valid;
 
         /// <inheritdoc />
-        public virtual InputType InputType { get; set; }
-#if DNETLABS
-            = InputType.Buttons;
-#else
-            = InputType.Reactions;
-#endif
+        public virtual InputType InputType { get; set; } = InputType.Buttons;
 
         /// <inheritdoc />
         public virtual ActionOnStop ActionOnCancellation { get; set; }

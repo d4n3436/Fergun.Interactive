@@ -49,7 +49,6 @@ namespace Fergun.Interactive
         /// </summary>
         ActionOnStop ActionOnTimeout { get; }
 
-#if DNETLABS
         /// <summary>
         /// Builds the components that a message that represents this element would have.
         /// </summary>
@@ -57,6 +56,5 @@ namespace Fergun.Interactive
         /// <param name="disableAll">Whether to disable all the components.</param>
         /// <returns>A message component.</returns>
         MessageComponent BuildComponents(bool disableAll);
-#endif
     }
 }

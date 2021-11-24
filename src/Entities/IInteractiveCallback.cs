@@ -33,14 +33,12 @@ namespace Fergun.Interactive
         /// <returns>A task that represents the operation.</returns>
         Task ExecuteAsync(SocketReaction reaction);
 
-#if DNETLABS
         /// <summary>
         /// Executes this event.
         /// </summary>
         /// <param name="interaction">The incoming interaction.</param>
         /// <returns>A task that represents the operation.</returns>
         Task ExecuteAsync(SocketInteraction interaction);
-#endif
     }
 
     /// <summary>

@@ -174,7 +174,6 @@ namespace Fergun.Interactive.Selection
             }
         }
 
-#if DNETLABS
         /// <inheritdoc/>
         public virtual MessageComponent BuildComponents(bool disableAll)
         {
@@ -238,6 +237,5 @@ namespace Fergun.Interactive.Selection
 
             return builder.Build();
         }
-#endif
     }
 }

@@ -151,7 +151,6 @@ namespace Fergun.Interactive.Selection
             TimeoutTaskSource.TrySetResult((selected, InteractiveStatus.Success));
         }
 
-#if DNETLABS
         /// <inheritdoc/>
         public Task ExecuteAsync(SocketInteraction interaction)
         {
@@ -216,7 +215,6 @@ namespace Fergun.Interactive.Selection
             TimeoutTaskSource.TrySetResult((selected, isCanceled ? InteractiveStatus.Canceled : InteractiveStatus.Success));
             Dispose();
         }
-#endif
 
         private void Dispose(bool disposing)
         {

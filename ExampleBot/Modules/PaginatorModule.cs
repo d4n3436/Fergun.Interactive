@@ -71,8 +71,8 @@ namespace ExampleBot.Modules
             // Get images from Google Images.
             var images = (await _scraper.GetImagesAsync(query)).ToList();
 
-            // If we can use interactions, prefer disabling the input (buttons, select menus) instead of removing them from the message.
-            var actionOnTimeout = Program.CanUseInteractions ? ActionOnStop.DisableInput : ActionOnStop.DeleteInput;
+            // Prefer disabling the input (buttons, select menus) instead of removing them from the message.
+            var actionOnTimeout = ActionOnStop.DisableInput ;
 
             var paginator = new LazyPaginatorBuilder()
                 .AddUser(Context.User)

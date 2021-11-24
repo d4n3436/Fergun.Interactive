@@ -45,12 +45,7 @@ namespace Fergun.Interactive.Pagination
         public virtual DeletionOptions Deletion { get; set; } = DeletionOptions.Valid | DeletionOptions.Invalid;
 
         /// <inheritdoc/>
-        public virtual InputType InputType { get; set; }
-#if DNETLABS
-            = InputType.Buttons;
-#else
-            = InputType.Reactions;
-#endif
+        public virtual InputType InputType { get; set; } = InputType.Buttons;
 
         /// <inheritdoc/>
         /// <remarks>The default value is <see cref="ActionOnStop.ModifyMessage"/>.</remarks>

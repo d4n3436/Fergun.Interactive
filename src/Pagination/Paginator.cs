@@ -174,7 +174,6 @@ namespace Fergun.Interactive.Pagination
                 _ => new ValueTask<bool>(false)
             };
 
-#if DNETLABS
         /// <inheritdoc/>
         public virtual MessageComponent BuildComponents(bool disableAll)
         {
@@ -201,6 +200,5 @@ namespace Fergun.Interactive.Pagination
 
             return builder.Build();
         }
-#endif
     }
 }

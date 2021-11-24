@@ -17,11 +17,11 @@ namespace Fergun.Interactive
         /// </summary>
         Messages = 1 << 1,
         /// <summary>
-        /// Use buttons as input. Only valid when using Discord.Net Labs.
+        /// Use buttons as input.
         /// </summary>
         Buttons = 1 << 2,
         /// <summary>
-        /// Use select menus as input. Only valid when using Discord.Net Labs.
+        /// Use select menus as input.
         /// </summary>
         SelectMenus = 1 << 3
     }

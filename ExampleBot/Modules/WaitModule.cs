@@ -2,7 +2,6 @@
 using System.Threading.Tasks;
 using Discord;
 using Discord.Commands;
-using Discord.WebSocket;
 using Fergun.Interactive;
 
 namespace ExampleBot.Modules
@@ -35,10 +34,10 @@ namespace ExampleBot.Modules
             {
                 x.Content = result.IsTimeout ? "Timeout!" : $"{MentionUtils.MentionUser(result.Value.UserId)} reacted: {result.Value.Emote}";
                 x.AllowedMentions = AllowedMentions.None;
+                x.Embeds = Array.Empty<Embed>(); // workaround for d.net bug
             });
         }
 
-#if DNETLABS
         [Command("interaction", RunMode = RunMode.Async)]
         public async Task NextInteractionAsync()
         {
@@ -62,8 +61,8 @@ namespace ExampleBot.Modules
                 x.Content = result.IsTimeout ? "Timeout!" : $"{MentionUtils.MentionUser(result.Value.User?.Id ?? 0)} pressed the button!";
                 x.Components = new ComponentBuilder().Build(); // No components
                 x.AllowedMentions = AllowedMentions.None;
+                x.Embeds = Array.Empty<Embed>(); // workaround for d.net bug
             });
         }
-#endif
     }
 }

@@ -12,16 +12,10 @@ namespace ExampleBot
 {
     internal class Program
     {
-        public static bool CanUseInteractions { get; set; }
-
         private static Task Main() => new Program().StartAsync();
 
         private async Task StartAsync()
         {
-#if DNETLABS
-            CanUseInteractions = true;
-#endif
-
             var services = ConfigureServices();
             var client = services.GetRequiredService<DiscordSocketClient>();
 
