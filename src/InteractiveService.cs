@@ -851,7 +851,7 @@ namespace Fergun.Interactive
                         await result.Message.ModifyAsync(UpdateMessage).ConfigureAwait(false);
                     }
                 }
-                catch (HttpException ex) when ((int?)ex.DiscordCode == 10008)
+                catch (HttpException ex) when (ex.DiscordCode == DiscordErrorCode.UnknownMessage)
                 {
                     // Ignore 10008 (Unknown Message) error.
                 }
