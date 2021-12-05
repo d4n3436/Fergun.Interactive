@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <TargetFramework>net6.0</TargetFramework>
     <LangVersion>latest</LangVersion>
     <Configurations>Debug;Release;DebugLabs;ReleaseLabs</Configurations>
     <RestoreAdditionalProjectSources>https://www.myget.org/F/discord-net/api/v3/index.json</RestoreAdditionalProjectSources>
@@ -31,8 +31,8 @@
   </Choose>
 
   <ItemGroup>
-    <PackageReference Include="GScraper" Version="1.0.1" />
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="5.0.2" />
+    <PackageReference Include="GScraper" Version="1.0.2" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="6.0.0" />
     <ProjectReference Include="..\src\Fergun.Interactive.csproj" />
   </ItemGroup>
 

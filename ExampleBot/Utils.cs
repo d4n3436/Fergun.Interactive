@@ -1,14 +1,10 @@
 ﻿using System;
 using Discord;
 
-namespace ExampleBot
+namespace ExampleBot;
+
+public static class Utils
 {
-    public static class Utils
-    {
-        public static Color GetRandomColor()
-        {
-            var rng = new Random();
-            return new Color(rng.Next(0, 256), rng.Next(0, 256), rng.Next(0, 256));
-        }
-    }
+    public static Color GetRandomColor()
+        => new(Random.Shared.Next(0, 256), Random.Shared.Next(0, 256), Random.Shared.Next(0, 256));
 }
