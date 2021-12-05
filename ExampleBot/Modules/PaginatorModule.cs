@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Discord;
 using Discord.Commands;
+using ExampleBot.Extensions;
 using Fergun.Interactive;
 using Fergun.Interactive.Pagination;
 using GScraper.Google;
@@ -58,7 +59,7 @@ namespace ExampleBot.Modules
             {
                 var page = new PageBuilder()
                     .WithDescription($"This is page {index + 1}.")
-                    .WithColor(GetRandomColor());
+                    .WithRandomColor();
 
                 return Task.FromResult(page);
             }
@@ -100,12 +101,10 @@ namespace ExampleBot.Modules
                     .WithDescription("Image paginator example")
                     .WithImageUrl(images[index].Url)
                     .WithFooter($"Page {index + 1}/{images.Count}")
-                    .WithColor(GetRandomColor());
+                    .WithRandomColor();
 
                 return Task.FromResult(page);
             }
         }
-
-        private Color GetRandomColor() => new(Rng.Next(0, 255), Rng.Next(0, 255), Rng.Next(0, 255));
     }
 }

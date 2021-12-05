@@ -5,6 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Discord;
 using Discord.Commands;
+using ExampleBot.Extensions;
 using Fergun.Interactive;
 using Fergun.Interactive.Selection;
 
@@ -28,7 +29,7 @@ namespace ExampleBot.Modules
             var pageBuilder = new PageBuilder() // A PageBuilder is just an EmbedBuilder with a Text property (content).
                 .WithTitle("Selection Example")
                 .WithDescription($"Select a programming language:\n{string.Join('\n', options.Select(x => $"- **{x}**"))}")
-                .WithColor(GetRandomColor()); // Random embed color.
+                .WithRandomColor(); // Random embed color.
 
             var selection = new SelectionBuilder<string>() // Create a new SelectionBuilder that uses strings as input.
                 .AddUser(Context.User) // Only allow the user that executed the command to interact with the selection.
@@ -52,7 +53,7 @@ namespace ExampleBot.Modules
 
             var builder = new EmbedBuilder()
                 .WithDescription(isSuccess ? $"You selected: {selected}" : "Timeout!")
-                .WithColor(GetRandomColor());
+                .WithRandomColor();
 
             await ReplyAsync(embed: builder.Build());
         }
@@ -72,7 +73,7 @@ namespace ExampleBot.Modules
 
             var pageBuilder = new PageBuilder()
                 .WithDescription("Select the device you're using")
-                .WithColor(GetRandomColor());
+                .WithRandomColor();
 
             var selection = new EmoteSelectionBuilder()
                 .AddUser(Context.User)
@@ -88,7 +89,7 @@ namespace ExampleBot.Modules
 
             var builder = new EmbedBuilder()
                 .WithDescription(result.IsSuccess ? $"You selected: {result.Value}" : "Timeout!")
-                .WithColor(GetRandomColor());
+                .WithRandomColor();
 
             await ReplyAsync(embed: builder.Build());
         }
@@ -108,7 +109,7 @@ namespace ExampleBot.Modules
 
             var pageBuilder = new PageBuilder()
                 .WithDescription("Select a number")
-                .WithColor(GetRandomColor());
+                .WithRandomColor();
 
             var selection = new EmoteSelectionBuilder<string>()
                 .AddUser(Context.User)
@@ -124,7 +125,7 @@ namespace ExampleBot.Modules
 
             var builder = new EmbedBuilder()
                 .WithDescription(result.IsSuccess ? $"You selected: {emote} ({selected})" : "Timeout!")
-                .WithColor(GetRandomColor());
+                .WithRandomColor();
 
             await ReplyAsync(embed: builder.Build());
         }
@@ -145,7 +146,7 @@ namespace ExampleBot.Modules
                 new Item("Cancel", "❌")
             };
 
-            var color = GetRandomColor();
+            var color = Utils.GetRandomColor();
 
             var pageBuilder = new PageBuilder()
                 .WithDescription("Select a food type")
@@ -214,7 +215,7 @@ namespace ExampleBot.Modules
             // Add the cancel emote at the end of the dictionary
             emotes.Add(new Emoji("❌"), -1);
 
-            var color = GetRandomColor();
+            var color = Utils.GetRandomColor();
 
             // Prefer disabling the input (buttons, select menus) instead of removing them from the message.
             var actionOnStop = ActionOnStop.DisableInput;
@@ -258,8 +259,6 @@ namespace ExampleBot.Modules
                 // Do stuff with the selected option
             }
         }
-
-        private Color GetRandomColor() => new(Rng.Next(0, 255), Rng.Next(0, 255), Rng.Next(0, 255));
 
         private class Item
         {
