@@ -23,7 +23,7 @@ var provider = new ServiceCollection()
 
 ## Examples
 
-The [ExampleBot](ExampleBot) contains multiple examples with comments. The default prefix is `!`.
+The [Example Bot](ExampleBot) contains multiple examples with comments. The default prefix is `!`.
 
 Compile with the `DebugLabs` or `ReleaseLabs` configuration to be able to use interactions.
 
@@ -48,6 +48,7 @@ Example modules:
 - Customization
   - [Selection with custom button colors](ExampleBot/Modules/CustomButtonModule.cs#L20) (`!custom button`)
   - [Multi selection](ExampleBot/Modules/CustomSelectModule.cs#L19) (`!custom select`) (Selection message with multiple select menus)
+  - [Extension methods in builders](ExampleBot/Modules/CustomExtensionModule.cs#L17) (`!custom extension`)
 
 ## Q&A
 
