@@ -29,21 +29,25 @@ Compile with the `DebugLabs` or `ReleaseLabs` configuration to be able to use in
 
 Example modules:
 - Waiting for socket entities (messages, reactions, etc.)
-  - [Wait for a message](ExampleBot/Modules/WaitModule.cs#L16) (`!next message`)
-  - [Wait for a reaction](ExampleBot/Modules/WaitModule.cs#L27) (`!next reaction`)
-  - [Wait for an interaction](ExampleBot/Modules/WaitModule.cs#L43) (`!next interaction`)
+  - [Wait for a message](ExampleBot/Modules/WaitModule.cs#L15) (`!next message`)
+  - [Wait for a reaction](ExampleBot/Modules/WaitModule.cs#L26) (`!next reaction`)
+  - [Wait for an interaction](ExampleBot/Modules/WaitModule.cs#L42) (`!next interaction`)
 
 - Selection
-  - [Simple selection](ExampleBot/Modules/SelectionModule.cs#L24) (`!select`)
-  - [Emote selection](ExampleBot/Modules/SelectionModule.cs#L64) (`!select emote`) (for selections using reactions/buttons as input)
-  - [Emote selection 2](ExampleBot/Modules/SelectionModule.cs#L98) (`!select emote2`)
-  - [Selection with extra features](ExampleBot/Modules/SelectionModule.cs#L135) (`!select extra`)
-  - [Menu](ExampleBot/Modules/SelectionModule.cs#L193) (`!select menu`) (How to reuse a selection message)
+  - [Simple selection](ExampleBot/Modules/SelectionModule.cs#L23) (`!select simple`)
+  - [Emote selection](ExampleBot/Modules/SelectionModule.cs#L63) (`!select emote`) (for selections using reactions/buttons as input)
+  - [Emote selection 2](ExampleBot/Modules/SelectionModule.cs#L97) (`!select emote2`)
+  - [Selection with extra features](ExampleBot/Modules/SelectionModule.cs#L134) (`!select extra`)
+  - [Menu](ExampleBot/Modules/SelectionModule.cs#L188) (`!select menu`) (How to reuse a selection message)
 
 - Paginator
-  - [Static paginator](ExampleBot/Modules/PaginatorModule.cs#L23) (`!paginator`)
+  - [Static paginator](ExampleBot/Modules/PaginatorModule.cs#L22) (`!paginator static`)
   - [Lazy paginator](ExampleBot/Modules/PaginatorModule.cs#L46) (`!paginator lazy`)
   - [Image paginator](ExampleBot/Modules/PaginatorModule.cs#L68) (`!paginator img [query]`)
+
+- Customization
+  - [Selection with custom button colors](ExampleBot/Modules/CustomButtonModule.cs#L20) (`!custom button`)
+  - [Multi selection](ExampleBot/Modules/CustomSelectModule.cs#L19) (`!custom select`) (Selection message with multiple select menus)
 
 ## Q&A
 

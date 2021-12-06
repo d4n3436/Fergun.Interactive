@@ -17,10 +17,8 @@ public class PaginatorModule : ModuleBase
 
     public InteractiveService Interactive { get; set; }
 
-    public Random Rng { get; set; }
-
     // Sends a message that contains a static paginator with pages that can be changed with reactions or buttons.
-    [Command(RunMode = RunMode.Async)]
+    [Command("static", RunMode = RunMode.Async)]
     public async Task PaginatorAsync()
     {
         var pages = new[]

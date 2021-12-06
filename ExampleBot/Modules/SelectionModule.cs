@@ -16,12 +16,10 @@ public class SelectionModule : ModuleBase
 {
     public InteractiveService Interactive { get; set; }
 
-    public Random Rng { get; set; }
-
     // Sends a message that contains selection of options which the user can select one.
     // Here the selection is received via messages.
     // Important: Commands using methods from InteractiveService should always have RunMode.Async
-    [Command(RunMode = RunMode.Async)]
+    [Command("simple", RunMode = RunMode.Async)]
     public async Task SelectAsync()
     {
         var options = new[] { "C", "C++", "C#", "Java", "Python", "JavaScript", "PHP" };
