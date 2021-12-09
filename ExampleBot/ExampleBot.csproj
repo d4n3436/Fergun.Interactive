@@ -20,12 +20,12 @@
   <Choose>
     <When Condition="'$(Configuration)'=='Release' Or '$(Configuration)'=='Debug'">
       <ItemGroup>
-        <PackageReference Include="Discord.Net.Commands" Version="3.0.0-dev-20211124.17" />
+        <PackageReference Include="Discord.Net.Commands" Version="3.0.0-dev-20211206.5" />
       </ItemGroup>
     </When>
     <Otherwise>
       <ItemGroup>
-        <PackageReference Include="Discord.Net.Labs.Commands" Version="3.3.3" />
+        <PackageReference Include="Discord.Net.Labs.Commands" Version="3.4.9" />
       </ItemGroup>
     </Otherwise>
   </Choose>

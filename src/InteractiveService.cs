@@ -733,11 +733,11 @@ namespace Fergun.Interactive
             switch (responseType)
             {
                 case InteractionResponseType.ChannelMessageWithSource:
-                    await interaction.RespondAsync(page.Text, embed: page.Embed, ephemeral: ephemeral, component: component).ConfigureAwait(false);
+                    await interaction.RespondAsync(page.Text, embed: page.Embed, ephemeral: ephemeral, components: component).ConfigureAwait(false);
                     return await interaction.GetOriginalResponseAsync().ConfigureAwait(false);
 
                 case InteractionResponseType.DeferredChannelMessageWithSource:
-                    return await interaction.FollowupAsync(page.Text, embed: page.Embed, ephemeral: ephemeral, component: component).ConfigureAwait(false);
+                    return await interaction.FollowupAsync(page.Text, embed: page.Embed, ephemeral: ephemeral, components: component).ConfigureAwait(false);
 
                 case InteractionResponseType.DeferredUpdateMessage:
                     InteractiveGuards.ValidResponseType(responseType, interaction, nameof(responseType));
@@ -754,7 +754,7 @@ namespace Fergun.Interactive
 
             void UpdateMessage(MessageProperties props)
             {
-                props.Content = page.Text;
+                props.Content = page.Text ?? ""; // workaround for d.net bug
                 props.Embed = page.Embed;
                 props.Components = component;
             }
@@ -876,7 +876,7 @@ namespace Fergun.Interactive
 
             void UpdateMessage(MessageProperties props)
             {
-                props.Content = page?.Text ?? new Optional<string>();
+                props.Content = page?.Text ?? ""; // workaround for d.net bug
                 props.Embed = page?.Embed ?? new Optional<Embed>();
                 props.Components = components ?? new Optional<MessageComponent>();
             }

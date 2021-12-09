@@ -158,7 +158,7 @@ namespace Fergun.Interactive.Pagination
 
                 await interaction.UpdateAsync(x =>
                 {
-                    x.Content = currentPage.Text;
+                    x.Content = currentPage.Text ?? ""; // workaround for d.net bug
                     x.Embed = currentPage.Embed;
                     x.Components = buttons;
                 }).ConfigureAwait(false);
