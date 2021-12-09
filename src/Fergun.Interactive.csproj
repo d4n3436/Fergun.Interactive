@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <Version>1.3-dev2</Version>
+    <Version>1.3-dev3</Version>
     <LangVersion>9</LangVersion>
     <Nullable>enable</Nullable>
     <Authors>d4n3436</Authors>
@@ -21,10 +21,8 @@ An addon that adds interactive functionality to commands.
 This is a fork of Discord.InteractivityAddon that adds several features like more customization and support for interactions.
     </Description>
     <PackageReleaseNotes>
-- Updated Discord.Net.WebSockets to dev 3.0 (enabling interactions support).
-- Added dedicated methods for getting incoming interactions (message components, app commands, etc).
-- Fix result in SendPaginatorAsync having an incorrect timeout value.
-- Minor bug fixes.
+- Updated Discord.Net.WebSocket to 3.0.0-dev-20211206.5
+- [Labs] Updated Discord.Net.Labs.WebSocket to 3.4.9
     </PackageReleaseNotes>
   </PropertyGroup>
 
