@@ -493,7 +493,7 @@ namespace Fergun.Interactive
             => await SendPaginatorInternalAsync(paginator, null, timeout, message, messageAction, resetTimeoutOnInput, cancellationToken).ConfigureAwait(false);
 
         /// <summary>
-        /// Sends a paginator with pages which the user can change through via reactions or buttons.
+        /// Responds an interaction with a paginator.
         /// </summary>
         /// <param name="paginator">The paginator to send.</param>
         /// <param name="interaction">The interaction to respond.</param>
@@ -581,7 +581,6 @@ namespace Fergun.Interactive
         /// <param name="selection">The selection to send.</param>
         /// <param name="channel">The channel to send the selection to.</param>
         /// <param name="timeout">The time until the selection times out.</param>
-        /// <param name="message">A message to be used for the selection instead of a new one.</param>
         /// <param name="messageAction">A method that gets executed once when a message containing the selection is sent or modified.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> to cancel the selection.</param>
         /// <returns>
@@ -593,29 +592,32 @@ namespace Fergun.Interactive
         /// <exception cref="ArgumentNullException"/>
         /// <exception cref="NotSupportedException"/>
         public async Task<InteractiveMessageResult<TOption?>> SendSelectionAsync<TOption>(BaseSelection<TOption> selection, IMessageChannel channel,
-            TimeSpan? timeout = null, IUserMessage? message = null, Action<IUserMessage>? messageAction = null, CancellationToken cancellationToken = default)
-        {
-            InteractiveGuards.NotNull(selection, nameof(selection));
-            InteractiveGuards.NotNull(channel, nameof(channel));
-            InteractiveGuards.MessageFromCurrentUser(_client, message, nameof(message));
-            InteractiveGuards.DeleteAndDisableInputNotSet(selection.ActionOnTimeout, nameof(selection.ActionOnTimeout));
-            InteractiveGuards.DeleteAndDisableInputNotSet(selection.ActionOnCancellation, nameof(selection.ActionOnCancellation));
-            InteractiveGuards.DeleteAndDisableInputNotSet(selection.ActionOnSuccess, nameof(selection.ActionOnSuccess));
-            InteractiveGuards.SupportedInputType(selection, false);
-
-            message = await SendOrModifyMessageAsync(selection, message, channel).ConfigureAwait(false);
-            messageAction?.Invoke(message);
-
-            var timeoutTaskSource = new TimeoutTaskCompletionSource<(TOption?, InteractiveStatus)>(timeout ?? _config.DefaultTimeout,
-                false, (default, InteractiveStatus.Timeout), (default, InteractiveStatus.Canceled), cancellationToken);
-
-            var callback = new SelectionCallback<TOption>(selection, message, timeoutTaskSource, DateTimeOffset.UtcNow);
-
-            return await WaitForSelectionResultAsync(callback).ConfigureAwait(false);
-        }
+            TimeSpan? timeout = null, Action<IUserMessage>? messageAction = null, CancellationToken cancellationToken = default)
+            => await SendSelectionInternalAsync(selection, channel, timeout, null, messageAction, cancellationToken).ConfigureAwait(false);
 
         /// <summary>
-        /// Sends a selection to the given message channel.
+        /// Modifies a message to a selection.
+        /// </summary>
+        /// <typeparam name="TOption">The type of the options the selection contains.</typeparam>
+        /// <param name="selection">The selection to send.</param>
+        /// <param name="timeout">The time until the selection times out.</param>
+        /// <param name="message">An existing message to modify to display the <see cref="BaseSelection{TOption}"/>.</param>
+        /// <param name="messageAction">A method that gets executed once when a message containing the selection is sent or modified.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> to cancel the selection.</param>
+        /// <returns>
+        /// A task that represents the asynchronous operation for modifying the message to a selection and waiting for a valid input, a timeout or a cancellation.<br/>
+        /// The task result contains an <see cref="InteractiveMessageResult{T}"/> with the selected value (if valid), the message used for the selection
+        /// (which may not be valid if the message has been deleted), the elapsed time and the status.
+        /// </returns>
+        /// <exception cref="ArgumentException"/>
+        /// <exception cref="ArgumentNullException"/>
+        /// <exception cref="NotSupportedException"/>
+        public async Task<InteractiveMessageResult<TOption?>> SendSelectionAsync<TOption>(BaseSelection<TOption> selection, IUserMessage message,
+            TimeSpan? timeout = null, Action<IUserMessage>? messageAction = null, CancellationToken cancellationToken = default)
+            => await SendSelectionInternalAsync(selection, null, timeout, message, messageAction, cancellationToken).ConfigureAwait(false);
+
+        /// <summary>
+        /// Responds an interaction with a selection.
         /// </summary>
         /// <typeparam name="TOption">The type of the options the selection contains.</typeparam>
         /// <param name="selection">The selection to send.</param>
@@ -661,6 +663,27 @@ namespace Fergun.Interactive
 
             var initialInteraction = responseType is InteractionResponseType.DeferredUpdateMessage or InteractionResponseType.UpdateMessage ? interaction : null;
             var callback = new SelectionCallback<TOption>(selection, message, timeoutTaskSource, DateTimeOffset.UtcNow, initialInteraction);
+
+            return await WaitForSelectionResultAsync(callback).ConfigureAwait(false);
+        }
+
+        private async Task<InteractiveMessageResult<TOption?>> SendSelectionInternalAsync<TOption>(BaseSelection<TOption> selection, IMessageChannel? channel,
+            TimeSpan? timeout = null, IUserMessage? message = null, Action<IUserMessage>? messageAction = null, CancellationToken cancellationToken = default)
+        {
+            InteractiveGuards.NotNull(selection, nameof(selection));
+            InteractiveGuards.MessageFromCurrentUser(_client, message, nameof(message));
+            InteractiveGuards.DeleteAndDisableInputNotSet(selection.ActionOnTimeout, nameof(selection.ActionOnTimeout));
+            InteractiveGuards.DeleteAndDisableInputNotSet(selection.ActionOnCancellation, nameof(selection.ActionOnCancellation));
+            InteractiveGuards.DeleteAndDisableInputNotSet(selection.ActionOnSuccess, nameof(selection.ActionOnSuccess));
+            InteractiveGuards.SupportedInputType(selection, false);
+
+            message = await SendOrModifyMessageAsync(selection, message, channel).ConfigureAwait(false);
+            messageAction?.Invoke(message);
+
+            var timeoutTaskSource = new TimeoutTaskCompletionSource<(TOption?, InteractiveStatus)>(timeout ?? _config.DefaultTimeout,
+                false, (default, InteractiveStatus.Timeout), (default, InteractiveStatus.Canceled), cancellationToken);
+
+            var callback = new SelectionCallback<TOption>(selection, message, timeoutTaskSource, DateTimeOffset.UtcNow);
 
             return await WaitForSelectionResultAsync(callback).ConfigureAwait(false);
         }

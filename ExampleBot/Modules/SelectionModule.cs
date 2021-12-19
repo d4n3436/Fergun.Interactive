@@ -241,7 +241,9 @@ public class SelectionModule : ModuleBase
 
             // if message is null, SendSelectionAsync() will send a message, otherwise it will modify the message.
             // The cancellation token persists here, so it will be canceled after 10 minutes no matter how many times the selection is used.
-            result = await Interactive.SendSelectionAsync(selection, Context.Channel, TimeSpan.FromMinutes(10), message, cancellationToken: cts.Token);
+            result = message is null
+                ? await Interactive.SendSelectionAsync(selection, Context.Channel, TimeSpan.FromMinutes(10), cancellationToken: cts.Token)
+                : await Interactive.SendSelectionAsync(selection, message, TimeSpan.FromMinutes(10), cancellationToken: cts.Token);
 
             // Store the used message.
             message = result.Message;
