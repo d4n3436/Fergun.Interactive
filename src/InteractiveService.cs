@@ -25,6 +25,7 @@ namespace Fergun.Interactive
         private readonly BaseSocketClient _client;
         private readonly ConcurrentDictionary<ulong, IInteractiveCallback> _callbacks = new();
         private readonly ConcurrentDictionary<Guid, IInteractiveCallback> _filteredCallbacks = new();
+        private readonly InteractiveConfig _config;
 
         /// <summary>
         /// Gets a dictionary of active callbacks.
@@ -34,19 +35,16 @@ namespace Fergun.Interactive
         /// <summary>
         /// Gets the default timeout for interactive actions provided by this service.
         /// </summary>
-        public TimeSpan DefaultTimeout { get; } = TimeSpan.FromSeconds(30);
+        [Obsolete("This property is deprecated and will be removed in a future version.")]
+        public TimeSpan DefaultTimeout { get; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="InteractiveService"/> class using the default timeout.
         /// </summary>
         /// <param name="client">An instance of <see cref="BaseSocketClient"/>.</param>
         public InteractiveService(BaseSocketClient client)
+            : this(client, new InteractiveConfig())
         {
-            InteractiveGuards.NotNull(client, nameof(client));
-            _client = client;
-            _client.MessageReceived += MessageReceived;
-            _client.ReactionAdded += ReactionAdded;
-            _client.InteractionCreated += InteractionCreated;
         }
 
         /// <summary>
@@ -54,14 +52,10 @@ namespace Fergun.Interactive
         /// </summary>
         /// <param name="client">An instance of <see cref="BaseSocketClient"/>.</param>
         /// <param name="defaultTimeout">The default timeout for the interactive actions.</param>
+        [Obsolete("This constructor is deprecated and it will be removed in a future version. Use InteractiveService(BaseSocketClient, InteractiveConfig) instead.")]
         public InteractiveService(BaseSocketClient client, TimeSpan defaultTimeout)
-            : this(client)
+            : this(client, new InteractiveConfig { DefaultTimeout = defaultTimeout })
         {
-            if (defaultTimeout <= TimeSpan.Zero)
-            {
-                throw new ArgumentOutOfRangeException(nameof(defaultTimeout), "Timespan cannot be negative or zero.");
-            }
-
             DefaultTimeout = defaultTimeout;
         }
 
@@ -79,6 +73,7 @@ namespace Fergun.Interactive
         /// </summary>
         /// <param name="client">An instance of <see cref="DiscordSocketClient"/>.</param>
         /// <param name="defaultTimeout">The default timeout for the interactive actions.</param>
+        [Obsolete("This constructor is deprecated and will be removed in a future version. Use InteractiveService(DiscordSocketClient, InteractiveConfig) instead.")]
         public InteractiveService(DiscordSocketClient client, TimeSpan defaultTimeout)
             : this((BaseSocketClient)client, defaultTimeout)
         {
@@ -98,10 +93,55 @@ namespace Fergun.Interactive
         /// </summary>
         /// <param name="client">An instance of <see cref="DiscordShardedClient"/>.</param>
         /// <param name="defaultTimeout">The default timeout for the interactive actions.</param>
+        [Obsolete("This constructor is deprecated and will be removed in a future version. Use InteractiveService(DiscordShardedClient, InteractiveConfig) instead.")]
         public InteractiveService(DiscordShardedClient client, TimeSpan defaultTimeout)
             : this((BaseSocketClient)client, defaultTimeout)
         {
         }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="InteractiveService"/> class using a specified configuration.
+        /// </summary>
+        /// <param name="client">An instance of <see cref="BaseSocketClient"/>.</param>
+        /// <param name="config">The configuration.</param>
+        public InteractiveService(BaseSocketClient client, InteractiveConfig config)
+        {
+            InteractiveGuards.NotNull(client, nameof(client));
+            InteractiveGuards.NotNull(config, nameof(config));
+
+            _client = client;
+            _config = config;
+            _client.MessageReceived += MessageReceived;
+            _client.ReactionAdded += ReactionAdded;
+            _client.InteractionCreated += InteractionCreated;
+
+            Log = LogMessage;
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="InteractiveService"/> class using a specified configuration.
+        /// </summary>
+        /// <param name="client">An instance of <see cref="DiscordSocketClient"/>.</param>
+        /// <param name="config">The configuration.</param>
+        public InteractiveService(DiscordSocketClient client, InteractiveConfig config)
+            : this((BaseSocketClient)client, config)
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="InteractiveService"/> class using a specified configuration.
+        /// </summary>
+        /// <param name="client">An instance of <see cref="DiscordShardedClient"/>.</param>
+        /// <param name="config">The configuration.</param>
+        public InteractiveService(DiscordShardedClient client, InteractiveConfig config)
+            : this((BaseSocketClient)client, config)
+        {
+        }
+
+        /// <summary>
+        /// Occurs when an interactive-related information is received.
+        /// </summary>
+        public event Func<LogMessage, Task> Log;
 
         /// <summary>
         /// Attempts to remove and return a callback.
@@ -235,7 +275,7 @@ namespace Fergun.Interactive
         {
             InteractiveGuards.NotNull(message, nameof(message));
 
-            await Task.Delay(deleteDelay ?? DefaultTimeout).ConfigureAwait(false);
+            await Task.Delay(deleteDelay ?? _config.DefaultTimeout).ConfigureAwait(false);
 
             try
             {
@@ -444,7 +484,7 @@ namespace Fergun.Interactive
                 return new InteractiveMessageResult(TimeSpan.Zero, message);
             }
 
-            var timeoutTaskSource = new TimeoutTaskCompletionSource<InteractiveStatus>(timeout ?? DefaultTimeout,
+            var timeoutTaskSource = new TimeoutTaskCompletionSource<InteractiveStatus>(timeout ?? _config.DefaultTimeout,
                 resetTimeoutOnInput, InteractiveStatus.Timeout, InteractiveStatus.Canceled, cancellationToken);
 
             var callback = new PaginatorCallback(paginator, message, timeoutTaskSource, DateTimeOffset.UtcNow);
@@ -500,7 +540,7 @@ namespace Fergun.Interactive
                 return new InteractiveMessageResult(TimeSpan.Zero, message);
             }
 
-            var timeoutTaskSource = new TimeoutTaskCompletionSource<InteractiveStatus>(timeout ?? DefaultTimeout,
+            var timeoutTaskSource = new TimeoutTaskCompletionSource<InteractiveStatus>(timeout ?? _config.DefaultTimeout,
                 resetTimeoutOnInput, InteractiveStatus.Timeout, InteractiveStatus.Canceled, cancellationToken);
 
             var initialInteraction = responseType is InteractionResponseType.DeferredUpdateMessage or InteractionResponseType.UpdateMessage ? interaction : null;
@@ -541,7 +581,7 @@ namespace Fergun.Interactive
             message = await SendOrModifyMessageAsync(selection, message, channel).ConfigureAwait(false);
             messageAction?.Invoke(message);
 
-            var timeoutTaskSource = new TimeoutTaskCompletionSource<(TOption?, InteractiveStatus)>(timeout ?? DefaultTimeout,
+            var timeoutTaskSource = new TimeoutTaskCompletionSource<(TOption?, InteractiveStatus)>(timeout ?? _config.DefaultTimeout,
                 false, (default, InteractiveStatus.Timeout), (default, InteractiveStatus.Canceled), cancellationToken);
 
             var callback = new SelectionCallback<TOption>(selection, message, timeoutTaskSource, DateTimeOffset.UtcNow);
@@ -591,7 +631,7 @@ namespace Fergun.Interactive
             var message = await SendOrModifyMessageAsync(selection, interaction, responseType, ephemeral).ConfigureAwait(false);
             messageAction?.Invoke(message);
 
-            var timeoutTaskSource = new TimeoutTaskCompletionSource<(TOption?, InteractiveStatus)>(timeout ?? DefaultTimeout,
+            var timeoutTaskSource = new TimeoutTaskCompletionSource<(TOption?, InteractiveStatus)>(timeout ?? _config.DefaultTimeout,
                 false, (default, InteractiveStatus.Timeout), (default, InteractiveStatus.Canceled), cancellationToken);
 
             var initialInteraction = responseType is InteractionResponseType.DeferredUpdateMessage or InteractionResponseType.UpdateMessage ? interaction : null;
@@ -608,7 +648,7 @@ namespace Fergun.Interactive
 
             var guid = Guid.NewGuid();
 
-            var timeoutTaskSource = new TimeoutTaskCompletionSource<(T?, InteractiveStatus)>(timeout ?? DefaultTimeout,
+            var timeoutTaskSource = new TimeoutTaskCompletionSource<(T?, InteractiveStatus)>(timeout ?? _config.DefaultTimeout,
                 false, (default, InteractiveStatus.Timeout), (default, InteractiveStatus.Canceled), cancellationToken);
 
             var callback = new FilteredCallback<T>(filter, action, timeoutTaskSource, DateTimeOffset.UtcNow);
@@ -893,7 +933,17 @@ namespace Fergun.Interactive
             {
                 if (pair.Value is FilteredCallback<SocketMessage> filteredCallback)
                 {
-                    _ = Task.Run(async () => await filteredCallback.ExecuteAsync(message).ConfigureAwait(false));
+                    _ = Task.Run(async () =>
+                    {
+                        try
+                        {
+                            await filteredCallback.ExecuteAsync(message).ConfigureAwait(false);
+                        }
+                        catch (Exception ex)
+                        {
+                            LogError("InteractiveService", "Failed to execute filtered message callback", ex);
+                        }
+                    });
                 }
             }
 
@@ -905,14 +955,34 @@ namespace Fergun.Interactive
             if (reaction.UserId != _client.CurrentUser.Id
                 && _callbacks.TryGetValue(reaction.MessageId, out var callback))
             {
-                _ = Task.Run(async () => await callback.ExecuteAsync(reaction).ConfigureAwait(false));
+                _ = Task.Run(async () =>
+                {
+                    try
+                    {
+                        await callback.ExecuteAsync(reaction).ConfigureAwait(false);
+                    }
+                    catch (Exception ex)
+                    {
+                        LogError("InteractiveService", $"Failed to execute reaction callback (message Id: {reaction.MessageId})", ex);
+                    }
+                });
             }
 
             foreach (var pair in _filteredCallbacks)
             {
                 if (pair.Value is FilteredCallback<SocketReaction> filteredCallback)
                 {
-                    _ = Task.Run(async () => await filteredCallback.ExecuteAsync(reaction).ConfigureAwait(false));
+                    _ = Task.Run(async () =>
+                    {
+                        try
+                        {
+                            await filteredCallback.ExecuteAsync(reaction).ConfigureAwait(false);
+                        }
+                        catch (Exception ex)
+                        {
+                            LogError("InteractiveService", "Failed to execute filtered reaction callback", ex);
+                        }
+                    });
                 }
             }
 
@@ -926,7 +996,17 @@ namespace Fergun.Interactive
                 && interaction is SocketMessageComponent componentInteraction
                 && _callbacks.TryGetValue(componentInteraction.Message.Id, out var callback))
             {
-                _ = Task.Run(async () => await callback.ExecuteAsync(componentInteraction).ConfigureAwait(false));
+                _ = Task.Run(async () =>
+                {
+                    try
+                    {
+                        await callback.ExecuteAsync(componentInteraction).ConfigureAwait(false);
+                    }
+                    catch (Exception ex)
+                    {
+                        LogError("InteractiveService", $"Failed to execute interaction callback (message Id: {componentInteraction.Message.Id})", ex);
+                    }
+                });
             }
 
             foreach (var pair in _filteredCallbacks)
@@ -936,11 +1016,29 @@ namespace Fergun.Interactive
                     or FilteredCallback<SocketSlashCommand> or FilteredCallback<SocketUserCommand>
                     or FilteredCallback<SocketMessageCommand> or FilteredCallback<SocketAutocompleteInteraction>)
                 {
-                    _ = Task.Run(async () => await pair.Value.ExecuteAsync(interaction).ConfigureAwait(false));
+                    _ = Task.Run(async () =>
+                    {
+                        try
+                        {
+                            await pair.Value.ExecuteAsync(interaction).ConfigureAwait(false);
+                        }
+                        catch (Exception ex)
+                        {
+                            LogError("InteractiveService", "Failed to execute filtered interaction callback", ex);
+                        }
+                    });
                 }
             }
 
             return Task.CompletedTask;
         }
+
+        private void LogError(string source, string message, Exception? exception = null)
+            => Log(new LogMessage(LogSeverity.Error, source, message, exception));
+
+        private Task LogMessage(LogMessage message) =>
+            _config.LogLevel >= message.Severity
+                ? Task.FromResult(message)
+                : Task.CompletedTask;
     }
 }

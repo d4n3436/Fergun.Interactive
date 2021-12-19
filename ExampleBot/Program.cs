@@ -20,6 +20,7 @@ internal static class Program
         var client = services.GetRequiredService<DiscordSocketClient>();
 
         services.GetRequiredService<CommandService>().Log += LogAsync;
+        services.GetRequiredService<InteractiveService>().Log += LogAsync;
         client.Log += LogAsync;
 
         // Put your token here
