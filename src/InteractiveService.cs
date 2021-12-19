@@ -452,7 +452,6 @@ namespace Fergun.Interactive
         /// <param name="paginator">The paginator to send.</param>
         /// <param name="channel">The channel to send the <see cref="Paginator"/> to.</param>
         /// <param name="timeout">The time until the <see cref="Paginator"/> times out.</param>
-        /// <param name="message">An existing message to modify to display the <see cref="Paginator"/>.</param>
         /// <param name="messageAction">A method that gets executed once when a message containing the paginator is sent or modified.</param>
         /// <param name="resetTimeoutOnInput">Whether to reset the internal timeout timer when a valid input is received.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> to cancel the paginator.</param>
@@ -467,30 +466,31 @@ namespace Fergun.Interactive
         /// <exception cref="ArgumentNullException"/>
         /// <exception cref="NotSupportedException"/>
         public async Task<InteractiveMessageResult> SendPaginatorAsync(Paginator paginator, IMessageChannel channel, TimeSpan? timeout = null,
-            IUserMessage? message = null, Action<IUserMessage>? messageAction = null, bool resetTimeoutOnInput = false, CancellationToken cancellationToken = default)
-        {
-            InteractiveGuards.NotNull(paginator, nameof(paginator));
-            InteractiveGuards.NotNull(channel, nameof(channel));
-            InteractiveGuards.MessageFromCurrentUser(_client, message, nameof(message));
-            InteractiveGuards.DeleteAndDisableInputNotSet(paginator.ActionOnTimeout, nameof(paginator.ActionOnTimeout));
-            InteractiveGuards.DeleteAndDisableInputNotSet(paginator.ActionOnCancellation, nameof(paginator.ActionOnCancellation));
-            InteractiveGuards.SupportedInputType(paginator, false);
+            Action<IUserMessage>? messageAction = null, bool resetTimeoutOnInput = false, CancellationToken cancellationToken = default)
+            => await SendPaginatorInternalAsync(paginator, channel, timeout, null, messageAction, resetTimeoutOnInput, cancellationToken).ConfigureAwait(false);
 
-            message = await SendOrModifyMessageAsync(paginator, message, channel).ConfigureAwait(false);
-            messageAction?.Invoke(message);
-
-            if (paginator.MaxPageIndex == 0)
-            {
-                return new InteractiveMessageResult(TimeSpan.Zero, message);
-            }
-
-            var timeoutTaskSource = new TimeoutTaskCompletionSource<InteractiveStatus>(timeout ?? _config.DefaultTimeout,
-                resetTimeoutOnInput, InteractiveStatus.Timeout, InteractiveStatus.Canceled, cancellationToken);
-
-            var callback = new PaginatorCallback(paginator, message, timeoutTaskSource, DateTimeOffset.UtcNow);
-
-            return await WaitForPaginatorResultAsync(callback).ConfigureAwait(false);
-        }
+        /// <summary>
+        /// Modifies a message to a paginator with pages which the user can change through via reactions or buttons.
+        /// </summary>
+        /// <param name="paginator">The paginator to send.</param>
+        /// <param name="message">An existing message to modify to display the <see cref="Paginator"/>.</param>
+        /// <param name="timeout">The time until the <see cref="Paginator"/> times out.</param>
+        /// <param name="messageAction">A method that gets executed once when a message containing the paginator is modified.</param>
+        /// <param name="resetTimeoutOnInput">Whether to reset the internal timeout timer when a valid input is received.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> to cancel the paginator.</param>
+        /// <returns>
+        /// A task that represents the asynchronous operation for modifying the message to a paginator and waiting for a timeout or cancellation.<br/>
+        /// The task result contains an <see cref="InteractiveMessageResult"/> with the message used for pagination
+        /// (which may not be valid if the message has been deleted), the elapsed time and the status.<br/>
+        /// If the paginator only contains one page, the task will return when the message has been sent and the result
+        /// will contain the sent message and a <see cref="InteractiveStatus.Success"/> status.
+        /// </returns>
+        /// <exception cref="ArgumentException"/>
+        /// <exception cref="ArgumentNullException"/>
+        /// <exception cref="NotSupportedException"/>
+        public async Task<InteractiveMessageResult> SendPaginatorAsync(Paginator paginator, IUserMessage message, TimeSpan? timeout = null,
+            Action<IUserMessage>? messageAction = null, bool resetTimeoutOnInput = false, CancellationToken cancellationToken = default)
+            => await SendPaginatorInternalAsync(paginator, null, timeout, message, messageAction, resetTimeoutOnInput, cancellationToken).ConfigureAwait(false);
 
         /// <summary>
         /// Sends a paginator with pages which the user can change through via reactions or buttons.
@@ -545,6 +545,31 @@ namespace Fergun.Interactive
 
             var initialInteraction = responseType is InteractionResponseType.DeferredUpdateMessage or InteractionResponseType.UpdateMessage ? interaction : null;
             var callback = new PaginatorCallback(paginator, message, timeoutTaskSource, DateTimeOffset.UtcNow, initialInteraction);
+
+            return await WaitForPaginatorResultAsync(callback).ConfigureAwait(false);
+        }
+
+        private async Task<InteractiveMessageResult> SendPaginatorInternalAsync(Paginator paginator, IMessageChannel? channel, TimeSpan? timeout = null,
+            IUserMessage? message = null, Action<IUserMessage>? messageAction = null, bool resetTimeoutOnInput = false, CancellationToken cancellationToken = default)
+        {
+            InteractiveGuards.NotNull(paginator, nameof(paginator));
+            InteractiveGuards.MessageFromCurrentUser(_client, message, nameof(message));
+            InteractiveGuards.DeleteAndDisableInputNotSet(paginator.ActionOnTimeout, nameof(paginator.ActionOnTimeout));
+            InteractiveGuards.DeleteAndDisableInputNotSet(paginator.ActionOnCancellation, nameof(paginator.ActionOnCancellation));
+            InteractiveGuards.SupportedInputType(paginator, false);
+
+            message = await SendOrModifyMessageAsync(paginator, message, channel).ConfigureAwait(false);
+            messageAction?.Invoke(message);
+
+            if (paginator.MaxPageIndex == 0)
+            {
+                return new InteractiveMessageResult(TimeSpan.Zero, message);
+            }
+
+            var timeoutTaskSource = new TimeoutTaskCompletionSource<InteractiveStatus>(timeout ?? _config.DefaultTimeout,
+                resetTimeoutOnInput, InteractiveStatus.Timeout, InteractiveStatus.Canceled, cancellationToken);
+
+            var callback = new PaginatorCallback(paginator, message, timeoutTaskSource, DateTimeOffset.UtcNow);
 
             return await WaitForPaginatorResultAsync(callback).ConfigureAwait(false);
         }
@@ -729,7 +754,7 @@ namespace Fergun.Interactive
         }
 
         private static async Task<IUserMessage> SendOrModifyMessageAsync<TOption>(IInteractiveElement<TOption> element,
-            IUserMessage? message, IMessageChannel channel)
+            IUserMessage? message, IMessageChannel? channel)
         {
             var page = await element.GetCurrentPageAsync().ConfigureAwait(false);
 
@@ -751,7 +776,8 @@ namespace Fergun.Interactive
             }
             else
             {
-                message = await channel.SendMessageAsync(page.Text,
+                InteractiveGuards.NotNull(channel, nameof(channel));
+                message = await channel!.SendMessageAsync(page.Text,
                     embed: page.Embed, component: component).ConfigureAwait(false);
             }
 
