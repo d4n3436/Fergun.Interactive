@@ -75,7 +75,9 @@ public partial class CustomModule
                 .AddUser(Context.User)
                 .Build();
 
-            result = await Interactive.SendSelectionAsync(multiSelection, Context.Channel, TimeSpan.FromMinutes(2), message, null, cts.Token);
+            result = message is null
+                ? await Interactive.SendSelectionAsync(multiSelection, Context.Channel, TimeSpan.FromMinutes(2), null, cts.Token)
+                : await Interactive.SendSelectionAsync(multiSelection, message, TimeSpan.FromMinutes(2), null, cts.Token);
 
             message = result.Message;
 
