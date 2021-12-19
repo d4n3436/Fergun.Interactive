@@ -44,7 +44,7 @@ public class WaitModule : ModuleBase
         var builder = new ComponentBuilder()
             .WithButton("Hey", "id");
 
-        var msg = await ReplyAsync("Press this button!", component: builder.Build());
+        var msg = await ReplyAsync("Press this button!", components: builder.Build());
 
         // Wait for a user to press the button
         var result = await Interactive.NextMessageComponentAsync(x => x.Message.Id == msg.Id,

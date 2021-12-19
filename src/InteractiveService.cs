@@ -778,7 +778,7 @@ namespace Fergun.Interactive
             {
                 InteractiveGuards.NotNull(channel, nameof(channel));
                 message = await channel!.SendMessageAsync(page.Text,
-                    embed: page.Embed, component: component).ConfigureAwait(false);
+                    embed: page.Embed, components: component).ConfigureAwait(false);
             }
 
             return message;
@@ -820,7 +820,7 @@ namespace Fergun.Interactive
 
             void UpdateMessage(MessageProperties props)
             {
-                props.Content = page.Text ?? ""; // workaround for d.net bug
+                props.Content = page.Text;
                 props.Embed = page.Embed;
                 props.Components = component;
             }
@@ -942,7 +942,7 @@ namespace Fergun.Interactive
 
             void UpdateMessage(MessageProperties props)
             {
-                props.Content = page?.Text ?? ""; // workaround for d.net bug
+                props.Content = page?.Text ?? new Optional<string>();
                 props.Embed = page?.Embed ?? new Optional<Embed>();
                 props.Components = components ?? new Optional<MessageComponent>();
             }
