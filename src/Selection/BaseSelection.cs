@@ -47,9 +47,9 @@ namespace Fergun.Interactive.Selection
         public TOption? CancelOption { get; }
 
         /// <summary>
-        /// Gets the <see cref="Page"/> which is sent into the channel.
+        /// Gets the <see cref="IPage"/> which is sent into the channel.
         /// </summary>
-        public Page SelectionPage { get; }
+        public IPage SelectionPage { get; }
 
         /// <inheritdoc/>
         public IReadOnlyCollection<IUser> Users { get; }
@@ -58,16 +58,16 @@ namespace Fergun.Interactive.Selection
         public IReadOnlyCollection<TOption> Options { get; }
 
         /// <inheritdoc/>
-        public Page? CanceledPage { get; }
+        public IPage? CanceledPage { get; }
 
         /// <inheritdoc/>
-        public Page? TimeoutPage { get; }
+        public IPage? TimeoutPage { get; }
 
         /// <summary>
-        /// Gets the <see cref="Page"/> which this selection gets modified to after a valid input is received
+        /// Gets the <see cref="IPage"/> which this selection gets modified to after a valid input is received
         /// (except if <see cref="CancelOption"/> is received).
         /// </summary>
-        public Page? SuccessPage { get; }
+        public IPage? SuccessPage { get; }
 
         /// <inheritdoc/>
         public DeletionOptions Deletion { get; }
@@ -90,8 +90,8 @@ namespace Fergun.Interactive.Selection
         /// Initializes a new instance of the <see cref="BaseSelection{TOption}"/> class.
         /// </summary>
         protected BaseSelection(Func<TOption, IEmote>? emoteConverter, Func<TOption, string>? stringConverter, IEqualityComparer<TOption> equalityComparer,
-            bool allowCancel, Page selectionPage, IReadOnlyCollection<IUser> users, IReadOnlyCollection<TOption> options, Page? canceledPage,
-            Page? timeoutPage, Page? successPage, DeletionOptions deletion, InputType inputType, ActionOnStop actionOnCancellation,
+            bool allowCancel, IPage selectionPage, IReadOnlyCollection<IUser> users, IReadOnlyCollection<TOption> options, IPage? canceledPage,
+            IPage? timeoutPage, IPage? successPage, DeletionOptions deletion, InputType inputType, ActionOnStop actionOnCancellation,
             ActionOnStop actionOnTimeout, ActionOnStop actionOnSuccess)
         {
             if (inputType == 0)

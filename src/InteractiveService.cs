@@ -793,7 +793,7 @@ namespace Fergun.Interactive
                 await message.ModifyAsync(x =>
                 {
                     x.Content = page.Text;
-                    x.Embed = page.Embed;
+                    x.Embeds = page.Embeds.GetOrCreateEmbedArray();
                     x.Components = component;
                 }).ConfigureAwait(false);
             }
@@ -801,7 +801,7 @@ namespace Fergun.Interactive
             {
                 InteractiveGuards.NotNull(channel, nameof(channel));
                 message = await channel!.SendMessageAsync(page.Text,
-                    embed: page.Embed, components: component).ConfigureAwait(false);
+                    embeds: page.Embeds.GetOrCreateEmbedArray(), components: component).ConfigureAwait(false);
             }
 
             return message;
@@ -819,14 +819,16 @@ namespace Fergun.Interactive
                 component = element.BuildComponents(false);
             }
 
+            var embeds = page.Embeds.GetOrCreateEmbedArray();
+
             switch (responseType)
             {
                 case InteractionResponseType.ChannelMessageWithSource:
-                    await interaction.RespondAsync(page.Text, embed: page.Embed, ephemeral: ephemeral, components: component).ConfigureAwait(false);
+                    await interaction.RespondAsync(page.Text, embeds, ephemeral: ephemeral, components: component).ConfigureAwait(false);
                     return await interaction.GetOriginalResponseAsync().ConfigureAwait(false);
 
                 case InteractionResponseType.DeferredChannelMessageWithSource:
-                    return await interaction.FollowupAsync(page.Text, embed: page.Embed, ephemeral: ephemeral, components: component).ConfigureAwait(false);
+                    return await interaction.FollowupAsync(page.Text, embeds, ephemeral: ephemeral, components: component).ConfigureAwait(false);
 
                 case InteractionResponseType.DeferredUpdateMessage:
                     InteractiveGuards.ValidResponseType(responseType, interaction, nameof(responseType));
@@ -844,7 +846,7 @@ namespace Fergun.Interactive
             void UpdateMessage(MessageProperties props)
             {
                 props.Content = page.Text;
-                props.Embed = page.Embed;
+                props.Embeds = embeds;
                 props.Components = component;
             }
         }
@@ -896,7 +898,7 @@ namespace Fergun.Interactive
                 return;
             }
 
-            Page? page = null;
+            IPage? page = null;
             if (action.HasFlag(ActionOnStop.ModifyMessage))
             {
                 page = result.Status switch
@@ -921,7 +923,7 @@ namespace Fergun.Interactive
                 }
             }
 
-            bool modifyMessage = page?.Text is not null || page?.Embed is not null || components is not null;
+            bool modifyMessage = page?.Text is not null || page?.Embeds.Count > 0 || components is not null;
 
             if (modifyMessage)
             {
@@ -966,7 +968,7 @@ namespace Fergun.Interactive
             void UpdateMessage(MessageProperties props)
             {
                 props.Content = page?.Text ?? new Optional<string>();
-                props.Embed = page?.Embed ?? new Optional<Embed>();
+                props.Embeds = page?.Embeds.GetOrCreateEmbedArray();
                 props.Components = components ?? new Optional<MessageComponent>();
             }
         }

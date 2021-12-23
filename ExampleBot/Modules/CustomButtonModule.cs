@@ -62,8 +62,8 @@ public partial class CustomModule : ModuleBase
     public class ButtonSelection<T> : BaseSelection<ButtonOption<T>>
     {
         public ButtonSelection(Func<ButtonOption<T>, IEmote> emoteConverter, Func<ButtonOption<T>, string> stringConverter,
-            IEqualityComparer<ButtonOption<T>> equalityComparer, bool allowCancel, Page selectionPage, IReadOnlyCollection<IUser> users,
-            IReadOnlyCollection<ButtonOption<T>> options, Page canceledPage, Page timeoutPage, Page successPage, DeletionOptions deletion,
+            IEqualityComparer<ButtonOption<T>> equalityComparer, bool allowCancel, IPage selectionPage, IReadOnlyCollection<IUser> users,
+            IReadOnlyCollection<ButtonOption<T>> options, IPage canceledPage, IPage timeoutPage, IPage successPage, DeletionOptions deletion,
             InputType inputType, ActionOnStop actionOnCancellation, ActionOnStop actionOnTimeout, ActionOnStop actionOnSuccess)
             : base(emoteConverter, stringConverter, equalityComparer, allowCancel, selectionPage, users, options, canceledPage,
                 timeoutPage, successPage, deletion, inputType, actionOnCancellation, actionOnTimeout, actionOnSuccess)

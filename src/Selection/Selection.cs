@@ -11,9 +11,9 @@ namespace Fergun.Interactive.Selection
     public class Selection<TOption> : BaseSelection<TOption>
     {
         internal Selection(Func<TOption, IEmote>? emoteConverter, Func<TOption, string>? stringConverter,
-            IEqualityComparer<TOption> equalityComparer, bool allowCancel, Page selectionPage,
-            IReadOnlyCollection<IUser> users, IReadOnlyCollection<TOption> options, Page? canceledPage,
-            Page? timeoutPage, Page? successPage, DeletionOptions deletion, InputType inputType,
+            IEqualityComparer<TOption> equalityComparer, bool allowCancel, IPage selectionPage,
+            IReadOnlyCollection<IUser> users, IReadOnlyCollection<TOption> options, IPage? canceledPage,
+            IPage? timeoutPage, IPage? successPage, DeletionOptions deletion, InputType inputType,
             ActionOnStop actionOnCancellation, ActionOnStop actionOnTimeout, ActionOnStop actionOnSuccess)
             : base(emoteConverter, stringConverter, equalityComparer, allowCancel, selectionPage, users, options,
                 canceledPage, timeoutPage, successPage, deletion, inputType, actionOnCancellation, actionOnTimeout,

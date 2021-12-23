@@ -8,7 +8,7 @@ namespace Fergun.Interactive
     /// <summary>
     /// Represents a <see cref="Page"/> builder.
     /// </summary>
-    public class PageBuilder
+    public class PageBuilder : IPageBuilder<Page>
     {
         private readonly EmbedBuilder _builder;
 

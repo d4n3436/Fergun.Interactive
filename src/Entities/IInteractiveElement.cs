@@ -20,14 +20,14 @@ namespace Fergun.Interactive
         IReadOnlyCollection<TOption> Options { get; }
 
         /// <summary>
-        /// Gets the <see cref="Page"/> which this element gets modified to after cancellation.
+        /// Gets the <see cref="IPage"/> which this element gets modified to after cancellation.
         /// </summary>
-        Page? CanceledPage { get; }
+        IPage? CanceledPage { get; }
 
         /// <summary>
-        /// Gets the <see cref="Page"/> which this element gets modified to after a timeout.
+        /// Gets the <see cref="IPage"/> which this element gets modified to after a timeout.
         /// </summary>
-        Page? TimeoutPage { get; }
+        IPage? TimeoutPage { get; }
 
         /// <summary>
         /// Gets what type of inputs this element should delete.

@@ -14,7 +14,7 @@ namespace Fergun.Interactive.Pagination
         /// <summary>
         /// Gets or sets the pages of the <see cref="Paginator"/>.
         /// </summary>
-        public IList<PageBuilder> Pages { get; set; } = new List<PageBuilder>();
+        public IList<IPageBuilder<IPage>> Pages { get; set; } = new List<IPageBuilder<IPage>>();
 
         /// <summary>
         /// Initializes a new instance of the <see cref="StaticPaginatorBuilder"/> class.
@@ -40,7 +40,8 @@ namespace Fergun.Interactive.Pagination
                 InputType,
                 ActionOnCancellation,
                 ActionOnTimeout,
-                Pages.Select((x, i) => x.WithPaginatorFooter(Footer, i, Pages.Count - 1, Users).Build()).ToArray(),
+                //Pages.Select((x, i) => x.WithPaginatorFooter(Footer, i, Pages.Count - 1, Users).Build()).ToArray(),
+                Pages.Select(x => x.Build()).ToArray(),
                 startPageIndex);
         }
 
@@ -49,7 +50,7 @@ namespace Fergun.Interactive.Pagination
         /// </summary>
         /// <param name="pages">The pages.</param>
         /// <returns>This builder.</returns>
-        public StaticPaginatorBuilder WithPages(params PageBuilder[] pages)
+        public StaticPaginatorBuilder WithPages(params IPageBuilder<IPage>[] pages)
         {
             Pages = pages?.ToList() ?? throw new ArgumentNullException(nameof(pages));
             return this;
@@ -60,7 +61,7 @@ namespace Fergun.Interactive.Pagination
         /// </summary>
         /// <param name="pages">The pages.</param>
         /// <returns>This builder.</returns>
-        public StaticPaginatorBuilder WithPages(IEnumerable<PageBuilder> pages)
+        public StaticPaginatorBuilder WithPages(IEnumerable<IPageBuilder<IPage>> pages)
         {
             Pages = pages?.ToList() ?? throw new ArgumentNullException(nameof(pages));
             return this;
@@ -71,7 +72,7 @@ namespace Fergun.Interactive.Pagination
         /// </summary>
         /// <param name="page">The page.</param>
         /// <returns>This builder.</returns>
-        public StaticPaginatorBuilder AddPage(PageBuilder page)
+        public StaticPaginatorBuilder AddPage(IPageBuilder<IPage> page)
         {
             Pages.Add(page ?? throw new ArgumentNullException(nameof(page)));
             return this;

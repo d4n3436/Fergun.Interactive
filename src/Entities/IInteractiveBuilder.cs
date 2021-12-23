@@ -24,14 +24,14 @@ namespace Fergun.Interactive
         ICollection<TOption> Options { get; set; }
 
         /// <summary>
-        /// Gets or sets the <see cref="Page"/> which the <typeparamref name="TElement"/> gets modified to after cancellation.
+        /// Gets or sets the <see cref="IPage"/> which the <typeparamref name="TElement"/> gets modified to after cancellation.
         /// </summary>
-        PageBuilder? CanceledPage { get; set; }
+        IPageBuilder<IPage>? CanceledPage { get; set; }
 
         /// <summary>
-        /// Gets or sets the <see cref="Page"/> which the <typeparamref name="TElement"/> gets modified to after a timeout.
+        /// Gets or sets the <see cref="IPage"/> which the <typeparamref name="TElement"/> gets modified to after a timeout.
         /// </summary>
-        PageBuilder? TimeoutPage { get; set; }
+        IPageBuilder<IPage>? TimeoutPage { get; set; }
 
         /// <summary>
         /// Gets or sets what type of inputs the <typeparamref name="TElement"/> should delete.
@@ -95,18 +95,18 @@ namespace Fergun.Interactive
         TBuilder AddOption(TOption option);
 
         /// <summary>
-        /// Sets the <see cref="Page"/> which the <typeparamref name="TElement"/> gets modified to after a cancellation.
+        /// Sets the <see cref="IPage"/> which the <typeparamref name="TElement"/> gets modified to after a cancellation.
         /// </summary>
         /// <param name="page">The page.</param>
         /// <returns>This builder.</returns>
-        TBuilder WithCanceledPage(PageBuilder page);
+        TBuilder WithCanceledPage(IPageBuilder<IPage> page);
 
         /// <summary>
-        /// Sets the <see cref="Page"/> which the <typeparamref name="TElement"/> gets modified to after a timeout.
+        /// Sets the <see cref="IPage"/> which the <typeparamref name="TElement"/> gets modified to after a timeout.
         /// </summary>
         /// <param name="page">The page.</param>
         /// <returns>This builder.</returns>
-        TBuilder WithTimeoutPage(PageBuilder page);
+        TBuilder WithTimeoutPage(IPageBuilder<IPage> page);
 
         /// <summary>
         /// Sets what type of inputs the <typeparamref name="TElement"/> should delete.

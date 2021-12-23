@@ -14,7 +14,7 @@ namespace Fergun.Interactive.Pagination
         /// <summary>
         /// Gets or sets the method used to load the pages of the paginator lazily.
         /// </summary>
-        public Func<int, Task<PageBuilder>> PageFactory { get; set; } = null!;
+        public Func<int, Task<IPageBuilder<IPage>>> PageFactory { get; set; } = null!;
 
         /// <summary>
         /// Gets or sets the maximum page index of the paginator.
@@ -55,12 +55,12 @@ namespace Fergun.Interactive.Pagination
                 MaxPageIndex,
                 CacheLoadedPages);
 
-            async Task<Page> AddPaginatorFooterAsync(int page)
+            async Task<IPage> AddPaginatorFooterAsync(int page)
             {
                 var builder = await PageFactory(page).ConfigureAwait(false);
 
                 return builder
-                    .WithPaginatorFooter(Footer, page, MaxPageIndex, Users)
+                    //.WithPaginatorFooter(Footer, page, MaxPageIndex, Users)
                     .Build();
             }
         }
@@ -70,7 +70,7 @@ namespace Fergun.Interactive.Pagination
         /// </summary>
         /// <param name="pageFactory">The page factory.</param>
         /// <returns>This builder.</returns>
-        public LazyPaginatorBuilder WithPageFactory(Func<int, Task<PageBuilder>> pageFactory)
+        public LazyPaginatorBuilder WithPageFactory(Func<int, Task<IPageBuilder<IPage>>> pageFactory)
         {
             PageFactory = pageFactory ?? throw new ArgumentNullException(nameof(pageFactory));
             return this;

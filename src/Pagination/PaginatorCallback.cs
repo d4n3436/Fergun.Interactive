@@ -103,7 +103,7 @@ namespace Fergun.Interactive.Pagination
                 var currentPage = await Paginator.GetOrLoadCurrentPageAsync().ConfigureAwait(false);
                 await Message.ModifyAsync(x =>
                 {
-                    x.Embed = currentPage.Embed;
+                    x.Embeds = currentPage.Embeds.GetOrCreateEmbedArray();
                     x.Content = currentPage.Text;
                 }).ConfigureAwait(false);
             }
@@ -159,7 +159,7 @@ namespace Fergun.Interactive.Pagination
                 await interaction.UpdateAsync(x =>
                 {
                     x.Content = currentPage.Text ?? ""; // workaround for d.net bug
-                    x.Embed = currentPage.Embed;
+                    x.Embeds = currentPage.Embeds.GetOrCreateEmbedArray();
                     x.Components = buttons;
                 }).ConfigureAwait(false);
             }

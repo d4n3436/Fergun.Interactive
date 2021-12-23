@@ -53,9 +53,9 @@ public class PaginatorModule : ModuleBase
 
         await Interactive.SendPaginatorAsync(paginator, Context.Channel, TimeSpan.FromMinutes(10));
 
-        static Task<PageBuilder> GeneratePageAsync(int index)
+        static Task<IPageBuilder<IPage>> GeneratePageAsync(int index)
         {
-            var page = new PageBuilder()
+            IPageBuilder<IPage> page = new PageBuilder()
                 .WithDescription($"This is page {index + 1}.")
                 .WithRandomColor();
 
@@ -87,9 +87,9 @@ public class PaginatorModule : ModuleBase
 
         await Interactive.SendPaginatorAsync(paginator, Context.Channel, TimeSpan.FromMinutes(10));
 
-        Task<PageBuilder> GeneratePageAsync(int index)
+        Task<IPageBuilder<IPage>> GeneratePageAsync(int index)
         {
-            var page = new PageBuilder()
+            IPageBuilder<IPage> page = new PageBuilder()
                 .WithAuthor(Context.User)
                 .WithTitle(images[index].Title)
                 .WithUrl(images[index].SourceUrl)

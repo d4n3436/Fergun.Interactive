@@ -117,8 +117,8 @@ public class MultiSelectionBuilder<T> : BaseSelectionBuilder<MultiSelection<T>, 
 public class MultiSelection<T> : BaseSelection<MultiSelectionOption<T>>
 {
     public MultiSelection(Func<MultiSelectionOption<T>, IEmote> emoteConverter, Func<MultiSelectionOption<T>, string> stringConverter,
-        IEqualityComparer<MultiSelectionOption<T>> equalityComparer, bool allowCancel, Page selectionPage, IReadOnlyCollection<IUser> users,
-        IReadOnlyCollection<MultiSelectionOption<T>> options, Page canceledPage, Page timeoutPage, Page successPage, DeletionOptions deletion,
+        IEqualityComparer<MultiSelectionOption<T>> equalityComparer, bool allowCancel, IPage selectionPage, IReadOnlyCollection<IUser> users,
+        IReadOnlyCollection<MultiSelectionOption<T>> options, IPage canceledPage, IPage timeoutPage, IPage successPage, DeletionOptions deletion,
         InputType inputType, ActionOnStop actionOnCancellation, ActionOnStop actionOnTimeout, ActionOnStop actionOnSuccess)
         : base(emoteConverter, stringConverter, equalityComparer, allowCancel, selectionPage, users, options, canceledPage,
             timeoutPage, successPage, deletion, inputType, actionOnCancellation, actionOnTimeout, actionOnSuccess)

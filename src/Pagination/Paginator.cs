@@ -37,10 +37,10 @@ namespace Fergun.Interactive.Pagination
         public IReadOnlyDictionary<IEmote, PaginatorAction> Emotes { get; }
 
         /// <inheritdoc/>
-        public Page? CanceledPage { get; }
+        public IPage? CanceledPage { get; }
 
         /// <inheritdoc/>
-        public Page? TimeoutPage { get; }
+        public IPage? TimeoutPage { get; }
 
         /// <summary>
         /// Gets what type of inputs this paginator should delete.
@@ -70,7 +70,7 @@ namespace Fergun.Interactive.Pagination
         /// Initializes a new instance of the <see cref="Paginator"/> class.
         /// </summary>
         protected Paginator(IReadOnlyCollection<IUser> users, IReadOnlyDictionary<IEmote, PaginatorAction> emotes,
-            Page? canceledPage, Page? timeoutPage, DeletionOptions deletion, InputType inputType,
+            IPage? canceledPage, IPage? timeoutPage, DeletionOptions deletion, InputType inputType,
             ActionOnStop actionOnCancellation, ActionOnStop actionOnTimeout, int startPageIndex)
         {
             Users = users ?? throw new ArgumentNullException(nameof(users));
@@ -150,13 +150,13 @@ namespace Fergun.Interactive.Pagination
         /// </summary>
         /// <param name="pageIndex">The index of the page to get or load.</param>
         /// <returns>A task representing the asynchronous operation. The task result contains the requested page.</returns>
-        public abstract Task<Page> GetOrLoadPageAsync(int pageIndex);
+        public abstract Task<IPage> GetOrLoadPageAsync(int pageIndex);
 
         /// <summary>
         /// Gets or loads the current page of this paginator.
         /// </summary>
         /// <returns>A task representing the asynchronous operation. The task result contains the current page.</returns>
-        public virtual Task<Page> GetOrLoadCurrentPageAsync()
+        public virtual Task<IPage> GetOrLoadCurrentPageAsync()
             => GetOrLoadPageAsync(CurrentPageIndex);
 
         /// <summary>

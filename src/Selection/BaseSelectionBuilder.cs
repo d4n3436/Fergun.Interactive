@@ -57,9 +57,9 @@ namespace Fergun.Interactive.Selection
         public virtual bool AllowCancel { get; set; }
 
         /// <summary>
-        /// Gets or sets the <see cref="Page"/> which is sent into the channel.
+        /// Gets or sets the <see cref="IPage"/> which is sent into the channel.
         /// </summary>
-        public virtual PageBuilder SelectionPage { get; set; } = null!;
+        public virtual IPageBuilder<IPage> SelectionPage { get; set; } = null!;
 
         /// <summary>
         /// Gets or sets the users who can interact with the <see cref="BaseSelection{TOption}"/>.
@@ -72,16 +72,16 @@ namespace Fergun.Interactive.Selection
         public virtual ICollection<TOption> Options { get; set; } = new List<TOption>();
 
         /// <inheritdoc />
-        public virtual PageBuilder? CanceledPage { get; set; }
+        public virtual IPageBuilder<IPage>? CanceledPage { get; set; }
 
         /// <inheritdoc />
-        public virtual PageBuilder? TimeoutPage { get; set; }
+        public virtual IPageBuilder<IPage>? TimeoutPage { get; set; }
 
         /// <summary>
-        /// Gets or sets the <see cref="Page"/> which the <see cref="BaseSelection{TOption}"/>
+        /// Gets or sets the <see cref="IPage"/> which the <see cref="BaseSelection{TOption}"/>
         /// gets modified to after a valid input is received (except cancellation inputs).
         /// </summary>
-        public virtual PageBuilder? SuccessPage { get; set; }
+        public virtual IPageBuilder<IPage>? SuccessPage { get; set; }
 
         /// <inheritdoc />
         public virtual DeletionOptions Deletion { get; set; } = DeletionOptions.Valid;
@@ -165,11 +165,11 @@ namespace Fergun.Interactive.Selection
         }
 
         /// <summary>
-        /// Sets the <see cref="Page"/> which is sent into the channel.
+        /// Sets the <see cref="IPage"/> which is sent into the channel.
         /// </summary>
         /// <param name="page">The page.</param>
         /// <returns>This builder.</returns>
-        public virtual TBuilder WithSelectionPage(PageBuilder page)
+        public virtual TBuilder WithSelectionPage(IPageBuilder<IPage> page)
         {
             SelectionPage = page ?? throw new ArgumentNullException(nameof(page));
             return (TBuilder)this;
@@ -223,33 +223,33 @@ namespace Fergun.Interactive.Selection
         }
 
         /// <summary>
-        /// Sets the <see cref="Page"/> which the <see cref="BaseSelection{TOption}"/> gets modified to after a cancellation.
+        /// Sets the <see cref="IPage"/> which the <see cref="BaseSelection{TOption}"/> gets modified to after a cancellation.
         /// </summary>
         /// <param name="page">The page.</param>
         /// <returns>This builder.</returns>
-        public virtual TBuilder WithCanceledPage(PageBuilder? page)
+        public virtual TBuilder WithCanceledPage(IPageBuilder<IPage>? page)
         {
             CanceledPage = page;
             return (TBuilder)this;
         }
 
         /// <summary>
-        /// Sets the <see cref="Page"/> which the <see cref="BaseSelection{TOption}"/> gets modified to after a timeout.
+        /// Sets the <see cref="IPage"/> which the <see cref="BaseSelection{TOption}"/> gets modified to after a timeout.
         /// </summary>
         /// <param name="page">The page.</param>
         /// <returns>This builder.</returns>
-        public virtual TBuilder WithTimeoutPage(PageBuilder? page)
+        public virtual TBuilder WithTimeoutPage(IPageBuilder<IPage>? page)
         {
             TimeoutPage = page;
             return (TBuilder)this;
         }
 
         /// <summary>
-        /// Sets the <see cref="Page"/> which the <see cref="BaseSelection{TOption}"/> gets modified to after a valid input is received (except cancellation inputs).
+        /// Sets the <see cref="IPage"/> which the <see cref="BaseSelection{TOption}"/> gets modified to after a valid input is received (except cancellation inputs).
         /// </summary>
         /// <param name="page">The page.</param>
         /// <returns>This builder.</returns>
-        public virtual TBuilder WithSuccessPage(PageBuilder? page)
+        public virtual TBuilder WithSuccessPage(IPageBuilder<IPage>? page)
         {
             SuccessPage = page;
             return (TBuilder)this;

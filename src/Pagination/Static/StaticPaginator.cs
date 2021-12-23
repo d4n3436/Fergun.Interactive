@@ -14,7 +14,7 @@ namespace Fergun.Interactive.Pagination
         /// <summary>
         /// Gets the pages of the <see cref="Paginator"/>.
         /// </summary>
-        public IReadOnlyCollection<Page> Pages { get; }
+        public IReadOnlyCollection<IPage> Pages { get; }
 
         /// <summary>
         /// Gets the maximum page index of the <see cref="Paginator"/>.
@@ -22,8 +22,8 @@ namespace Fergun.Interactive.Pagination
         public override int MaxPageIndex => Pages.Count - 1;
 
         internal StaticPaginator(IReadOnlyCollection<IUser> users, IReadOnlyDictionary<IEmote, PaginatorAction> emotes,
-            Page? canceledPage, Page? timeoutPage, DeletionOptions deletion, InputType inputType,
-            ActionOnStop actionOnCancellation, ActionOnStop actionOnTimeout, IReadOnlyCollection<Page> pages, int startPageIndex)
+            IPage? canceledPage, IPage? timeoutPage, DeletionOptions deletion, InputType inputType,
+            ActionOnStop actionOnCancellation, ActionOnStop actionOnTimeout, IReadOnlyCollection<IPage> pages, int startPageIndex)
             : base(users, emotes, canceledPage, timeoutPage, deletion, inputType, actionOnCancellation, actionOnTimeout, startPageIndex)
         {
             if (pages is null)
@@ -40,7 +40,7 @@ namespace Fergun.Interactive.Pagination
         }
 
         /// <inheritdoc/>
-        public override Task<Page> GetOrLoadPageAsync(int pageIndex)
+        public override Task<IPage> GetOrLoadPageAsync(int pageIndex)
             => Task.FromResult(Pages.ElementAt(pageIndex));
     }
 }

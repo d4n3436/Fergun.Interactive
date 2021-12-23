@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using Discord;
 using Discord.WebSocket;
 using Fergun.Interactive.Pagination;
@@ -12,6 +13,19 @@ namespace Fergun.Interactive
             if (obj is null)
             {
                 throw new ArgumentNullException(parameterName);
+            }
+        }
+
+        public static void EmbedCountInRange(ICollection<EmbedBuilder> builders, string parameterName)
+        {
+            EmbedCountInRange(builders.Count, parameterName);
+        }
+
+        public static void EmbedCountInRange(int count, string parameterName)
+        {
+            if (count > 10)
+            {
+                throw new ArgumentException("A page cannot have more than 10 embeds.", parameterName);
             }
         }
 
