@@ -13,16 +13,19 @@ namespace Fergun.Interactive.Selection
     internal sealed class SelectionCallback<TOption> : IInteractiveCallback
     {
         private bool _disposed;
+        private readonly Func<string, Task> _restResponseCallback;
 
         public SelectionCallback(BaseSelection<TOption> selection, IUserMessage message,
             TimeoutTaskCompletionSource<(TOption?, InteractiveStatus)> timeoutTaskSource,
-            DateTimeOffset startTime, SocketInteraction? initialInteraction = null)
+            DateTimeOffset startTime, Func<string, Task> restResponseCallback,
+            IDiscordInteraction? initialInteraction = null)
         {
             Selection = selection;
             Message = message;
             TimeoutTaskSource = timeoutTaskSource;
             StartTime = startTime;
             LastInteraction = initialInteraction;
+            _restResponseCallback = restResponseCallback;
         }
 
         /// <summary>
@@ -47,12 +50,12 @@ namespace Fergun.Interactive.Selection
         /// Gets the last received interaction that is not <see cref="StopInteraction"/>.
         /// </summary>
         /// <remarks>For selections, this is the interaction that was received to update a message to a selection.</remarks>
-        public SocketInteraction? LastInteraction { get; }
+        public IDiscordInteraction? LastInteraction { get; }
 
         /// <summary>
         /// Gets or sets the interaction that was received to stop the selection.
         /// </summary>
-        public SocketMessageComponent? StopInteraction { get; private set; }
+        public IComponentInteraction? StopInteraction { get; private set; }
 
         /// <inheritdoc/>
         public void Cancel() => TimeoutTaskSource.TryCancel();
@@ -152,18 +155,18 @@ namespace Fergun.Interactive.Selection
         }
 
         /// <inheritdoc/>
-        public Task ExecuteAsync(SocketInteraction interaction)
+        public Task ExecuteAsync(IDiscordInteraction interaction)
         {
             if ((Selection.InputType.HasFlag(InputType.Buttons) || Selection.InputType.HasFlag(InputType.SelectMenus))
-                && interaction is SocketMessageComponent componentInteraction)
+                && interaction is IComponentInteraction componentInteraction)
             {
-                Execute(componentInteraction);
+                Execute(new GenericMessageComponent(componentInteraction, _restResponseCallback));
             }
 
             return Task.CompletedTask;
         }
 
-        public void Execute(SocketMessageComponent interaction)
+        public void Execute(GenericMessageComponent interaction)
         {
             if (interaction.Message.Id != Message.Id || !Selection.CanInteract(interaction.User))
             {
@@ -178,6 +181,7 @@ namespace Fergun.Interactive.Selection
                 ComponentType.SelectMenu => (interaction
                     .Message
                     .Components
+                    .OfType<ActionRowComponent>()
                     .FirstOrDefault(x => x.Components.Any(y => y.Type == ComponentType.SelectMenu && y.CustomId == interaction.Data.CustomId))?
                     .Components
                     .FirstOrDefault() as SelectMenuComponent)?

@@ -12,16 +12,19 @@ namespace Fergun.Interactive.Pagination
     internal sealed class PaginatorCallback : IInteractiveCallback
     {
         private bool _disposed;
+        private readonly Func<string, Task> _restResponseCallback;
 
         public PaginatorCallback(Paginator paginator, IUserMessage message,
             TimeoutTaskCompletionSource<InteractiveStatus> timeoutTaskSource,
-            DateTimeOffset startTime, SocketInteraction? initialInteraction = null)
+            DateTimeOffset startTime, Func<string, Task> restResponseCallback,
+            IDiscordInteraction? initialInteraction = null)
         {
             Paginator = paginator;
             Message = message;
             TimeoutTaskSource = timeoutTaskSource;
             StartTime = startTime;
             LastInteraction = initialInteraction;
+            _restResponseCallback = restResponseCallback;
         }
 
         /// <summary>
@@ -46,12 +49,12 @@ namespace Fergun.Interactive.Pagination
         /// Gets or sets the last received interaction that is not <see cref="StopInteraction"/>.
         /// </summary>
         /// <remarks>For paginators, this is either the interaction that was received to update a message to a paginator or the interaction received to change the pages.</remarks>
-        public SocketInteraction? LastInteraction { get; private set; }
+        public IDiscordInteraction? LastInteraction { get; private set; }
 
         /// <summary>
         /// Gets or sets the interaction that was received to stop the paginator.
         /// </summary>
-        public SocketMessageComponent? StopInteraction { get; private set; }
+        public IComponentInteraction? StopInteraction { get; private set; }
 
         /// <inheritdoc/>
         public void Cancel() => TimeoutTaskSource.TryCancel();
@@ -110,17 +113,17 @@ namespace Fergun.Interactive.Pagination
         }
 
         /// <inheritdoc/>
-        public Task ExecuteAsync(SocketInteraction interaction)
+        public Task ExecuteAsync(IDiscordInteraction interaction)
         {
-            if (Paginator.InputType.HasFlag(InputType.Buttons) && interaction is SocketMessageComponent componentInteraction)
+            if (Paginator.InputType.HasFlag(InputType.Buttons) && interaction is IComponentInteraction componentInteraction)
             {
-                return ExecuteAsync(componentInteraction);
+                return ExecuteAsync(new GenericMessageComponent(componentInteraction, _restResponseCallback));
             }
 
             return Task.CompletedTask;
         }
 
-        public async Task ExecuteAsync(SocketMessageComponent interaction)
+        public async Task ExecuteAsync(GenericMessageComponent interaction)
         {
             if (interaction.Message.Id != Message.Id || !Paginator.CanInteract(interaction.User))
             {
@@ -130,6 +133,7 @@ namespace Fergun.Interactive.Pagination
             var emote = (interaction
                 .Message
                 .Components
+                .OfType<ActionRowComponent>()
                 .FirstOrDefault()?
                 .Components?
                 .FirstOrDefault(x => x is ButtonComponent button && button.CustomId == interaction.Data.CustomId) as ButtonComponent)?

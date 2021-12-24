@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 using Discord;
 
 namespace Fergun.Interactive
@@ -31,5 +32,10 @@ namespace Fergun.Interactive
         /// Gets or sets the minimum log level severity that will be sent to the <see cref="InteractiveService.Log"/> event.
         /// </summary>
         public LogSeverity LogLevel { get; set; } = LogSeverity.Info;
+
+        /// <summary>
+        /// Gets or sets delegate that will be used when responding to REST-based interactions.
+        /// </summary>
+        public Func<string, Task> RestResponseCallback { get; set; } = _ => Task.CompletedTask;
     }
 }

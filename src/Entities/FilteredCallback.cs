@@ -1,5 +1,6 @@
 using System;
 using System.Threading.Tasks;
+using Discord;
 using Discord.WebSocket;
 
 namespace Fergun.Interactive
@@ -78,7 +79,7 @@ namespace Fergun.Interactive
         }
 
         /// <inheritdoc/>
-        public Task ExecuteAsync(SocketInteraction interaction)
+        public Task ExecuteAsync(IDiscordInteraction interaction)
         {
             if (interaction is TInput input)
             {

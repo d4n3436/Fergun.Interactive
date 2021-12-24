@@ -8,6 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Discord;
 using Discord.Net;
+using Discord.Rest;
 using Discord.WebSocket;
 using Fergun.Interactive.Pagination;
 using Fergun.Interactive.Selection;
@@ -521,7 +522,7 @@ namespace Fergun.Interactive
         /// <exception cref="ArgumentException"/>
         /// <exception cref="ArgumentNullException"/>
         /// <exception cref="NotSupportedException"/>
-        public async Task<InteractiveMessageResult> SendPaginatorAsync(Paginator paginator, SocketInteraction interaction, TimeSpan? timeout = null,
+        public async Task<InteractiveMessageResult> SendPaginatorAsync(Paginator paginator, IDiscordInteraction interaction, TimeSpan? timeout = null,
             InteractionResponseType responseType = InteractionResponseType.ChannelMessageWithSource, bool ephemeral = false,
             Action<IUserMessage>? messageAction = null, bool resetTimeoutOnInput = false, CancellationToken cancellationToken = default)
         {
@@ -532,7 +533,11 @@ namespace Fergun.Interactive
             InteractiveGuards.SupportedInputType(paginator, ephemeral);
             InteractiveGuards.ValidResponseType(responseType, nameof(responseType));
 
-            var message = await SendOrModifyMessageAsync(paginator, interaction, responseType, ephemeral).ConfigureAwait(false);
+            var wrappedInteraction = interaction is IComponentInteraction component
+                ? new GenericMessageComponent(component, _config.RestResponseCallback)
+                : new GenericInteraction(interaction, _config.RestResponseCallback);
+
+            var message = await SendOrModifyMessageAsync(paginator, wrappedInteraction, responseType, ephemeral).ConfigureAwait(false);
             messageAction?.Invoke(message);
 
             if (paginator.MaxPageIndex == 0)
@@ -544,7 +549,7 @@ namespace Fergun.Interactive
                 resetTimeoutOnInput, InteractiveStatus.Timeout, InteractiveStatus.Canceled, cancellationToken);
 
             var initialInteraction = responseType is InteractionResponseType.DeferredUpdateMessage or InteractionResponseType.UpdateMessage ? interaction : null;
-            var callback = new PaginatorCallback(paginator, message, timeoutTaskSource, DateTimeOffset.UtcNow, initialInteraction);
+            var callback = new PaginatorCallback(paginator, message, timeoutTaskSource, DateTimeOffset.UtcNow, _config.RestResponseCallback, initialInteraction);
 
             return await WaitForPaginatorResultAsync(callback).ConfigureAwait(false);
         }
@@ -569,7 +574,7 @@ namespace Fergun.Interactive
             var timeoutTaskSource = new TimeoutTaskCompletionSource<InteractiveStatus>(timeout ?? _config.DefaultTimeout,
                 resetTimeoutOnInput, InteractiveStatus.Timeout, InteractiveStatus.Canceled, cancellationToken);
 
-            var callback = new PaginatorCallback(paginator, message, timeoutTaskSource, DateTimeOffset.UtcNow);
+            var callback = new PaginatorCallback(paginator, message, timeoutTaskSource, DateTimeOffset.UtcNow, _config.RestResponseCallback);
 
             return await WaitForPaginatorResultAsync(callback).ConfigureAwait(false);
         }
@@ -643,7 +648,7 @@ namespace Fergun.Interactive
         /// <exception cref="ArgumentException"/>
         /// <exception cref="ArgumentNullException"/>
         /// <exception cref="NotSupportedException"/>
-        public async Task<InteractiveMessageResult<TOption?>> SendSelectionAsync<TOption>(BaseSelection<TOption> selection, SocketInteraction interaction,
+        public async Task<InteractiveMessageResult<TOption?>> SendSelectionAsync<TOption>(BaseSelection<TOption> selection, IDiscordInteraction interaction,
             TimeSpan? timeout = null, InteractionResponseType responseType = InteractionResponseType.ChannelMessageWithSource, bool ephemeral = false,
             Action<IUserMessage>? messageAction = null, CancellationToken cancellationToken = default)
         {
@@ -655,14 +660,18 @@ namespace Fergun.Interactive
             InteractiveGuards.SupportedInputType(selection, ephemeral);
             InteractiveGuards.ValidResponseType(responseType, nameof(responseType));
 
-            var message = await SendOrModifyMessageAsync(selection, interaction, responseType, ephemeral).ConfigureAwait(false);
+            var wrappedInteraction = interaction is IComponentInteraction component
+                ? new GenericMessageComponent(component, _config.RestResponseCallback)
+                : new GenericInteraction(interaction, _config.RestResponseCallback);
+
+            var message = await SendOrModifyMessageAsync(selection, wrappedInteraction, responseType, ephemeral).ConfigureAwait(false);
             messageAction?.Invoke(message);
 
             var timeoutTaskSource = new TimeoutTaskCompletionSource<(TOption?, InteractiveStatus)>(timeout ?? _config.DefaultTimeout,
                 false, (default, InteractiveStatus.Timeout), (default, InteractiveStatus.Canceled), cancellationToken);
 
             var initialInteraction = responseType is InteractionResponseType.DeferredUpdateMessage or InteractionResponseType.UpdateMessage ? interaction : null;
-            var callback = new SelectionCallback<TOption>(selection, message, timeoutTaskSource, DateTimeOffset.UtcNow, initialInteraction);
+            var callback = new SelectionCallback<TOption>(selection, message, timeoutTaskSource, DateTimeOffset.UtcNow, _config.RestResponseCallback, initialInteraction);
 
             return await WaitForSelectionResultAsync(callback).ConfigureAwait(false);
         }
@@ -683,7 +692,7 @@ namespace Fergun.Interactive
             var timeoutTaskSource = new TimeoutTaskCompletionSource<(TOption?, InteractiveStatus)>(timeout ?? _config.DefaultTimeout,
                 false, (default, InteractiveStatus.Timeout), (default, InteractiveStatus.Canceled), cancellationToken);
 
-            var callback = new SelectionCallback<TOption>(selection, message, timeoutTaskSource, DateTimeOffset.UtcNow);
+            var callback = new SelectionCallback<TOption>(selection, message, timeoutTaskSource, DateTimeOffset.UtcNow, _config.RestResponseCallback);
 
             return await WaitForSelectionResultAsync(callback).ConfigureAwait(false);
         }
@@ -728,7 +737,7 @@ namespace Fergun.Interactive
 
             if (_callbacks.TryRemove(callback.Message.Id, out _))
             {
-                await ApplyActionOnStopAsync(callback.Paginator, result, callback.LastInteraction, callback.StopInteraction).ConfigureAwait(false);
+                await ApplyActionOnStopAsync(callback.Paginator, result, callback.LastInteraction, callback.StopInteraction as GenericMessageComponent).ConfigureAwait(false);
             }
 
             callback.Dispose();
@@ -768,7 +777,7 @@ namespace Fergun.Interactive
 
             if (_callbacks.TryRemove(callback.Message.Id, out _))
             {
-                await ApplyActionOnStopAsync(callback.Selection, result, callback.LastInteraction, callback.StopInteraction).ConfigureAwait(false);
+                await ApplyActionOnStopAsync(callback.Selection, result, callback.LastInteraction, callback.StopInteraction as GenericMessageComponent).ConfigureAwait(false);
             }
 
             callback.TimeoutTaskSource.TryDispose();
@@ -807,7 +816,7 @@ namespace Fergun.Interactive
             return message;
         }
 
-        private static async Task<IUserMessage> SendOrModifyMessageAsync<TOption>(IInteractiveElement<TOption> element, SocketInteraction interaction,
+        private static async Task<IUserMessage> SendOrModifyMessageAsync<TOption>(IInteractiveElement<TOption> element, IDiscordInteraction interaction,
             InteractionResponseType responseType, bool ephemeral)
         {
             var page = await element.GetCurrentPageAsync().ConfigureAwait(false);
@@ -834,7 +843,7 @@ namespace Fergun.Interactive
 
                 case InteractionResponseType.UpdateMessage:
                     InteractiveGuards.ValidResponseType(responseType, interaction, nameof(responseType));
-                    await ((SocketMessageComponent)interaction).UpdateAsync(UpdateMessage).ConfigureAwait(false);
+                    await ((GenericMessageComponent)interaction).UpdateAsync(UpdateMessage).ConfigureAwait(false);
                     return await interaction.GetOriginalResponseAsync().ConfigureAwait(false);
 
                 default:
@@ -850,7 +859,7 @@ namespace Fergun.Interactive
         }
 
         private static async Task ApplyActionOnStopAsync<TOption>(IInteractiveElement<TOption> element, IInteractiveMessageResult result,
-            SocketInteraction? lastInteraction, SocketMessageComponent? stopInteraction)
+            IDiscordInteraction? lastInteraction, GenericMessageComponent? stopInteraction)
         {
             bool ephemeral = result.Message.Flags.GetValueOrDefault().HasFlag(MessageFlags.Ephemeral);
 
@@ -931,7 +940,7 @@ namespace Fergun.Interactive
                     {
                         await stopInteraction.UpdateAsync(UpdateMessage).ConfigureAwait(false);
                     }
-                    else if (lastInteraction?.IsValidToken == true) // The element is from a message that was updated using an interaction, and its token is still valid
+                    else if (lastInteraction?.IsValidToken() == true) // The element is from a message that was updated using an interaction, and its token is still valid
                     {
                         await lastInteraction.ModifyOriginalResponseAsync(UpdateMessage).ConfigureAwait(false);
                     }
@@ -1038,11 +1047,18 @@ namespace Fergun.Interactive
             return Task.CompletedTask;
         }
 
-        private Task InteractionCreated(SocketInteraction interaction)
+        /// <summary>
+        /// Handles incoming REST interactions.
+        /// </summary>
+        /// <param name="interaction">The REST interaction.</param>
+        /// <returns>A <see cref="Task"/>.</returns>
+        public Task HandleRestInteractionAsync(RestInteraction interaction) => InteractionCreated(interaction);
+
+        private Task InteractionCreated(IDiscordInteraction interaction)
         {
             if (interaction.User?.Id != _client.CurrentUser.Id
                 && interaction.Type == InteractionType.MessageComponent
-                && interaction is SocketMessageComponent componentInteraction
+                && interaction is IComponentInteraction componentInteraction
                 && _callbacks.TryGetValue(componentInteraction.Message.Id, out var callback))
             {
                 _ = Task.Run(async () =>

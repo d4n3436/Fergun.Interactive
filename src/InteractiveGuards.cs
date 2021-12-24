@@ -71,9 +71,9 @@ namespace Fergun.Interactive
             }
         }
 
-        public static void ValidResponseType(InteractionResponseType responseType, SocketInteraction interaction, string parameterName)
+        public static void ValidResponseType(InteractionResponseType responseType, IDiscordInteraction interaction, string parameterName)
         {
-            if (interaction is not SocketMessageComponent &&
+            if (interaction is not IComponentInteraction &&
                 responseType is InteractionResponseType.DeferredUpdateMessage or InteractionResponseType.UpdateMessage)
             {
                 throw new ArgumentException($"Interaction response type {responseType} can only be used on component interactions.", parameterName);

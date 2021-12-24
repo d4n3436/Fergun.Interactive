@@ -1,5 +1,6 @@
 using System;
 using System.Threading.Tasks;
+using Discord;
 using Discord.WebSocket;
 
 namespace Fergun.Interactive
@@ -38,7 +39,7 @@ namespace Fergun.Interactive
         /// </summary>
         /// <param name="interaction">The incoming interaction.</param>
         /// <returns>A task that represents the operation.</returns>
-        Task ExecuteAsync(SocketInteraction interaction);
+        Task ExecuteAsync(IDiscordInteraction interaction);
     }
 
     /// <summary>

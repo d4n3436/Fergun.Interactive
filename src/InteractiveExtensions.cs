@@ -29,6 +29,9 @@ namespace Fergun.Interactive
             return false;
         }
 
+        // IsValidToken is not present in IDiscordInteraction so we have to use this.
+        public static bool IsValidToken(this IDiscordInteraction interaction) => (DateTimeOffset.UtcNow - interaction.CreatedAt).TotalMinutes <= 15;
+
         public static async Task<Page> GetCurrentPageAsync<TOption>(this IInteractiveElement<TOption> element)
             => element switch
             {
