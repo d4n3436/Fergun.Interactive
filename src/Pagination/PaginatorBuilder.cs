@@ -35,10 +35,10 @@ namespace Fergun.Interactive.Pagination
         public virtual IDictionary<IEmote, PaginatorAction> Options { get; set; } = new Dictionary<IEmote, PaginatorAction>();
 
         /// <inheritdoc/>
-        public virtual IPageBuilder<IPage>? CanceledPage { get; set; }
+        public virtual IPageBuilder? CanceledPage { get; set; }
 
         /// <inheritdoc/>
-        public virtual IPageBuilder<IPage>? TimeoutPage { get; set; }
+        public virtual IPageBuilder? TimeoutPage { get; set; }
 
         /// <inheritdoc/>
         /// <remarks>This property is ignored in button-based paginators.</remarks>
@@ -151,7 +151,7 @@ namespace Fergun.Interactive.Pagination
         /// </summary>
         /// <param name="page">The page.</param>
         /// <returns>This builder.</returns>
-        public virtual TBuilder WithCanceledPage(IPageBuilder<IPage>? page)
+        public virtual TBuilder WithCanceledPage(IPageBuilder? page)
         {
             CanceledPage = page;
             return (TBuilder)this;
@@ -162,7 +162,7 @@ namespace Fergun.Interactive.Pagination
         /// </summary>
         /// <param name="page">The page.</param>
         /// <returns>This builder.</returns>
-        public virtual TBuilder WithTimeoutPage(IPageBuilder<IPage>? page)
+        public virtual TBuilder WithTimeoutPage(IPageBuilder? page)
         {
             TimeoutPage = page;
             return (TBuilder)this;

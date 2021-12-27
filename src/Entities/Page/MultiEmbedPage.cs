@@ -9,14 +9,10 @@ namespace Fergun.Interactive
     /// </summary>
     public class MultiEmbedPage : IPage
     {
-        /// <summary>
-        /// Gets the text of this <see cref="MultiEmbedPage"/>.
-        /// </summary>
+        /// <inheritdoc/>
         public string? Text { get; }
 
-        /// <summary>
-        /// Gets the embeds of this <see cref="MultiEmbedPage"/>.
-        /// </summary>
+        /// <inheritdoc/>
         public IReadOnlyCollection<Embed> Embeds { get; }
 
         internal MultiEmbedPage(string? text, ICollection<EmbedBuilder> builders)

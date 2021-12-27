@@ -6,7 +6,7 @@ namespace Fergun.Interactive
     /// <summary>
     /// Represents a builder of pages with multiple embeds.
     /// </summary>
-    public class MultiEmbedPageBuilder : IPageBuilder<MultiEmbedPage>
+    public class MultiEmbedPageBuilder : IPageBuilder<MultiEmbedPage>, IPageBuilder
     {
         /// <summary>
         /// Gets or sets the text of a <see cref="MultiEmbedPage"/>.
@@ -82,5 +82,8 @@ namespace Fergun.Interactive
             Builders.Add(builder);
             return this;
         }
+
+        /// <inheritdoc/>
+        IPage IPageBuilder<IPage>.Build() => Build();
     }
 }

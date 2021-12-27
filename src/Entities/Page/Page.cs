@@ -11,20 +11,16 @@ namespace Fergun.Interactive
     {
         private readonly Lazy<Embed[]> _lazyEmbeds;
 
-        /// <summary>
-        /// Gets the text of this <see cref="Page"/>.
-        /// </summary>
+        /// <inheritdoc/>
         public string? Text { get; }
 
         /// <summary>
-        /// Gets the embed of this <see cref="Page"/>.
+        /// Gets the embed of this page.
         /// </summary>
         public Embed? Embed { get; }
 
-        /// <summary>
-        /// Gets the embeds of this <see cref="Page"/>
-        /// </summary>
-        IReadOnlyCollection<Embed> IPage.Embeds => _lazyEmbeds.Value;
+        /// <inheritdoc/>
+        IReadOnlyCollection<Embed> IPage<Embed>.Embeds => _lazyEmbeds.Value;
 
         /// <summary>
         /// Creates a <see cref="PageBuilder"/> with all the values of this <see cref="IPage"/>.
