@@ -1,5 +1,5 @@
-using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Discord;
@@ -66,37 +66,26 @@ namespace Fergun.Interactive.Pagination
         /// <inheritdoc/>
         IReadOnlyCollection<KeyValuePair<IEmote, PaginatorAction>> IInteractiveElement<KeyValuePair<IEmote, PaginatorAction>>.Options => Emotes;
 
+        //protected Paginator(IInteractiveBuilderProperties<KeyValuePair<IEmote, PaginatorAction>> builder, int startPageIndex)
         /// <summary>
         /// Initializes a new instance of the <see cref="Paginator"/> class.
         /// </summary>
-        protected Paginator(IReadOnlyCollection<IUser> users, IReadOnlyDictionary<IEmote, PaginatorAction> emotes,
-            Page? canceledPage, Page? timeoutPage, DeletionOptions deletion, InputType inputType,
-            ActionOnStop actionOnCancellation, ActionOnStop actionOnTimeout, int startPageIndex)
+        protected Paginator(PaginatorBuilderProperties builder, int startPageIndex)
         {
-            Users = users ?? throw new ArgumentNullException(nameof(users));
+            InteractiveGuards.NotNull(builder, nameof(builder));
+            InteractiveGuards.NotNull(builder.Users, nameof(builder.Users));
+            InteractiveGuards.NotNull(builder.Options, nameof(builder.Options));
+            InteractiveGuards.NotEmpty(builder.Options, nameof(builder.Options));
+            InteractiveGuards.SupportedInputType(builder.InputType, false);
 
-            if (inputType == 0)
-            {
-                throw new ArgumentException("At least one input type must be set.", nameof(inputType));
-            }
-
-            if (emotes is null)
-            {
-                throw new ArgumentNullException(nameof(emotes));
-            }
-
-            if (emotes.Count == 0)
-            {
-                throw new ArgumentException($"{nameof(emotes)} must contain at least one element.", nameof(emotes));
-            }
-
-            Emotes = emotes;
-            CanceledPage = canceledPage;
-            TimeoutPage = timeoutPage;
-            Deletion = deletion;
-            InputType = inputType;
-            ActionOnCancellation = actionOnCancellation;
-            ActionOnTimeout = actionOnTimeout;
+            Users = builder.Users.ToArray();
+            Emotes = builder.Options.AsReadOnly();
+            CanceledPage = builder.CanceledPage?.Build();
+            TimeoutPage = builder.TimeoutPage?.Build();
+            Deletion = builder.Deletion;
+            InputType = builder.InputType;
+            ActionOnCancellation = builder.ActionOnCancellation;
+            ActionOnTimeout = builder.ActionOnTimeout;
             CurrentPageIndex = startPageIndex;
         }
 

@@ -1,8 +1,5 @@
 using System;
-using System.Collections.ObjectModel;
-using System.Linq;
 using System.Threading.Tasks;
-using Discord;
 
 namespace Fergun.Interactive.Pagination
 {
@@ -41,28 +38,7 @@ namespace Fergun.Interactive.Pagination
                 WithDefaultEmotes();
             }
 
-            return new LazyPaginator(
-                Users.ToArray(),
-                new ReadOnlyDictionary<IEmote, PaginatorAction>(Options), // TODO: Find a way to create an ImmutableDictionary without getting the contents reordered.
-                CanceledPage?.Build(),
-                TimeoutPage?.Build(),
-                Deletion,
-                InputType,
-                ActionOnCancellation,
-                ActionOnTimeout,
-                PageFactory != null! ? AddPaginatorFooterAsync : null!,
-                startPageIndex,
-                MaxPageIndex,
-                CacheLoadedPages);
-
-            async Task<Page> AddPaginatorFooterAsync(int page)
-            {
-                var builder = await PageFactory(page).ConfigureAwait(false);
-
-                return builder
-                    .WithPaginatorFooter(Footer, page, MaxPageIndex, Users)
-                    .Build();
-            }
+            return new LazyPaginator(this, startPageIndex);
         }
 
         /// <summary>

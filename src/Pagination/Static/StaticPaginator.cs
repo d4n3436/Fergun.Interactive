@@ -1,8 +1,6 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Discord;
 
 namespace Fergun.Interactive.Pagination
 {
@@ -12,31 +10,22 @@ namespace Fergun.Interactive.Pagination
     public sealed class StaticPaginator : Paginator
     {
         /// <summary>
-        /// Gets the pages of the <see cref="Paginator"/>.
+        /// Gets the pages of this paginator.
         /// </summary>
         public IReadOnlyCollection<Page> Pages { get; }
 
         /// <summary>
-        /// Gets the maximum page index of the <see cref="Paginator"/>.
+        /// Gets the maximum page index of this paginator.
         /// </summary>
         public override int MaxPageIndex => Pages.Count - 1;
 
-        internal StaticPaginator(IReadOnlyCollection<IUser> users, IReadOnlyDictionary<IEmote, PaginatorAction> emotes,
-            Page? canceledPage, Page? timeoutPage, DeletionOptions deletion, InputType inputType,
-            ActionOnStop actionOnCancellation, ActionOnStop actionOnTimeout, IReadOnlyCollection<Page> pages, int startPageIndex)
-            : base(users, emotes, canceledPage, timeoutPage, deletion, inputType, actionOnCancellation, actionOnTimeout, startPageIndex)
+        internal StaticPaginator(StaticPaginatorBuilder builder, int startPageIndex)
+            : base(builder, startPageIndex)
         {
-            if (pages is null)
-            {
-                throw new ArgumentNullException(nameof(pages));
-            }
+            InteractiveGuards.NotNull(builder.Pages, nameof(builder.Pages));
+            InteractiveGuards.NotEmpty(builder.Pages, nameof(builder.Pages));
 
-            if (pages.Count == 0)
-            {
-                throw new ArgumentException("A paginator needs at least one page.", nameof(pages));
-            }
-
-            Pages = pages;
+            Pages = builder.Pages.Select((x, i) => x.WithPaginatorFooter(builder.Footer, i, builder.Pages.Count - 1, builder.Users).Build()).ToArray();
         }
 
         /// <inheritdoc/>

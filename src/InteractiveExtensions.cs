@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 using Discord;
 using Fergun.Interactive.Pagination;
@@ -52,5 +54,8 @@ namespace Fergun.Interactive
         // Using just startTime.GetElapsedTime() would return a slightly incorrect elapsed time if the status is Timeout
         public static TimeSpan GetElapsedTime(this InteractiveStatus status, DateTimeOffset startTime, TimeSpan timeoutDelay)
             => status == InteractiveStatus.Timeout ? timeoutDelay : startTime.GetElapsedTime();
+
+        public static IReadOnlyDictionary<TKey, TValue> AsReadOnly<TKey, TValue>(this IDictionary<TKey, TValue> dictionary)
+            => new ReadOnlyDictionary<TKey, TValue>(dictionary);
     }
 }
