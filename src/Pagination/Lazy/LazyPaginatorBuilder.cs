@@ -70,9 +70,10 @@ namespace Fergun.Interactive.Pagination
         /// </summary>
         /// <param name="pageFactory">The page factory.</param>
         /// <returns>This builder.</returns>
-        public LazyPaginatorBuilder WithPageFactory(Func<int, Task<IPageBuilder>> pageFactory)
+        public LazyPaginatorBuilder WithPageFactory<TPageBuilder>(Func<int, Task<TPageBuilder>> pageFactory)
+            where TPageBuilder : IPageBuilder
         {
-            PageFactory = pageFactory ?? throw new ArgumentNullException(nameof(pageFactory));
+            PageFactory = pageFactory as Func<int, Task<IPageBuilder>> ?? throw new ArgumentNullException(nameof(pageFactory));
             return this;
         }
 
