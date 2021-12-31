@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Discord;
+using Discord.WebSocket;
 
 namespace Fergun.Interactive.Selection
 {
@@ -236,6 +237,167 @@ namespace Fergun.Interactive.Selection
             }
 
             return builder.Build();
+        }
+
+        /// <inheritdoc cref="IInteractiveInputHandler.HandleMessageAsync"/>
+        public virtual async Task<InteractiveInputResult<TOption>> HandleMessageAsync(IMessage input, IUserMessage message)
+        {
+            if (!InputType.HasFlag(InputType.Messages) || !this.CanInteract(input.Author))
+            {
+                return InteractiveInputStatus.Ignored;
+            }
+
+            TOption? selected = default;
+            string? selectedString = null;
+            foreach (var value in Options)
+            {
+                string? temp = StringConverter?.Invoke(value);
+                if (temp != input.Content) continue;
+                selectedString = temp;
+                selected = value;
+                break;
+            }
+
+            if (selectedString is null)
+            {
+                if (Deletion.HasFlag(DeletionOptions.Invalid))
+                {
+                    await input.DeleteAsync().ConfigureAwait(false);
+                }
+                return InteractiveInputStatus.Ignored;
+            }
+
+            bool isCanceled = AllowCancel && StringConverter?.Invoke(CancelOption) == selectedString;
+
+            if (isCanceled)
+            {
+                return new(InteractiveInputStatus.Canceled, selected!);
+            }
+
+            if (Deletion.HasFlag(DeletionOptions.Valid))
+            {
+                await input.DeleteAsync().ConfigureAwait(false);
+            }
+
+            return new(InteractiveInputStatus.Success, selected!);
+        }
+
+        /// <inheritdoc cref="IInteractiveInputHandler.HandleReactionAsync"/>
+        public virtual async Task<InteractiveInputResult<TOption>> HandleReactionAsync(SocketReaction input, IUserMessage message)
+        {
+            if (!InputType.HasFlag(InputType.Reactions) || !this.CanInteract(input.UserId))
+            {
+                return InteractiveInputStatus.Ignored;
+            }
+
+            TOption? selected = default;
+            IEmote? selectedEmote = null;
+            foreach (var value in Options)
+            {
+                var temp = EmoteConverter?.Invoke(value);
+                if (temp?.Name != input.Emote.Name) continue;
+                selectedEmote = temp;
+                selected = value;
+                break;
+            }
+
+            if (selectedEmote is null)
+            {
+                if (Deletion.HasFlag(DeletionOptions.Invalid))
+                {
+                    await message.RemoveReactionAsync(input.Emote, input.UserId).ConfigureAwait(false);
+                }
+                return InteractiveInputStatus.Ignored;
+            }
+
+            bool isCanceled = AllowCancel && EmoteConverter?.Invoke(CancelOption).Name == selectedEmote.Name;
+
+            if (isCanceled)
+            {
+                return new(InteractiveInputStatus.Canceled, selected);
+            }
+
+            if (Deletion.HasFlag(DeletionOptions.Valid))
+            {
+                await message.RemoveReactionAsync(input.Emote, input.UserId).ConfigureAwait(false);
+            }
+
+            return new(InteractiveInputStatus.Success, selected);
+        }
+
+        /// <inheritdoc cref="IInteractiveInputHandler.HandleInteractionAsync"/>
+        public virtual Task<InteractiveInputResult<TOption>> HandleInteractionAsync(SocketInteraction input, IUserMessage message)
+            => Task.FromResult(HandleInteraction(input, message));
+
+        private InteractiveInputResult<TOption> HandleInteraction(SocketInteraction input, IUserMessage message)
+        {
+            if ((!InputType.HasFlag(InputType.Buttons) && !InputType.HasFlag(InputType.SelectMenus)) || input is not SocketMessageComponent interaction)
+            {
+                return InteractiveInputStatus.Ignored;
+            }
+
+            if (interaction.Message.Id != message.Id || !this.CanInteract(interaction.User))
+            {
+                return InteractiveInputStatus.Ignored;
+            }
+
+            TOption? selected = default;
+            string? selectedString = null;
+            string? customId = interaction.Data.Type switch
+            {
+                ComponentType.Button => interaction.Data.CustomId,
+                ComponentType.SelectMenu => (interaction
+                        .Message
+                        .Components
+                        .FirstOrDefault(x => x.Components.Any(y => y.Type == ComponentType.SelectMenu && y.CustomId == interaction.Data.CustomId))?
+                        .Components
+                        .FirstOrDefault() as SelectMenuComponent)?
+                    .Options
+                    .FirstOrDefault(x => x.Value == interaction.Data.Values.FirstOrDefault())?
+                    .Value,
+                _ => null
+            };
+
+            if (customId is null)
+            {
+                return InteractiveInputStatus.Ignored;
+            }
+
+            foreach (var value in Options)
+            {
+                string? stringValue = EmoteConverter?.Invoke(value)?.ToString() ?? StringConverter?.Invoke(value);
+                if (customId != stringValue) continue;
+                selected = value;
+                selectedString = stringValue;
+                break;
+            }
+
+            if (selectedString is null)
+            {
+                return InteractiveInputStatus.Ignored;
+            }
+
+            bool isCanceled = AllowCancel && (EmoteConverter?.Invoke(CancelOption)?.ToString() ?? StringConverter?.Invoke(CancelOption)) == selectedString;
+
+            return new(isCanceled ? InteractiveInputStatus.Canceled : InteractiveInputStatus.Success, selected);
+        }
+
+        /// <inheritdoc/>
+        async Task<IInteractiveResult<InteractiveInputStatus>> IInteractiveInputHandler.HandleMessageAsync(IMessage input, IUserMessage message)
+            => await HandleMessageAsync(input, message).ConfigureAwait(false);
+
+        /// <inheritdoc/>
+        async Task<IInteractiveResult<InteractiveInputStatus>> IInteractiveInputHandler.HandleReactionAsync(IReaction input, IUserMessage message)
+        {
+            InteractiveGuards.ExpectedType<IReaction, SocketReaction>(input, nameof(input), out var socketReaction);
+            return await HandleReactionAsync(socketReaction, message).ConfigureAwait(false);
+        }
+
+        /// <inheritdoc/>
+        async Task<IInteractiveResult<InteractiveInputStatus>> IInteractiveInputHandler.HandleInteractionAsync(IDiscordInteraction input, IUserMessage message)
+        {
+            InteractiveGuards.ExpectedType<IDiscordInteraction, SocketInteraction>(input, nameof(input), out var socketInteraction);
+            return await HandleInteractionAsync(socketInteraction, message).ConfigureAwait(false);
         }
     }
 }

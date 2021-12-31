@@ -1,5 +1,4 @@
 using System;
-using System.Linq;
 using System.Threading.Tasks;
 using Discord;
 using Discord.WebSocket;
@@ -60,160 +59,66 @@ namespace Fergun.Interactive.Selection
         /// <inheritdoc/>
         public async Task ExecuteAsync(SocketMessage message)
         {
-            if (!Selection.InputType.HasFlag(InputType.Messages) || !Selection.CanInteract(message.Author))
+            var result = await Selection.HandleMessageAsync(message, Message);
+
+            switch (result.Status)
             {
-                return;
+                case InteractiveInputStatus.Success:
+                    TimeoutTaskSource.TrySetResult((result.SelectedOption, InteractiveStatus.Success));
+                    break;
+
+                case InteractiveInputStatus.Canceled:
+                    TimeoutTaskSource.TrySetResult((result.SelectedOption, InteractiveStatus.Canceled));
+                    break;
+
+                case InteractiveInputStatus.Ignored:
+                default:
+                    break;
             }
-
-            bool manageMessages = message.Channel is SocketGuildChannel guildChannel
-                                  && guildChannel.Guild.CurrentUser.GetPermissions(guildChannel).ManageMessages;
-
-            TOption? selected = default;
-            string? selectedString = null;
-            foreach (var value in Selection.Options)
-            {
-                string? temp = Selection.StringConverter?.Invoke(value);
-                if (temp != message.Content) continue;
-                selectedString = temp;
-                selected = value;
-                break;
-            }
-
-            if (selectedString is null)
-            {
-                if (manageMessages && Selection.Deletion.HasFlag(DeletionOptions.Invalid))
-                {
-                    await message.DeleteAsync().ConfigureAwait(false);
-                }
-                return;
-            }
-
-            bool isCanceled = Selection.AllowCancel && Selection.StringConverter?.Invoke(Selection.CancelOption) == selectedString;
-
-            if (isCanceled)
-            {
-                TimeoutTaskSource.TrySetResult((selected, InteractiveStatus.Canceled));
-                return;
-            }
-
-            if (manageMessages && Selection.Deletion.HasFlag(DeletionOptions.Valid))
-            {
-                await message.DeleteAsync().ConfigureAwait(false);
-            }
-
-            TimeoutTaskSource.TrySetResult((selected, InteractiveStatus.Success));
         }
 
         /// <inheritdoc/>
         public async Task ExecuteAsync(SocketReaction reaction)
         {
-            if (!Selection.InputType.HasFlag(InputType.Reactions) || !Selection.CanInteract(reaction.UserId))
+            var result = await Selection.HandleReactionAsync(reaction, Message);
+
+            switch (result.Status)
             {
-                return;
+                case InteractiveInputStatus.Success:
+                    TimeoutTaskSource.TrySetResult((result.SelectedOption, InteractiveStatus.Success));
+                    break;
+
+                case InteractiveInputStatus.Canceled:
+                    TimeoutTaskSource.TrySetResult((result.SelectedOption, InteractiveStatus.Canceled));
+                    break;
+
+                case InteractiveInputStatus.Ignored:
+                default:
+                    break;
             }
-
-            bool manageMessages = Message.Channel is SocketGuildChannel guildChannel
-                                  && guildChannel.Guild.CurrentUser.GetPermissions(guildChannel).ManageMessages;
-
-            TOption? selected = default;
-            IEmote? selectedEmote = null;
-            foreach (var value in Selection.Options)
-            {
-                var temp = Selection.EmoteConverter?.Invoke(value);
-                if (temp?.Name != reaction.Emote.Name) continue;
-                selectedEmote = temp;
-                selected = value;
-                break;
-            }
-
-            if (selectedEmote is null)
-            {
-                if (manageMessages && Selection.Deletion.HasFlag(DeletionOptions.Invalid))
-                {
-                    await Message.RemoveReactionAsync(reaction.Emote, reaction.UserId).ConfigureAwait(false);
-                }
-                return;
-            }
-
-            bool isCanceled = Selection.AllowCancel && Selection.EmoteConverter?.Invoke(Selection.CancelOption).Name == selectedEmote.Name;
-
-            if (isCanceled)
-            {
-                TimeoutTaskSource.TrySetResult((selected, InteractiveStatus.Canceled));
-                return;
-            }
-
-            if (manageMessages && Selection.Deletion.HasFlag(DeletionOptions.Valid))
-            {
-                await Message.RemoveReactionAsync(reaction.Emote, reaction.UserId).ConfigureAwait(false);
-            }
-
-            TimeoutTaskSource.TrySetResult((selected, InteractiveStatus.Success));
         }
 
         /// <inheritdoc/>
-        public Task ExecuteAsync(SocketInteraction interaction)
+        public async Task ExecuteAsync(SocketInteraction interaction)
         {
-            if ((Selection.InputType.HasFlag(InputType.Buttons) || Selection.InputType.HasFlag(InputType.SelectMenus))
-                && interaction is SocketMessageComponent componentInteraction)
+            var result = await Selection.HandleInteractionAsync(interaction, Message);
+
+            switch (result.Status)
             {
-                Execute(componentInteraction);
+                case InteractiveInputStatus.Success:
+                    StopInteraction = interaction as SocketMessageComponent ?? StopInteraction;
+                    TimeoutTaskSource.TrySetResult((result.SelectedOption, InteractiveStatus.Success));
+                    break;
+
+                case InteractiveInputStatus.Canceled:
+                    StopInteraction = interaction as SocketMessageComponent ?? StopInteraction;
+                    TimeoutTaskSource.TrySetResult((result.SelectedOption, InteractiveStatus.Canceled));
+                    break;
+
+                case InteractiveInputStatus.Ignored:
+                default:
+                    break;
             }
-
-            return Task.CompletedTask;
-        }
-
-        public void Execute(SocketMessageComponent interaction)
-        {
-            if (interaction.Message.Id != Message.Id || !Selection.CanInteract(interaction.User))
-            {
-                return;
-            }
-
-            TOption? selected = default;
-            string? selectedString = null;
-            string? customId = interaction.Data.Type switch
-            {
-                ComponentType.Button => interaction.Data.CustomId,
-                ComponentType.SelectMenu => (interaction
-                    .Message
-                    .Components
-                    .FirstOrDefault(x => x.Components.Any(y => y.Type == ComponentType.SelectMenu && y.CustomId == interaction.Data.CustomId))?
-                    .Components
-                    .FirstOrDefault() as SelectMenuComponent)?
-                    .Options
-                    .FirstOrDefault(x => x.Value == interaction.Data.Values.FirstOrDefault())?
-                    .Value,
-                _ => null
-            };
-
-            if (customId is null)
-            {
-                return;
-            }
-
-            foreach (var value in Selection.Options)
-            {
-                string? stringValue = Selection.EmoteConverter?.Invoke(value)?.ToString() ?? Selection.StringConverter?.Invoke(value);
-                if (customId != stringValue) continue;
-                selected = value;
-                selectedString = stringValue;
-                break;
-            }
-
-            if (selectedString is null)
-            {
-                return;
-            }
-
-            StopInteraction = interaction;
-
-            bool isCanceled = Selection.AllowCancel
-                && (Selection.EmoteConverter?.Invoke(Selection.CancelOption)?.ToString()
-                ?? Selection.StringConverter?.Invoke(Selection.CancelOption)) == selectedString;
-
-            TimeoutTaskSource.TrySetResult((selected, isCanceled ? InteractiveStatus.Canceled : InteractiveStatus.Success));
-            Dispose();
         }
 
         private void Dispose(bool disposing)
