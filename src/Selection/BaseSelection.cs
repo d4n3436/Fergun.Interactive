@@ -242,10 +242,15 @@ namespace Fergun.Interactive.Selection
         /// <inheritdoc cref="IInteractiveInputHandler.HandleMessageAsync"/>
         public virtual async Task<InteractiveInputResult<TOption>> HandleMessageAsync(IMessage input, IUserMessage message)
         {
+            InteractiveGuards.NotNull(input, nameof(input));
+            InteractiveGuards.NotNull(message, nameof(message));
+
             if (!InputType.HasFlag(InputType.Messages) || !this.CanInteract(input.Author))
             {
                 return InteractiveInputStatus.Ignored;
             }
+
+            bool manageMessages = await message.Channel.CurrentUserHasManageMessagesAsync().ConfigureAwait(false);
 
             TOption? selected = default;
             string? selectedString = null;
@@ -260,7 +265,7 @@ namespace Fergun.Interactive.Selection
 
             if (selectedString is null)
             {
-                if (Deletion.HasFlag(DeletionOptions.Invalid))
+                if (manageMessages && Deletion.HasFlag(DeletionOptions.Invalid))
                 {
                     await input.DeleteAsync().ConfigureAwait(false);
                 }
@@ -274,7 +279,7 @@ namespace Fergun.Interactive.Selection
                 return new(InteractiveInputStatus.Canceled, selected!);
             }
 
-            if (Deletion.HasFlag(DeletionOptions.Valid))
+            if (manageMessages && Deletion.HasFlag(DeletionOptions.Valid))
             {
                 await input.DeleteAsync().ConfigureAwait(false);
             }
@@ -285,10 +290,15 @@ namespace Fergun.Interactive.Selection
         /// <inheritdoc cref="IInteractiveInputHandler.HandleReactionAsync"/>
         public virtual async Task<InteractiveInputResult<TOption>> HandleReactionAsync(SocketReaction input, IUserMessage message)
         {
+            InteractiveGuards.NotNull(input, nameof(input));
+            InteractiveGuards.NotNull(message, nameof(message));
+
             if (!InputType.HasFlag(InputType.Reactions) || !this.CanInteract(input.UserId))
             {
                 return InteractiveInputStatus.Ignored;
             }
+
+            bool manageMessages = await message.Channel.CurrentUserHasManageMessagesAsync().ConfigureAwait(false);
 
             TOption? selected = default;
             IEmote? selectedEmote = null;
@@ -303,7 +313,7 @@ namespace Fergun.Interactive.Selection
 
             if (selectedEmote is null)
             {
-                if (Deletion.HasFlag(DeletionOptions.Invalid))
+                if (manageMessages && Deletion.HasFlag(DeletionOptions.Invalid))
                 {
                     await message.RemoveReactionAsync(input.Emote, input.UserId).ConfigureAwait(false);
                 }
@@ -317,7 +327,7 @@ namespace Fergun.Interactive.Selection
                 return new(InteractiveInputStatus.Canceled, selected);
             }
 
-            if (Deletion.HasFlag(DeletionOptions.Valid))
+            if (manageMessages && Deletion.HasFlag(DeletionOptions.Valid))
             {
                 await message.RemoveReactionAsync(input.Emote, input.UserId).ConfigureAwait(false);
             }
@@ -331,6 +341,9 @@ namespace Fergun.Interactive.Selection
 
         private InteractiveInputResult<TOption> HandleInteraction(SocketInteraction input, IUserMessage message)
         {
+            InteractiveGuards.NotNull(input, nameof(input));
+            InteractiveGuards.NotNull(message, nameof(message));
+
             if ((!InputType.HasFlag(InputType.Buttons) && !InputType.HasFlag(InputType.SelectMenus)) || input is not SocketMessageComponent interaction)
             {
                 return InteractiveInputStatus.Ignored;

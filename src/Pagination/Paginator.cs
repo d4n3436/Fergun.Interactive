@@ -211,6 +211,9 @@ namespace Fergun.Interactive.Pagination
         /// <inheritdoc cref="IInteractiveInputHandler.HandleReactionAsync"/>
         public virtual async Task<InteractiveInputResult> HandleReactionAsync(SocketReaction input, IUserMessage message)
         {
+            InteractiveGuards.NotNull(input, nameof(input));
+            InteractiveGuards.NotNull(message, nameof(message));
+
             if (!InputType.HasFlag(InputType.Reactions) || input.MessageId != message.Id)
             {
                 return InteractiveInputStatus.Ignored;
@@ -219,12 +222,17 @@ namespace Fergun.Interactive.Pagination
             bool valid = Emotes.TryGetValue(input.Emote, out var action)
                          && this.CanInteract(input.UserId);
 
-            switch (valid)
+            bool manageMessages = await message.Channel.CurrentUserHasManageMessagesAsync().ConfigureAwait(false);
+
+            if (manageMessages)
             {
-                case false when Deletion.HasFlag(DeletionOptions.Invalid):
-                case true when Deletion.HasFlag(DeletionOptions.Valid):
-                    await message.RemoveReactionAsync(input.Emote, input.UserId).ConfigureAwait(false);
-                    break;
+                switch (valid)
+                {
+                    case false when Deletion.HasFlag(DeletionOptions.Invalid):
+                    case true when Deletion.HasFlag(DeletionOptions.Valid):
+                        await message.RemoveReactionAsync(input.Emote, input.UserId).ConfigureAwait(false);
+                        break;
+                }
             }
 
             if (!valid)
@@ -254,6 +262,9 @@ namespace Fergun.Interactive.Pagination
         /// <inheritdoc cref="IInteractiveInputHandler.HandleInteractionAsync"/>
         public virtual async Task<InteractiveInputResult> HandleInteractionAsync(SocketInteraction input, IUserMessage message)
         {
+            InteractiveGuards.NotNull(input, nameof(input));
+            InteractiveGuards.NotNull(message, nameof(message));
+
             if (!InputType.HasFlag(InputType.Buttons) || input is not SocketMessageComponent interaction)
             {
                 return new(InteractiveInputStatus.Ignored);
