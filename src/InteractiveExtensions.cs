@@ -37,6 +37,15 @@ namespace Fergun.Interactive
                 _ => throw new ArgumentException("Unknown interactive element.", nameof(element))
             };
 
+        public static async ValueTask<bool> CurrentUserHasManageMessagesAsync(this IMessageChannel channel)
+        {
+            if (channel is not ITextChannel textChannel)
+                return false;
+
+            var currentUser = await textChannel.Guild.GetCurrentUserAsync(CacheMode.CacheOnly);
+            return currentUser?.GetPermissions(textChannel).ManageMessages == true;
+        }
+
         public static TimeSpan GetElapsedTime(this PaginatorCallback callback, InteractiveStatus status)
             => status.GetElapsedTime(callback.StartTime, callback.TimeoutTaskSource.Delay);
 

@@ -15,6 +15,16 @@ namespace Fergun.Interactive
             }
         }
 
+        public static void ExpectedType<TInput, TExpected>(TInput obj, string parameterName, out TExpected expected)
+        {
+            if (obj is not TExpected temp)
+            {
+                throw new ArgumentException($"Parameter must be of type {typeof(TExpected)}.", parameterName);
+            }
+
+            expected = temp;
+        }
+
         public static void MessageFromCurrentUser(BaseSocketClient client, IUserMessage? message, string parameterName)
         {
             if (message is not null && message.Author.Id != client.CurrentUser.Id)
