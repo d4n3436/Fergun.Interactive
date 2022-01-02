@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Discord;
+using Discord.WebSocket;
 
 namespace Fergun.Interactive.Pagination
 {
@@ -188,6 +189,131 @@ namespace Fergun.Interactive.Pagination
             }
 
             return builder.Build();
+        }
+
+        /// <inheritdoc cref="IInteractiveInputHandler.HandleMessageAsync(IMessage, IUserMessage)"/>
+        /// <remarks>If this method is not overriden, it will throw a <see cref="NotSupportedException"/> since paginators don't support message input by default.</remarks>
+        public virtual Task<InteractiveInputResult> HandleMessageAsync(IMessage input, IUserMessage message)
+            => throw new NotSupportedException("Cannot handle a message input.");
+
+        /// <inheritdoc cref="IInteractiveInputHandler.HandleReactionAsync"/>
+        public virtual async Task<InteractiveInputResult> HandleReactionAsync(SocketReaction input, IUserMessage message)
+        {
+            InteractiveGuards.NotNull(input, nameof(input));
+            InteractiveGuards.NotNull(message, nameof(message));
+
+            if (!InputType.HasFlag(InputType.Reactions) || input.MessageId != message.Id)
+            {
+                return InteractiveInputStatus.Ignored;
+            }
+
+            bool valid = Emotes.TryGetValue(input.Emote, out var action)
+                         && this.CanInteract(input.UserId);
+
+            bool manageMessages = await message.Channel.CurrentUserHasManageMessagesAsync().ConfigureAwait(false);
+
+            if (manageMessages)
+            {
+                switch (valid)
+                {
+                    case false when Deletion.HasFlag(DeletionOptions.Invalid):
+                    case true when Deletion.HasFlag(DeletionOptions.Valid):
+                        await message.RemoveReactionAsync(input.Emote, input.UserId).ConfigureAwait(false);
+                        break;
+                }
+            }
+
+            if (!valid)
+            {
+                return InteractiveInputStatus.Ignored;
+            }
+
+            if (action == PaginatorAction.Exit)
+            {
+                return InteractiveInputStatus.Canceled;
+            }
+
+            bool refreshPage = await ApplyActionAsync(action).ConfigureAwait(false);
+            if (refreshPage)
+            {
+                var currentPage = await GetOrLoadCurrentPageAsync().ConfigureAwait(false);
+                await message.ModifyAsync(x =>
+                {
+                    x.Embed = currentPage.Embed;
+                    x.Content = currentPage.Text;
+                }).ConfigureAwait(false);
+            }
+
+            return InteractiveInputStatus.Success;
+        }
+
+        /// <inheritdoc cref="IInteractiveInputHandler.HandleInteractionAsync"/>
+        public virtual async Task<InteractiveInputResult> HandleInteractionAsync(SocketInteraction input, IUserMessage message)
+        {
+            InteractiveGuards.NotNull(input, nameof(input));
+            InteractiveGuards.NotNull(message, nameof(message));
+
+            if (!InputType.HasFlag(InputType.Buttons) || input is not SocketMessageComponent interaction)
+            {
+                return new(InteractiveInputStatus.Ignored);
+            }
+
+            if (interaction.Message.Id != message.Id || !this.CanInteract(interaction.User))
+            {
+                return new(InteractiveInputStatus.Ignored);
+            }
+
+            var emote = (interaction
+                    .Message
+                    .Components
+                    .FirstOrDefault()?
+                    .Components?
+                    .FirstOrDefault(x => x is ButtonComponent button && button.CustomId == interaction.Data.CustomId) as ButtonComponent)?
+                .Emote;
+
+            if (emote is null || !Emotes.TryGetValue(emote, out var action))
+            {
+                return InteractiveInputStatus.Ignored;
+            }
+
+            if (action == PaginatorAction.Exit)
+            {
+                return InteractiveInputStatus.Canceled;
+            }
+
+            bool refreshPage = await ApplyActionAsync(action).ConfigureAwait(false);
+            if (refreshPage)
+            {
+                var currentPage = await GetOrLoadCurrentPageAsync().ConfigureAwait(false);
+                var buttons = BuildComponents(false);
+
+                await interaction.UpdateAsync(x =>
+                {
+                    x.Content = currentPage.Text ?? ""; // workaround for d.net bug
+                    x.Embed = currentPage.Embed;
+                    x.Components = buttons;
+                }).ConfigureAwait(false);
+            }
+
+            return InteractiveInputStatus.Success;
+        }
+
+        /// <inheritdoc />
+        async Task<IInteractiveResult<InteractiveInputStatus>> IInteractiveInputHandler.HandleMessageAsync(IMessage input, IUserMessage message)
+            => await HandleMessageAsync(input, message).ConfigureAwait(false);
+
+        /// <inheritdoc />
+        async Task<IInteractiveResult<InteractiveInputStatus>> IInteractiveInputHandler.HandleReactionAsync(IReaction input, IUserMessage message)
+        {
+            InteractiveGuards.ExpectedType<IReaction, SocketReaction>(input, nameof(input), out var socketReaction);
+            return await HandleReactionAsync(socketReaction, message).ConfigureAwait(false);
+        }
+
+        /// <inheritdoc />
+        async Task<IInteractiveResult<InteractiveInputStatus>> IInteractiveInputHandler.HandleInteractionAsync(IDiscordInteraction input, IUserMessage message)
+        {
+            InteractiveGuards.ExpectedType<IDiscordInteraction, SocketInteraction>(input, nameof(input), out var socketInteraction);
+            return await HandleInteractionAsync(socketInteraction, message).ConfigureAwait(false);
         }
     }
 }

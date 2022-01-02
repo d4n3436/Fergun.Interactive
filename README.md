@@ -8,7 +8,7 @@ This is a fork of [Discord.InteractivityAddon](https://github.com/Playwo/Discord
 ## Usage
 - Install via NuGet:
   - [Fergun.Interactive](https://www.nuget.org/packages/Fergun.Interactive) (For [Discord.Net](https://github.com/discord-net/Discord.Net))
-  - [Fergun.Interactive.Labs](https://www.nuget.org/packages/Fergun.Interactive.Labs) (For [Discord.Net.Labs](https://github.com/Discord-Net-Labs/Discord.Net-Labs), supports interactions)
+  - [Fergun.Interactive.Labs](https://www.nuget.org/packages/Fergun.Interactive.Labs) (For [Discord.Net.Labs](https://github.com/Discord-Net-Labs/Discord.Net-Labs))
   
 - Add the `InteractiveService` into your service provider:
 ```cs
@@ -25,7 +25,7 @@ var provider = new ServiceCollection()
 
 The [Example Bot](ExampleBot) contains multiple examples with comments. The default prefix is `!`.
 
-Compile with the `DebugLabs` or `ReleaseLabs` configuration to be able to use interactions.
+Compile with the `DebugLabs` or `ReleaseLabs` configuration to use Discord.Net Labs instead of Discord.Net.
 
 Example modules:
 - Waiting for socket entities (messages, reactions, etc.)

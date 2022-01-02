@@ -1,7 +1,7 @@
 namespace Fergun.Interactive
 {
     /// <summary>
-    /// Specifies the possible status of an <see cref="IInteractiveResult"/>.
+    /// Specifies the possible status of an <see cref="IInteractiveResult{TStatus}"/> whose status is <see cref="InteractiveStatus"/>.
     /// </summary>
     public enum InteractiveStatus
     {

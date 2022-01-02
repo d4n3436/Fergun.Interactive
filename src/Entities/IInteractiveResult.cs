@@ -5,16 +5,12 @@ namespace Fergun.Interactive
     /// <summary>
     /// Represents a result from an interactive action.
     /// </summary>
-    public interface IInteractiveResult
+    /// <typeparam name="TStatus">The type of the status.</typeparam>
+    public interface IInteractiveResult<out TStatus> where TStatus : Enum
     {
-        /// <summary>
-        /// Gets the time passed between starting the interactive action and getting its result.
-        /// </summary>
-        public TimeSpan Elapsed { get; }
-
         /// <summary>
         /// Gets the status of this result.
         /// </summary>
-        public InteractiveStatus Status { get; }
+        TStatus Status { get; }
     }
 }
