@@ -16,6 +16,11 @@ namespace Fergun.Interactive.Pagination
         public virtual bool IsUserRestricted => Users.Count > 0;
 
         /// <summary>
+        /// Gets or sets the index of the page the paginator should start.
+        /// </summary>
+        public virtual int StartPageIndex { get; set; }
+
+        /// <summary>
         /// Gets or sets the footer format in the <see cref="Embed"/> of the paginator.
         /// </summary>
         /// <remarks>Setting this to other than <see cref="PaginatorFooter.None"/> will override any other footer in the pages.</remarks>
@@ -71,9 +76,19 @@ namespace Fergun.Interactive.Pagination
         /// <summary>
         /// Builds this <typeparamref name="TBuilder"/> into an immutable <typeparamref name="TPaginator"/>.
         /// </summary>
-        /// <param name="startPageIndex">The index of the page the paginator should start.</param>
         /// <returns>A <typeparamref name="TPaginator"/>.</returns>
-        public abstract TPaginator Build(int startPageIndex = 0);
+        public abstract TPaginator Build();
+
+        /// <summary>
+        /// Sets the index of the page the <typeparamref name="TPaginator"/> should start.
+        /// </summary>
+        /// <param name="startPageIndex">The index of the page the <typeparamref name="TPaginator"/> should start.</param>
+        /// <returns>This builder.</returns>
+        public virtual TBuilder WithStartPageIndex(int startPageIndex)
+        {
+            StartPageIndex = startPageIndex;
+            return (TBuilder)this;
+        }
 
         /// <summary>
         /// Gets the footer format in the <see cref="Embed"/> of the <typeparamref name="TPaginator"/>.

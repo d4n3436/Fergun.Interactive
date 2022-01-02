@@ -66,11 +66,11 @@ namespace Fergun.Interactive.Pagination
         /// <inheritdoc/>
         IReadOnlyCollection<KeyValuePair<IEmote, PaginatorAction>> IInteractiveElement<KeyValuePair<IEmote, PaginatorAction>>.Options => Emotes;
 
-        //protected Paginator(IInteractiveBuilderProperties<KeyValuePair<IEmote, PaginatorAction>> builder, int startPageIndex)
         /// <summary>
         /// Initializes a new instance of the <see cref="Paginator"/> class.
         /// </summary>
-        protected Paginator(PaginatorBuilderProperties builder, int startPageIndex)
+        /// <param name="builder">The builder to copy the properties from.</param>
+        protected Paginator(PaginatorBuilderProperties builder)
         {
             InteractiveGuards.NotNull(builder, nameof(builder));
             InteractiveGuards.NotNull(builder.Users, nameof(builder.Users));
@@ -86,7 +86,7 @@ namespace Fergun.Interactive.Pagination
             InputType = builder.InputType;
             ActionOnCancellation = builder.ActionOnCancellation;
             ActionOnTimeout = builder.ActionOnTimeout;
-            CurrentPageIndex = startPageIndex;
+            CurrentPageIndex = builder.StartPageIndex;
         }
 
         /// <summary>

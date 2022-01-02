@@ -31,14 +31,14 @@ namespace Fergun.Interactive.Pagination
         }
 
         /// <inheritdoc/>
-        public override LazyPaginator Build(int startPageIndex = 0)
+        public override LazyPaginator Build()
         {
             if (Options.Count == 0)
             {
                 WithDefaultEmotes();
             }
 
-            return new LazyPaginator(this, startPageIndex);
+            return new LazyPaginator(this);
         }
 
         /// <summary>

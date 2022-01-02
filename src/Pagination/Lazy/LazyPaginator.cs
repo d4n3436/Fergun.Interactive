@@ -26,8 +26,8 @@ namespace Fergun.Interactive.Pagination
         [MemberNotNullWhen(true, nameof(_cachedPages))]
         public bool CacheLoadedPages { get; }
 
-        internal LazyPaginator(LazyPaginatorBuilder builder, int startPageIndex)
-            : base(builder, startPageIndex)
+        internal LazyPaginator(LazyPaginatorBuilder builder)
+            : base(builder)
         {
             InteractiveGuards.NotNull(builder.PageFactory, nameof(builder.PageFactory));
 

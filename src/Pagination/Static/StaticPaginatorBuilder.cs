@@ -22,14 +22,14 @@ namespace Fergun.Interactive.Pagination
         }
 
         /// <inheritdoc/>
-        public override StaticPaginator Build(int startPageIndex = 0)
+        public override StaticPaginator Build()
         {
             if (Options.Count == 0)
             {
                 WithDefaultEmotes();
             }
 
-            return new StaticPaginator(this, startPageIndex);
+            return new StaticPaginator(this);
         }
 
         /// <summary>

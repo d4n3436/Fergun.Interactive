@@ -19,11 +19,12 @@ namespace Fergun.Interactive.Pagination
         /// </summary>
         public override int MaxPageIndex => Pages.Count - 1;
 
-        internal StaticPaginator(StaticPaginatorBuilder builder, int startPageIndex)
-            : base(builder, startPageIndex)
+        internal StaticPaginator(StaticPaginatorBuilder builder)
+            : base(builder)
         {
             InteractiveGuards.NotNull(builder.Pages, nameof(builder.Pages));
             InteractiveGuards.NotEmpty(builder.Pages, nameof(builder.Pages));
+            InteractiveGuards.IndexInRange(builder.Pages, builder.StartPageIndex, nameof(builder.StartPageIndex));
 
             Pages = builder.Pages.Select((x, i) => x.WithPaginatorFooter(builder.Footer, i, builder.Pages.Count - 1, builder.Users).Build()).ToArray();
         }

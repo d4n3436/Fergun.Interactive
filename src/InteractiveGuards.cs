@@ -33,6 +33,14 @@ namespace Fergun.Interactive
             }
         }
 
+        public static void IndexInRange<T>(ICollection<T> collection, int index, string parameterName)
+        {
+            if (index < 0 || index + 1 >= collection.Count)
+            {
+                throw new ArgumentOutOfRangeException(parameterName, index, $"Index must be greater than or equal to 0 and lower than {collection.Count}.");
+            }
+        }
+
         public static void MessageFromCurrentUser(BaseSocketClient client, IUserMessage? message, string parameterName)
         {
             if (message is not null && message.Author.Id != client.CurrentUser.Id)
