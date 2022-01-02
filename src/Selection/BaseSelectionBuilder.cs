@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using Discord;
 
@@ -60,12 +61,12 @@ namespace Fergun.Interactive.Selection
         /// <summary>
         /// Gets or sets the users who can interact with the <see cref="BaseSelection{TOption}"/>.
         /// </summary>
-        public virtual ICollection<IUser> Users { get; set; } = new List<IUser>();
+        public virtual ICollection<IUser> Users { get; set; } = new Collection<IUser>();
 
         /// <summary>
         /// Gets or sets the options to select from.
         /// </summary>
-        public virtual ICollection<TOption> Options { get; set; } = new List<TOption>();
+        public virtual ICollection<TOption> Options { get; set; } = new Collection<TOption>();
 
         /// <inheritdoc />
         public virtual PageBuilder? CanceledPage { get; set; }

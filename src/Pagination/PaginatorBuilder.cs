@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using Discord;
 
@@ -29,7 +30,7 @@ namespace Fergun.Interactive.Pagination
         /// <summary>
         /// Gets or sets the users who can interact with the paginator.
         /// </summary>
-        public virtual ICollection<IUser> Users { get; set; } = new List<IUser>();
+        public virtual ICollection<IUser> Users { get; set; } = new Collection<IUser>();
 
         /// <summary>
         /// Gets or sets the emotes and their related actions of the paginator.

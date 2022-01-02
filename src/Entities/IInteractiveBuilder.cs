@@ -154,6 +154,4 @@ namespace Fergun.Interactive
         /// <returns>This builder.</returns>
         TBuilder WithActionOnTimeout(ActionOnStop action);
     }
-
-    
 }
