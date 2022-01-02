@@ -1,5 +1,3 @@
-using System.Linq;
-
 namespace Fergun.Interactive.Selection
 {
     /// <summary>
@@ -16,12 +14,9 @@ namespace Fergun.Interactive.Selection
         }
 
         /// <summary>
-        /// Builds this builder into an immutable selection.
+        /// Builds this <see cref="SelectionBuilder{TOption}"/> into an immutable <see cref="Selection{TOption}"/>.
         /// </summary>
         /// <returns>A <see cref="Selection{TOption}"/>.</returns>
-        public override Selection<TOption> Build() => new(EmoteConverter, StringConverter,
-            EqualityComparer, AllowCancel, SelectionPage?.Build()!, Users.ToArray(), Options.ToArray(),
-            CanceledPage?.Build(), TimeoutPage?.Build(), SuccessPage?.Build(), Deletion, InputType,
-            ActionOnCancellation, ActionOnTimeout, ActionOnSuccess);
+        public override Selection<TOption> Build() => new(this);
     }
 }

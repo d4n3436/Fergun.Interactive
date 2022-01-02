@@ -71,35 +71,24 @@ namespace Fergun.Interactive.Pagination
         /// <summary>
         /// Initializes a new instance of the <see cref="Paginator"/> class.
         /// </summary>
-        protected Paginator(IReadOnlyCollection<IUser> users, IReadOnlyDictionary<IEmote, PaginatorAction> emotes,
-            Page? canceledPage, Page? timeoutPage, DeletionOptions deletion, InputType inputType,
-            ActionOnStop actionOnCancellation, ActionOnStop actionOnTimeout, int startPageIndex)
+        /// <param name="builder">The builder to copy the properties from.</param>
+        protected Paginator(PaginatorBuilderProperties builder)
         {
-            Users = users ?? throw new ArgumentNullException(nameof(users));
+            InteractiveGuards.NotNull(builder, nameof(builder));
+            InteractiveGuards.NotNull(builder.Users, nameof(builder.Users));
+            InteractiveGuards.NotNull(builder.Options, nameof(builder.Options));
+            InteractiveGuards.NotEmpty(builder.Options, nameof(builder.Options));
+            InteractiveGuards.SupportedInputType(builder.InputType, false);
 
-            if (inputType == 0)
-            {
-                throw new ArgumentException("At least one input type must be set.", nameof(inputType));
-            }
-
-            if (emotes is null)
-            {
-                throw new ArgumentNullException(nameof(emotes));
-            }
-
-            if (emotes.Count == 0)
-            {
-                throw new ArgumentException($"{nameof(emotes)} must contain at least one element.", nameof(emotes));
-            }
-
-            Emotes = emotes;
-            CanceledPage = canceledPage;
-            TimeoutPage = timeoutPage;
-            Deletion = deletion;
-            InputType = inputType;
-            ActionOnCancellation = actionOnCancellation;
-            ActionOnTimeout = actionOnTimeout;
-            CurrentPageIndex = startPageIndex;
+            Users = builder.Users.ToArray();
+            Emotes = builder.Options.AsReadOnly();
+            CanceledPage = builder.CanceledPage?.Build();
+            TimeoutPage = builder.TimeoutPage?.Build();
+            Deletion = builder.Deletion;
+            InputType = builder.InputType;
+            ActionOnCancellation = builder.ActionOnCancellation;
+            ActionOnTimeout = builder.ActionOnTimeout;
+            CurrentPageIndex = builder.StartPageIndex;
         }
 
         /// <summary>

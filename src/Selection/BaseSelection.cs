@@ -88,60 +88,40 @@ namespace Fergun.Interactive.Selection
         public ActionOnStop ActionOnSuccess { get; }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="BaseSelection{TOption}"/> class.
+        /// Initializes a new instance of the <see cref="BaseSelection{TOption}"/> class using the specified builder properties.
         /// </summary>
-        protected BaseSelection(Func<TOption, IEmote>? emoteConverter, Func<TOption, string>? stringConverter, IEqualityComparer<TOption> equalityComparer,
-            bool allowCancel, Page selectionPage, IReadOnlyCollection<IUser> users, IReadOnlyCollection<TOption> options, Page? canceledPage,
-            Page? timeoutPage, Page? successPage, DeletionOptions deletion, InputType inputType, ActionOnStop actionOnCancellation,
-            ActionOnStop actionOnTimeout, ActionOnStop actionOnSuccess)
+        /// <param name="builder">The builder to copy the properties from.</param>
+        protected BaseSelection(BaseSelectionBuilderProperties<TOption> builder)
         {
-            if (inputType == 0)
+            InteractiveGuards.SupportedInputType(builder.InputType, false);
+            InteractiveGuards.RequiredEmoteConverter(builder.InputType, builder.EmoteConverter);
+            InteractiveGuards.NotNull(builder.EqualityComparer, nameof(builder.EqualityComparer));
+            InteractiveGuards.NotNull(builder.SelectionPage, nameof(builder.SelectionPage));
+            InteractiveGuards.NotNull(builder.Options, nameof(builder.Options));
+            InteractiveGuards.NotNull(builder.Users, nameof(builder.Users));
+            InteractiveGuards.NotEmpty(builder.Options, nameof(builder.Options));
+
+            StringConverter = builder.StringConverter;
+            EmoteConverter = builder.EmoteConverter;
+            EqualityComparer = builder.EqualityComparer;
+            SelectionPage = builder.SelectionPage.Build();
+            AllowCancel = builder.AllowCancel && builder.Options.Count > 1;
+            CancelOption = AllowCancel ? builder.Options.Last() : default;
+            Users = builder.Users.ToArray();
+            Options = builder.Options.ToArray();
+            CanceledPage = builder.CanceledPage?.Build();
+            TimeoutPage = builder.TimeoutPage?.Build();
+            SuccessPage = builder.SuccessPage?.Build();
+            Deletion = builder.Deletion;
+            InputType = builder.InputType;
+            ActionOnCancellation = builder.ActionOnCancellation;
+            ActionOnTimeout = builder.ActionOnTimeout;
+            ActionOnSuccess = builder.ActionOnSuccess;
+
+            if (StringConverter is null && (!InputType.HasFlag(InputType.Buttons) || EmoteConverter is null))
             {
-                throw new ArgumentException("At least one input type must be set.", nameof(inputType));
+                StringConverter = x => x?.ToString()!;
             }
-
-            if (inputType.HasFlag(InputType.Reactions) && emoteConverter is null)
-            {
-                throw new ArgumentNullException(nameof(emoteConverter), $"{nameof(emoteConverter)} is required when {nameof(inputType)} has InputType.Reactions.");
-            }
-
-            if (stringConverter is null && (!inputType.HasFlag(InputType.Buttons) || emoteConverter is null))
-            {
-                stringConverter = x => x?.ToString()!;
-            }
-
-            EmoteConverter = emoteConverter;
-            StringConverter = stringConverter;
-            EqualityComparer = equalityComparer ?? throw new ArgumentNullException(nameof(equalityComparer));
-            SelectionPage = selectionPage ?? throw new ArgumentNullException(nameof(selectionPage));
-
-            if (options is null)
-            {
-                throw new ArgumentNullException(nameof(options));
-            }
-
-            if (options.Count == 0)
-            {
-                throw new ArgumentException($"{nameof(options)} must contain at least one element.", nameof(options));
-            }
-
-            if (options.Distinct(EqualityComparer).Count() != options.Count)
-            {
-                throw new ArgumentException($"{nameof(options)} must not contain duplicate elements.", nameof(options));
-            }
-
-            AllowCancel = allowCancel && options.Count > 1;
-            CancelOption = AllowCancel ? options.Last() : default;
-            Users = users ?? throw new ArgumentNullException(nameof(users));
-            Options = options;
-            CanceledPage = canceledPage;
-            TimeoutPage = timeoutPage;
-            SuccessPage = successPage;
-            Deletion = deletion;
-            InputType = inputType;
-            ActionOnCancellation = actionOnCancellation;
-            ActionOnTimeout = actionOnTimeout;
-            ActionOnSuccess = actionOnSuccess;
         }
 
         /// <summary>
