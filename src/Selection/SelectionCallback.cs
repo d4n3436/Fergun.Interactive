@@ -59,7 +59,7 @@ namespace Fergun.Interactive.Selection
         /// <inheritdoc/>
         public async Task ExecuteAsync(SocketMessage message)
         {
-            var result = await Selection.HandleMessageAsync(message, Message);
+            var result = await Selection.HandleMessageAsync(message, Message).ConfigureAwait(false);
 
             switch (result.Status)
             {
@@ -80,7 +80,7 @@ namespace Fergun.Interactive.Selection
         /// <inheritdoc/>
         public async Task ExecuteAsync(SocketReaction reaction)
         {
-            var result = await Selection.HandleReactionAsync(reaction, Message);
+            var result = await Selection.HandleReactionAsync(reaction, Message).ConfigureAwait(false);
 
             switch (result.Status)
             {
@@ -101,7 +101,7 @@ namespace Fergun.Interactive.Selection
         /// <inheritdoc/>
         public async Task ExecuteAsync(SocketInteraction interaction)
         {
-            var result = await Selection.HandleInteractionAsync(interaction, Message);
+            var result = await Selection.HandleInteractionAsync(interaction, Message).ConfigureAwait(false);
 
             switch (result.Status)
             {

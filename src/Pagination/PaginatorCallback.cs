@@ -58,7 +58,7 @@ namespace Fergun.Interactive.Pagination
         /// <inheritdoc/>
         public async Task ExecuteAsync(SocketMessage message)
         {
-            var result = await Paginator.HandleMessageAsync(message, Message);
+            var result = await Paginator.HandleMessageAsync(message, Message).ConfigureAwait(false);
             switch (result.Status)
             {
                 case InteractiveInputStatus.Success:
@@ -78,7 +78,7 @@ namespace Fergun.Interactive.Pagination
         /// <inheritdoc/>
         public async Task ExecuteAsync(SocketReaction reaction)
         {
-            var result = await Paginator.HandleReactionAsync(reaction, Message);
+            var result = await Paginator.HandleReactionAsync(reaction, Message).ConfigureAwait(false);
             switch (result.Status)
             {
                 case InteractiveInputStatus.Success:
@@ -98,7 +98,7 @@ namespace Fergun.Interactive.Pagination
         /// <inheritdoc/>
         public async Task ExecuteAsync(SocketInteraction interaction)
         {
-            var result = await Paginator.HandleInteractionAsync(interaction, Message);
+            var result = await Paginator.HandleInteractionAsync(interaction, Message).ConfigureAwait(false);
             switch (result.Status)
             {
                 case InteractiveInputStatus.Success:
