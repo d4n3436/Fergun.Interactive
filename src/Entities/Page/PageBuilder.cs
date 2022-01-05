@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Discord;
 using Fergun.Interactive.Pagination;
 
@@ -397,7 +398,7 @@ namespace Fergun.Interactive
             return this;
         }
 
-        internal PageBuilder WithPaginatorFooter(PaginatorFooter footer, int page, int totalPages, IList<IUser>? users)
+        internal PageBuilder WithPaginatorFooter(PaginatorFooter footer, int page, int totalPages, ICollection<IUser>? users)
         {
             if (footer == PaginatorFooter.None)
             {
@@ -413,7 +414,7 @@ namespace Fergun.Interactive
                 }
                 else if (users.Count == 1)
                 {
-                    var user = users[0];
+                    var user = users.First();
 
                     Footer.IconUrl = user.GetAvatarUrl() ?? user.GetDefaultAvatarUrl();
                     Footer.Text += $"Interactor: {user}\n";

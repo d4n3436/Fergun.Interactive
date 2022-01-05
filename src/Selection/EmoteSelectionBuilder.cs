@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using Discord;
 
 namespace Fergun.Interactive.Selection
@@ -20,23 +19,17 @@ namespace Fergun.Interactive.Selection
         public override IEqualityComparer<KeyValuePair<IEmote, TValue>> EqualityComparer { get; set; } = new EmoteComparer<TValue>();
 
         /// <summary>
-        /// Gets or sets the options.
-        /// </summary>
-        public new IDictionary<IEmote, TValue> Options { get; set; } = new Dictionary<IEmote, TValue>();
-
-        /// <summary>
         /// Initializes a new instance of the <see cref="EmoteSelectionBuilder{TValue}"/> class.
         /// </summary>
         public EmoteSelectionBuilder()
         {
         }
 
-        /// <inheritdoc/>
-        public override Selection<KeyValuePair<IEmote, TValue>> Build()
-            => new(EmoteConverter, StringConverter,
-                EqualityComparer, AllowCancel, SelectionPage.Build(), Users.ToArray(), Options.ToArray(),
-                CanceledPage?.Build(), TimeoutPage?.Build(), SuccessPage?.Build(), Deletion, InputType,
-                ActionOnCancellation, ActionOnTimeout, ActionOnSuccess);
+        /// <summary>
+        /// Builds this <see cref="EmoteSelectionBuilder{TValue}"/> into an immutable <see cref="Selection{TOption}"/>.
+        /// </summary>
+        /// <returns>A <see cref="Selection{TOption}"/>.</returns>
+        public override Selection<KeyValuePair<IEmote, TValue>> Build() => new(this);
 
         /// <summary>
         /// Sets the options.
@@ -57,7 +50,7 @@ namespace Fergun.Interactive.Selection
         /// <returns>This builder.</returns>
         public EmoteSelectionBuilder<TValue> AddOption(IEmote emote, TValue value)
         {
-            Options.Add(emote, value);
+            Options.Add(new KeyValuePair<IEmote, TValue>(emote, value));
             return this;
         }
     }
@@ -81,12 +74,11 @@ namespace Fergun.Interactive.Selection
         {
         }
 
-        /// <inheritdoc/>
-        public override Selection<IEmote> Build()
-            => new(EmoteConverter, StringConverter,
-                EqualityComparer, AllowCancel, SelectionPage?.Build()!, Users.ToArray(), Options.ToArray(),
-                CanceledPage?.Build(), TimeoutPage?.Build(), SuccessPage?.Build(), Deletion, InputType,
-                ActionOnCancellation, ActionOnTimeout, ActionOnSuccess);
+        /// <summary>
+        /// Builds this <see cref="EmoteSelectionBuilder"/> into an immutable <see cref="Selection{TOption}"/>.
+        /// </summary>
+        /// <returns>A <see cref="Selection{TOption}"/>.</returns>
+        public override Selection<IEmote> Build() => new(this);
     }
 
     internal class EmoteComparer<TValue> : IEqualityComparer<KeyValuePair<IEmote, TValue>>

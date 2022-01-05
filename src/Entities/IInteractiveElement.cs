@@ -7,7 +7,7 @@ namespace Fergun.Interactive
     /// Represents an interactive element.
     /// </summary>
     /// <typeparam name="TOption">The type of the options.</typeparam>
-    public interface IInteractiveElement<out TOption>
+    public interface IInteractiveElement<out TOption> : IInteractiveInputHandler
     {
         /// <summary>
         /// Gets a read-only collection of users who can interact with this element.

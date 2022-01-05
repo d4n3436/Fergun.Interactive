@@ -1,5 +1,4 @@
 using System;
-using System.Linq;
 using System.Threading.Tasks;
 using Discord;
 using Discord.WebSocket;
@@ -57,111 +56,64 @@ namespace Fergun.Interactive.Pagination
         public void Cancel() => TimeoutTaskSource.TryCancel();
 
         /// <inheritdoc/>
-        public Task ExecuteAsync(SocketMessage message)
-            => throw new NotSupportedException("Cannot execute this callback using a message.");
+        public async Task ExecuteAsync(SocketMessage message)
+        {
+            var result = await Paginator.HandleMessageAsync(message, Message).ConfigureAwait(false);
+            switch (result.Status)
+            {
+                case InteractiveInputStatus.Success:
+                    TimeoutTaskSource.TryReset();
+                    break;
+
+                case InteractiveInputStatus.Canceled:
+                    Cancel();
+                    break;
+
+                case InteractiveInputStatus.Ignored:
+                default:
+                    break;
+            }
+        }
 
         /// <inheritdoc/>
         public async Task ExecuteAsync(SocketReaction reaction)
         {
-            if (!Paginator.InputType.HasFlag(InputType.Reactions) || reaction.MessageId != Message.Id)
+            var result = await Paginator.HandleReactionAsync(reaction, Message).ConfigureAwait(false);
+            switch (result.Status)
             {
-                return;
-            }
+                case InteractiveInputStatus.Success:
+                    TimeoutTaskSource.TryReset();
+                    break;
 
-            bool valid = Paginator.Emotes.TryGetValue(reaction.Emote, out var action)
-                         && Paginator.CanInteract(reaction.UserId);
+                case InteractiveInputStatus.Canceled:
+                    Cancel();
+                    break;
 
-            bool manageMessages = Message.Channel is SocketGuildChannel guildChannel
-                                  && guildChannel.Guild.CurrentUser.GetPermissions(guildChannel).ManageMessages;
-
-            if (manageMessages)
-            {
-                switch (valid)
-                {
-                    case false when Paginator.Deletion.HasFlag(DeletionOptions.Invalid):
-                    case true when Paginator.Deletion.HasFlag(DeletionOptions.Valid):
-                        await Message.RemoveReactionAsync(reaction.Emote, reaction.UserId).ConfigureAwait(false);
-                        break;
-                }
-            }
-
-            if (!valid)
-            {
-                return;
-            }
-
-            if (action == PaginatorAction.Exit)
-            {
-                Cancel();
-                return;
-            }
-
-            TimeoutTaskSource.TryReset();
-            bool refreshPage = await Paginator.ApplyActionAsync(action).ConfigureAwait(false);
-            if (refreshPage)
-            {
-                var currentPage = await Paginator.GetOrLoadCurrentPageAsync().ConfigureAwait(false);
-                await Message.ModifyAsync(x =>
-                {
-                    x.Embeds = currentPage.Embeds.GetOrCreateEmbedArray();
-                    x.Content = currentPage.Text;
-                }).ConfigureAwait(false);
+                case InteractiveInputStatus.Ignored:
+                default:
+                    break;
             }
         }
 
         /// <inheritdoc/>
-        public Task ExecuteAsync(SocketInteraction interaction)
+        public async Task ExecuteAsync(SocketInteraction interaction)
         {
-            if (Paginator.InputType.HasFlag(InputType.Buttons) && interaction is SocketMessageComponent componentInteraction)
+            var result = await Paginator.HandleInteractionAsync(interaction, Message).ConfigureAwait(false);
+            switch (result.Status)
             {
-                return ExecuteAsync(componentInteraction);
-            }
+                case InteractiveInputStatus.Success:
+                    LastInteraction = interaction;
+                    TimeoutTaskSource.TryReset();
+                    break;
 
-            return Task.CompletedTask;
-        }
+                case InteractiveInputStatus.Canceled:
+                    StopInteraction = interaction as SocketMessageComponent ?? StopInteraction;
+                    Cancel();
+                    break;
 
-        public async Task ExecuteAsync(SocketMessageComponent interaction)
-        {
-            if (interaction.Message.Id != Message.Id || !Paginator.CanInteract(interaction.User))
-            {
-                return;
-            }
-
-            var emote = (interaction
-                .Message
-                .Components
-                .FirstOrDefault()?
-                .Components?
-                .FirstOrDefault(x => x is ButtonComponent button && button.CustomId == interaction.Data.CustomId) as ButtonComponent)?
-                .Emote;
-
-            if (emote is null || !Paginator.Emotes.TryGetValue(emote, out var action))
-            {
-                return;
-            }
-
-            if (action == PaginatorAction.Exit)
-            {
-                StopInteraction = interaction;
-                Cancel();
-                return;
-            }
-
-            LastInteraction = interaction;
-
-            TimeoutTaskSource.TryReset();
-            bool refreshPage = await Paginator.ApplyActionAsync(action).ConfigureAwait(false);
-            if (refreshPage)
-            {
-                var currentPage = await Paginator.GetOrLoadCurrentPageAsync().ConfigureAwait(false);
-                var buttons = Paginator.BuildComponents(false);
-
-                await interaction.UpdateAsync(x =>
-                {
-                    x.Content = currentPage.Text ?? ""; // workaround for d.net bug
-                    x.Embeds = currentPage.Embeds.GetOrCreateEmbedArray();
-                    x.Components = buttons;
-                }).ConfigureAwait(false);
+                case InteractiveInputStatus.Ignored:
+                default:
+                    break;
             }
         }
 

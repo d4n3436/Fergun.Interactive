@@ -10,36 +10,45 @@ namespace Fergun.Interactive
     /// <typeparam name="TOption">The type of the options.</typeparam>
     /// <typeparam name="TBuilder">The type of this builder.</typeparam>
     public interface IInteractiveBuilder<out TElement, TOption, out TBuilder>
+        : IInteractiveBuilderProperties<TOption>, IInteractiveBuilderMethods<TElement, TOption, TBuilder>
         where TElement : IInteractiveElement<TOption>
         where TBuilder : IInteractiveBuilder<TElement, TOption, TBuilder>
     {
+    }
+
+    /// <summary>
+    /// Contains the properties of an <see cref="IInteractiveBuilder{TElement, TOption, TBuilder}"/>.
+    /// </summary>
+    /// <typeparam name="TOption">The type of the options.</typeparam>
+    public interface IInteractiveBuilderProperties<TOption>
+    {
         /// <summary>
-        /// Gets or sets the users who can interact with the <typeparamref name="TElement"/>.
+        /// Gets or sets the users who can interact with the element.
         /// </summary>
         ICollection<IUser> Users { get; set; }
 
         /// <summary>
-        /// Gets or sets a collection of inputs.
+        /// Gets or sets a collection of options.
         /// </summary>
         ICollection<TOption> Options { get; set; }
 
         /// <summary>
-        /// Gets or sets the <see cref="IPage"/> which the <typeparamref name="TElement"/> gets modified to after cancellation.
+        /// Gets or sets the <see cref="IPage"/> which the element gets modified to after cancellation.
         /// </summary>
         IPageBuilder? CanceledPage { get; set; }
 
         /// <summary>
-        /// Gets or sets the <see cref="IPage"/> which the <typeparamref name="TElement"/> gets modified to after a timeout.
+        /// Gets or sets the <see cref="IPage"/> which the element gets modified to after a timeout.
         /// </summary>
         IPageBuilder? TimeoutPage { get; set; }
 
         /// <summary>
-        /// Gets or sets what type of inputs the <typeparamref name="TElement"/> should delete.
+        /// Gets or sets what type of inputs the element should delete.
         /// </summary>
         DeletionOptions Deletion { get; set; }
 
         /// <summary>
-        /// Gets or sets the input type, that is, what is used to interact with the <typeparamref name="TElement"/>.
+        /// Gets or sets the input type, that is, what is used to interact with the element.
         /// </summary>
         InputType InputType { get; set; }
 
@@ -52,7 +61,16 @@ namespace Fergun.Interactive
         /// Gets or sets the action that will be done after a timeout.
         /// </summary>
         ActionOnStop ActionOnTimeout { get; set; }
+    }
 
+    /// <summary>
+    /// Provides a fluent interface for <see cref="IInteractiveBuilder{TElement, TOption, TBuilder}"/>.
+    /// </summary>
+    /// <typeparam name="TElement">The type of the built element.</typeparam>
+    /// <typeparam name="TOption">The type of the options.</typeparam>
+    /// <typeparam name="TBuilder">The type of this builder.</typeparam>
+    public interface IInteractiveBuilderMethods<out TElement, TOption, out TBuilder>
+    {
         /// <summary>
         /// Builds this interactive builder to an immutable <typeparamref name="TElement"/>.
         /// </summary>

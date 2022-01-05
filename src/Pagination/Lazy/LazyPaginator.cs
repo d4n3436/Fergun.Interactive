@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
-using Discord;
 
 namespace Fergun.Interactive.Pagination
 {
@@ -27,19 +26,25 @@ namespace Fergun.Interactive.Pagination
         [MemberNotNullWhen(true, nameof(_cachedPages))]
         public bool CacheLoadedPages { get; }
 
-        internal LazyPaginator(IReadOnlyCollection<IUser> users, IReadOnlyDictionary<IEmote, PaginatorAction> emotes,
-            IPage? canceledPage, IPage? timeoutPage, DeletionOptions deletion, InputType inputType,
-            ActionOnStop actionOnCancellation, ActionOnStop actionOnTimeout, Func<int, Task<IPage>> pageFactory,
-            int startPage, int maxPageIndex, bool cacheLoadedPages)
-            : base(users, emotes, canceledPage, timeoutPage, deletion, inputType, actionOnCancellation, actionOnTimeout, startPage)
+        internal LazyPaginator(LazyPaginatorBuilder builder)
+            : base(builder)
         {
-            PageFactory = pageFactory ?? throw new ArgumentNullException(nameof(pageFactory));
-            MaxPageIndex = maxPageIndex;
-            CacheLoadedPages = cacheLoadedPages;
+            InteractiveGuards.NotNull(builder.PageFactory, nameof(builder.PageFactory));
+
+            PageFactory = AddPaginatorFooterAsync;
+            MaxPageIndex = builder.MaxPageIndex;
+            CacheLoadedPages = builder.CacheLoadedPages;
 
             if (CacheLoadedPages)
             {
                 _cachedPages = new Dictionary<int, IPage>();
+            }
+
+            async Task<IPage> AddPaginatorFooterAsync(int page)
+            {
+                var pageBuilder = await builder.PageFactory(page).ConfigureAwait(false);
+                (pageBuilder as PageBuilder)?.WithPaginatorFooter(builder.Footer, page, MaxPageIndex, builder.Users);
+                return pageBuilder.Build();
             }
         }
 

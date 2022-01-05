@@ -31,7 +31,7 @@ namespace Fergun.Interactive
     /// <summary>
     /// Represents a non-generic result from an interactive action.
     /// </summary>
-    public class InteractiveResult : IInteractiveResult
+    public class InteractiveResult : IInteractiveResult<InteractiveStatus>, IElapsed
     {
         internal InteractiveResult(TimeSpan elapsed, InteractiveStatus status = InteractiveStatus.Success)
         {
