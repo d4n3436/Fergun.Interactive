@@ -38,10 +38,10 @@ namespace Fergun.Interactive.Pagination
         public virtual IDictionary<IEmote, PaginatorAction> Options { get; set; } = new Dictionary<IEmote, PaginatorAction>();
 
         /// <inheritdoc/>
-        public virtual PageBuilder? CanceledPage { get; set; }
+        public virtual IPageBuilder? CanceledPage { get; set; }
 
         /// <inheritdoc/>
-        public virtual PageBuilder? TimeoutPage { get; set; }
+        public virtual IPageBuilder? TimeoutPage { get; set; }
 
         /// <inheritdoc/>
         /// <remarks>This property is ignored in button-based paginators.</remarks>
@@ -163,22 +163,22 @@ namespace Fergun.Interactive.Pagination
         }
 
         /// <summary>
-        /// Sets the <see cref="Page"/> which the <typeparamref name="TPaginator"/> gets modified to after a cancellation.
+        /// Sets the <see cref="IPage"/> which the <typeparamref name="TPaginator"/> gets modified to after a cancellation.
         /// </summary>
         /// <param name="page">The page.</param>
         /// <returns>This builder.</returns>
-        public virtual TBuilder WithCanceledPage(PageBuilder? page)
+        public virtual TBuilder WithCanceledPage(IPageBuilder? page)
         {
             CanceledPage = page;
             return (TBuilder)this;
         }
 
         /// <summary>
-        /// Sets the <see cref="Page"/> which the <typeparamref name="TPaginator"/> gets modified to after a timeout.
+        /// Sets the <see cref="IPage"/> which the <typeparamref name="TPaginator"/> gets modified to after a timeout.
         /// </summary>
         /// <param name="page">The page.</param>
         /// <returns>This builder.</returns>
-        public virtual TBuilder WithTimeoutPage(PageBuilder? page)
+        public virtual TBuilder WithTimeoutPage(IPageBuilder? page)
         {
             TimeoutPage = page;
             return (TBuilder)this;

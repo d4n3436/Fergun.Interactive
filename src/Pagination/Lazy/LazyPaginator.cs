@@ -10,12 +10,12 @@ namespace Fergun.Interactive.Pagination
     /// </summary>
     public sealed class LazyPaginator : Paginator
     {
-        private readonly Dictionary<int, Page>? _cachedPages;
+        private readonly Dictionary<int, IPage>? _cachedPages;
 
         /// <summary>
         /// Gets the function used to load the pages of this paginator lazily.
         /// </summary>
-        public Func<int, Task<Page>> PageFactory { get; }
+        public Func<int, Task<IPage>> PageFactory { get; }
 
         /// <inheritdoc/>
         public override int MaxPageIndex { get; }
@@ -37,21 +37,19 @@ namespace Fergun.Interactive.Pagination
 
             if (CacheLoadedPages)
             {
-                _cachedPages = new Dictionary<int, Page>();
+                _cachedPages = new Dictionary<int, IPage>();
             }
 
-            async Task<Page> AddPaginatorFooterAsync(int page)
+            async Task<IPage> AddPaginatorFooterAsync(int page)
             {
                 var pageBuilder = await builder.PageFactory(page).ConfigureAwait(false);
-
-                return pageBuilder
-                    .WithPaginatorFooter(builder.Footer, page, MaxPageIndex, builder.Users)
-                    .Build();
+                (pageBuilder as PageBuilder)?.WithPaginatorFooter(builder.Footer, page, MaxPageIndex, builder.Users);
+                return pageBuilder.Build();
             }
         }
 
         /// <inheritdoc/>
-        public override async Task<Page> GetOrLoadPageAsync(int pageIndex)
+        public override async Task<IPage> GetOrLoadPageAsync(int pageIndex)
         {
             if (CacheLoadedPages && _cachedPages.TryGetValue(pageIndex, out var page))
             {

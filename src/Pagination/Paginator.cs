@@ -39,10 +39,10 @@ namespace Fergun.Interactive.Pagination
         public IReadOnlyDictionary<IEmote, PaginatorAction> Emotes { get; }
 
         /// <inheritdoc/>
-        public Page? CanceledPage { get; }
+        public IPage? CanceledPage { get; }
 
         /// <inheritdoc/>
-        public Page? TimeoutPage { get; }
+        public IPage? TimeoutPage { get; }
 
         /// <summary>
         /// Gets what type of inputs this paginator should delete.
@@ -141,13 +141,13 @@ namespace Fergun.Interactive.Pagination
         /// </summary>
         /// <param name="pageIndex">The index of the page to get or load.</param>
         /// <returns>A task representing the asynchronous operation. The task result contains the requested page.</returns>
-        public abstract Task<Page> GetOrLoadPageAsync(int pageIndex);
+        public abstract Task<IPage> GetOrLoadPageAsync(int pageIndex);
 
         /// <summary>
         /// Gets or loads the current page of this paginator.
         /// </summary>
         /// <returns>A task representing the asynchronous operation. The task result contains the current page.</returns>
-        public virtual Task<Page> GetOrLoadCurrentPageAsync()
+        public virtual Task<IPage> GetOrLoadCurrentPageAsync()
             => GetOrLoadPageAsync(CurrentPageIndex);
 
         /// <summary>
@@ -240,7 +240,7 @@ namespace Fergun.Interactive.Pagination
                 var currentPage = await GetOrLoadCurrentPageAsync().ConfigureAwait(false);
                 await message.ModifyAsync(x =>
                 {
-                    x.Embed = currentPage.Embed;
+                    x.Embeds = currentPage.Embeds.GetOrCreateEmbedArray();
                     x.Content = currentPage.Text;
                 }).ConfigureAwait(false);
             }
@@ -291,7 +291,7 @@ namespace Fergun.Interactive.Pagination
                 await interaction.UpdateAsync(x =>
                 {
                     x.Content = currentPage.Text ?? ""; // workaround for d.net bug
-                    x.Embed = currentPage.Embed;
+                    x.Embeds = currentPage.Embeds.GetOrCreateEmbedArray();
                     x.Components = buttons;
                 }).ConfigureAwait(false);
             }

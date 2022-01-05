@@ -51,6 +51,19 @@ namespace Fergun.Interactive
             expected = temp;
         }
 
+        public static void EmbedCountInRange(ICollection<EmbedBuilder> builders, string parameterName)
+        {
+            EmbedCountInRange(builders.Count, parameterName);
+        }
+
+        public static void EmbedCountInRange(int count, string parameterName)
+        {
+            if (count > 10)
+            {
+                throw new ArgumentException("A page cannot have more than 10 embeds.", parameterName);
+            }
+        }
+
         public static void MessageFromCurrentUser(BaseSocketClient client, IUserMessage? message, string parameterName)
         {
             if (message is not null && message.Author.Id != client.CurrentUser.Id)

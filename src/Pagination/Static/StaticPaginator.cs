@@ -12,7 +12,7 @@ namespace Fergun.Interactive.Pagination
         /// <summary>
         /// Gets the pages of this paginator.
         /// </summary>
-        public IReadOnlyCollection<Page> Pages { get; }
+        public IReadOnlyCollection<IPage> Pages { get; }
 
         /// <summary>
         /// Gets the maximum page index of this paginator.
@@ -26,11 +26,15 @@ namespace Fergun.Interactive.Pagination
             InteractiveGuards.NotEmpty(builder.Pages, nameof(builder.Pages));
             InteractiveGuards.IndexInRange(builder.Pages, builder.StartPageIndex, nameof(builder.StartPageIndex));
 
-            Pages = builder.Pages.Select((x, i) => x.WithPaginatorFooter(builder.Footer, i, builder.Pages.Count - 1, builder.Users).Build()).ToArray();
+            Pages = builder.Pages.Select((x, i) =>
+            {
+                (x as PageBuilder)?.WithPaginatorFooter(builder.Footer, i, builder.Pages.Count - 1, builder.Users);
+                return x.Build();
+            }).ToArray();
         }
 
         /// <inheritdoc/>
-        public override Task<Page> GetOrLoadPageAsync(int pageIndex)
+        public override Task<IPage> GetOrLoadPageAsync(int pageIndex)
             => Task.FromResult(Pages.ElementAt(pageIndex));
     }
 }

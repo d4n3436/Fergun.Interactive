@@ -12,7 +12,7 @@ namespace Fergun.Interactive.Pagination
         /// <summary>
         /// Gets or sets the pages of the paginator.
         /// </summary>
-        public IList<PageBuilder> Pages { get; set; } = new List<PageBuilder>();
+        public IList<IPageBuilder> Pages { get; set; } = new List<IPageBuilder>();
 
         /// <summary>
         /// Initializes a new instance of the <see cref="StaticPaginatorBuilder"/> class.
@@ -37,7 +37,7 @@ namespace Fergun.Interactive.Pagination
         /// </summary>
         /// <param name="pages">The pages.</param>
         /// <returns>This builder.</returns>
-        public StaticPaginatorBuilder WithPages(params PageBuilder[] pages)
+        public StaticPaginatorBuilder WithPages(params IPageBuilder[] pages)
         {
             Pages = pages?.ToList() ?? throw new ArgumentNullException(nameof(pages));
             return this;
@@ -48,7 +48,7 @@ namespace Fergun.Interactive.Pagination
         /// </summary>
         /// <param name="pages">The pages.</param>
         /// <returns>This builder.</returns>
-        public StaticPaginatorBuilder WithPages(IEnumerable<PageBuilder> pages)
+        public StaticPaginatorBuilder WithPages(IEnumerable<IPageBuilder> pages)
         {
             Pages = pages?.ToList() ?? throw new ArgumentNullException(nameof(pages));
             return this;
@@ -59,7 +59,7 @@ namespace Fergun.Interactive.Pagination
         /// </summary>
         /// <param name="page">The page.</param>
         /// <returns>This builder.</returns>
-        public StaticPaginatorBuilder AddPage(PageBuilder page)
+        public StaticPaginatorBuilder AddPage(IPageBuilder page)
         {
             Pages.Add(page ?? throw new ArgumentNullException(nameof(page)));
             return this;

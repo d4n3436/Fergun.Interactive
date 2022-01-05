@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using Discord;
 
 namespace Fergun.Interactive
@@ -6,17 +7,20 @@ namespace Fergun.Interactive
     /// <summary>
     /// Represents a message page. A page consists of a <see cref="Text"/> and an <see cref="Embed"/>.
     /// </summary>
-    public class Page
+    public class Page : IPage
     {
-        /// <summary>
-        /// Gets the text of this <see cref="Page"/>.
-        /// </summary>
+        private readonly Lazy<Embed[]> _lazyEmbeds;
+
+        /// <inheritdoc/>
         public string? Text { get; }
 
         /// <summary>
-        /// Gets the embed of this <see cref="Page"/>.
+        /// Gets the embed of this page.
         /// </summary>
         public Embed? Embed { get; }
+
+        /// <inheritdoc/>
+        IReadOnlyCollection<Embed> IPage<Embed>.Embeds => _lazyEmbeds.Value;
 
         /// <summary>
         /// Creates a <see cref="PageBuilder"/> with all the values of this <see cref="Page"/>.
@@ -50,6 +54,7 @@ namespace Fergun.Interactive
             }
 
             Embed = isEmpty ? null : builder!.Build();
+            _lazyEmbeds = new Lazy<Embed[]>(() => Embed is null ? Array.Empty<Embed>() : new[] { Embed });
         }
 
         /// <summary>

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Linq;
 using System.Threading.Tasks;
 using Discord;
 using Fergun.Interactive.Pagination;
@@ -31,7 +32,9 @@ namespace Fergun.Interactive
             return false;
         }
 
-        public static async Task<Page> GetCurrentPageAsync<TOption>(this IInteractiveElement<TOption> element)
+        public static Embed[] GetOrCreateEmbedArray(this IReadOnlyCollection<Embed> embeds) => embeds as Embed[] ?? embeds.ToArray();
+
+        public static async Task<IPage> GetCurrentPageAsync<TOption>(this IInteractiveElement<TOption> element)
             => element switch
             {
                 Paginator paginator => await paginator.GetOrLoadCurrentPageAsync().ConfigureAwait(false),

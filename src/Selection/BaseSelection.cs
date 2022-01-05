@@ -48,9 +48,9 @@ namespace Fergun.Interactive.Selection
         public TOption? CancelOption { get; }
 
         /// <summary>
-        /// Gets the <see cref="Page"/> which is sent into the channel.
+        /// Gets the <see cref="IPage"/> which is sent into the channel.
         /// </summary>
-        public Page SelectionPage { get; }
+        public IPage SelectionPage { get; }
 
         /// <inheritdoc/>
         public IReadOnlyCollection<IUser> Users { get; }
@@ -59,16 +59,16 @@ namespace Fergun.Interactive.Selection
         public IReadOnlyCollection<TOption> Options { get; }
 
         /// <inheritdoc/>
-        public Page? CanceledPage { get; }
+        public IPage? CanceledPage { get; }
 
         /// <inheritdoc/>
-        public Page? TimeoutPage { get; }
+        public IPage? TimeoutPage { get; }
 
         /// <summary>
-        /// Gets the <see cref="Page"/> which this selection gets modified to after a valid input is received
+        /// Gets the <see cref="IPage"/> which this selection gets modified to after a valid input is received
         /// (except if <see cref="CancelOption"/> is received).
         /// </summary>
-        public Page? SuccessPage { get; }
+        public IPage? SuccessPage { get; }
 
         /// <inheritdoc/>
         public DeletionOptions Deletion { get; }

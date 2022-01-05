@@ -11,7 +11,7 @@ namespace Fergun.Interactive.Pagination
         /// <summary>
         /// Gets or sets the method used to load the pages of the paginator lazily.
         /// </summary>
-        public Func<int, Task<PageBuilder>> PageFactory { get; set; } = null!;
+        public Func<int, Task<IPageBuilder>> PageFactory { get; set; } = null!;
 
         /// <summary>
         /// Gets or sets the maximum page index of the paginator.
@@ -46,9 +46,10 @@ namespace Fergun.Interactive.Pagination
         /// </summary>
         /// <param name="pageFactory">The page factory.</param>
         /// <returns>This builder.</returns>
-        public LazyPaginatorBuilder WithPageFactory(Func<int, Task<PageBuilder>> pageFactory)
+        public LazyPaginatorBuilder WithPageFactory<TPageBuilder>(Func<int, Task<TPageBuilder>> pageFactory)
+            where TPageBuilder : IPageBuilder
         {
-            PageFactory = pageFactory ?? throw new ArgumentNullException(nameof(pageFactory));
+            PageFactory = pageFactory as Func<int, Task<IPageBuilder>> ?? throw new ArgumentNullException(nameof(pageFactory));
             return this;
         }
 
