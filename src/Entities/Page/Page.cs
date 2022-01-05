@@ -23,7 +23,7 @@ namespace Fergun.Interactive
         IReadOnlyCollection<Embed> IPage<Embed>.Embeds => _lazyEmbeds.Value;
 
         /// <summary>
-        /// Creates a <see cref="PageBuilder"/> with all the values of this <see cref="IPage"/>.
+        /// Creates a <see cref="PageBuilder"/> with all the values of this <see cref="Page"/>.
         /// </summary>
         /// <returns>A <see cref="PageBuilder"/>.</returns>
         public PageBuilder ToPageBuilder()
