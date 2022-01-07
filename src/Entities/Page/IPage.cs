@@ -23,5 +23,11 @@ namespace Fergun.Interactive
     /// <inheritdoc/>
     public interface IPage : IPage<Embed> // Unfortunately we have to use Embed here because we can't send or modify messages using IEmbed.
     {
+        /// <summary>
+        /// Gets the array of <see cref="Embed"/> of this page.
+        /// </summary>
+        /// <remarks>This is used for sending and modifying messages via Discord.Net, since it requires an array of <see cref="Embed"/>.</remarks>
+        /// <returns>An <see cref="Embed"/>[].</returns>
+        Embed[] GetEmbedArray();
     }
 }

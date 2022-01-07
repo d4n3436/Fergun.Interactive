@@ -22,6 +22,9 @@ namespace Fergun.Interactive
         /// <inheritdoc/>
         IReadOnlyCollection<Embed> IPage<Embed>.Embeds => _lazyEmbeds.Value;
 
+        /// <inheritdoc />
+        Embed[] IPage.GetEmbedArray() => _lazyEmbeds.Value;
+
         /// <summary>
         /// Creates a <see cref="PageBuilder"/> with all the values of this <see cref="Page"/>.
         /// </summary>

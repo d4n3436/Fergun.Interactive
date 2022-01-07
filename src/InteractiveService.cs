@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using Discord;
 using Discord.Net;
 using Discord.WebSocket;
+using Fergun.Interactive.Extensions;
 using Fergun.Interactive.Pagination;
 using Fergun.Interactive.Selection;
 
@@ -793,7 +794,7 @@ namespace Fergun.Interactive
                 await message.ModifyAsync(x =>
                 {
                     x.Content = page.Text;
-                    x.Embeds = page.Embeds.GetOrCreateEmbedArray();
+                    x.Embeds = page.GetEmbedArray();
                     x.Components = component;
                 }).ConfigureAwait(false);
             }
@@ -801,7 +802,7 @@ namespace Fergun.Interactive
             {
                 InteractiveGuards.NotNull(channel, nameof(channel));
                 message = await channel!.SendMessageAsync(page.Text,
-                    embeds: page.Embeds.GetOrCreateEmbedArray(), components: component).ConfigureAwait(false);
+                    embeds: page.GetEmbedArray(), components: component).ConfigureAwait(false);
             }
 
             return message;
@@ -819,7 +820,7 @@ namespace Fergun.Interactive
                 component = element.BuildComponents(false);
             }
 
-            var embeds = page.Embeds.GetOrCreateEmbedArray();
+            var embeds = page.GetEmbedArray();
 
             switch (responseType)
             {
@@ -968,7 +969,7 @@ namespace Fergun.Interactive
             void UpdateMessage(MessageProperties props)
             {
                 props.Content = page?.Text ?? new Optional<string>();
-                props.Embeds = page?.Embeds.GetOrCreateEmbedArray();
+                props.Embeds = page?.GetEmbedArray() ?? new Optional<Embed[]>();
                 props.Components = components ?? new Optional<MessageComponent>();
             }
         }

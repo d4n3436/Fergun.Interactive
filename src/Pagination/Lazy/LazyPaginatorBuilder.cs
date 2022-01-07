@@ -49,7 +49,8 @@ namespace Fergun.Interactive.Pagination
         public LazyPaginatorBuilder WithPageFactory<TPageBuilder>(Func<int, Task<TPageBuilder>> pageFactory)
             where TPageBuilder : IPageBuilder
         {
-            PageFactory = pageFactory as Func<int, Task<IPageBuilder>> ?? throw new ArgumentNullException(nameof(pageFactory));
+            InteractiveGuards.NotNull(pageFactory, nameof(pageFactory));
+            PageFactory = pageFactory as Func<int, Task<IPageBuilder>> ?? (async index => await pageFactory(index).ConfigureAwait(false));
             return this;
         }
 

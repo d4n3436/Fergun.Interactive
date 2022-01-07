@@ -5,6 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Discord;
 using Discord.WebSocket;
+using Fergun.Interactive.Extensions;
 
 namespace Fergun.Interactive.Pagination
 {
@@ -240,7 +241,7 @@ namespace Fergun.Interactive.Pagination
                 var currentPage = await GetOrLoadCurrentPageAsync().ConfigureAwait(false);
                 await message.ModifyAsync(x =>
                 {
-                    x.Embeds = currentPage.Embeds.GetOrCreateEmbedArray();
+                    x.Embeds = currentPage.GetEmbedArray();
                     x.Content = currentPage.Text;
                 }).ConfigureAwait(false);
             }
@@ -291,7 +292,7 @@ namespace Fergun.Interactive.Pagination
                 await interaction.UpdateAsync(x =>
                 {
                     x.Content = currentPage.Text ?? ""; // workaround for d.net bug
-                    x.Embeds = currentPage.Embeds.GetOrCreateEmbedArray();
+                    x.Embeds = currentPage.GetEmbedArray();
                     x.Components = buttons;
                 }).ConfigureAwait(false);
             }

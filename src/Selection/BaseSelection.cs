@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Discord;
 using Discord.WebSocket;
+using Fergun.Interactive.Extensions;
 
 namespace Fergun.Interactive.Selection
 {
