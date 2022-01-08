@@ -153,31 +153,13 @@ namespace ExampleBot.Modules
         /// </summary>
         public TOption CurrentOption { get; private set; }
 
-        public override MessageComponent BuildComponents(bool disableAll)
+        public override ComponentBuilder GetOrAddComponents(bool disableAll, ComponentBuilder builder = null)
         {
-            var builder = new ComponentBuilder();
+            builder ??= new ComponentBuilder();
             var paginator = Options[CurrentOption];
 
-            // paginator buttons
-            foreach (var pair in paginator.Emotes)
-            {
-                bool isDisabled = disableAll || pair.Value switch
-                {
-                    PaginatorAction.SkipToStart => paginator.CurrentPageIndex == 0,
-                    PaginatorAction.Backward => paginator.CurrentPageIndex == 0,
-                    PaginatorAction.Forward => paginator.CurrentPageIndex == paginator.MaxPageIndex,
-                    PaginatorAction.SkipToEnd => paginator.CurrentPageIndex == paginator.MaxPageIndex,
-                    _ => false
-                };
-
-                var button = new ButtonBuilder()
-                    .WithCustomId(pair.Key.ToString())
-                    .WithStyle(pair.Value == PaginatorAction.Exit ? ButtonStyle.Danger : ButtonStyle.Primary)
-                    .WithEmote(pair.Key)
-                    .WithDisabled(isDisabled);
-
-                builder.WithButton(button);
-            }
+            // add paginator components to the builder
+            paginator.GetOrAddComponents(disableAll, builder);
 
             // select menu
             var options = new List<SelectMenuOptionBuilder>();
@@ -207,7 +189,7 @@ namespace ExampleBot.Modules
 
             builder.WithSelectMenu(selectMenu);
 
-            return builder.Build();
+            return builder;
         }
 
         public override async Task<InteractiveInputResult<KeyValuePair<TOption, Paginator>>> HandleInteractionAsync(SocketInteraction input, IUserMessage message)
@@ -267,7 +249,7 @@ namespace ExampleBot.Modules
             {
                 x.Content = currentPage.Text ?? "";
                 x.Embeds = currentPage.GetEmbedArray();
-                x.Components = BuildComponents(false);
+                x.Components = GetOrAddComponents(false).Build();
             }).ConfigureAwait(false);
 
             return InteractiveInputStatus.Ignored;

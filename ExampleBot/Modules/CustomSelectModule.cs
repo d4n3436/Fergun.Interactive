@@ -118,9 +118,9 @@ public class MultiSelection<T> : BaseSelection<MultiSelectionOption<T>>
     {
     }
 
-    public override MessageComponent BuildComponents(bool disableAll)
+    public override ComponentBuilder GetOrAddComponents(bool disableAll, ComponentBuilder builder = null)
     {
-        var builder = new ComponentBuilder();
+        builder ??= new ComponentBuilder();
         var selectMenus = new Dictionary<int, SelectMenuBuilder>();
 
         foreach (var option in Options)
@@ -155,7 +155,7 @@ public class MultiSelection<T> : BaseSelection<MultiSelectionOption<T>>
             builder.WithSelectMenu(selectMenu, row);
         }
 
-        return builder.Build();
+        return builder;
     }
 }
 

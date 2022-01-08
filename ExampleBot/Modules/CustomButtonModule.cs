@@ -62,9 +62,9 @@ public partial class CustomModule : ModuleBase
         }
 
         // This method needs to be overriden to build our own component the way we want.
-        public override MessageComponent BuildComponents(bool disableAll)
+        public override ComponentBuilder GetOrAddComponents(bool disableAll, ComponentBuilder builder = null)
         {
-            var builder = new ComponentBuilder();
+            builder ??= new ComponentBuilder();
             foreach (var option in Options)
             {
                 var emote = EmoteConverter?.Invoke(option);
@@ -86,7 +86,7 @@ public partial class CustomModule : ModuleBase
                 builder.WithButton(button);
             }
 
-            return builder.Build();
+            return builder;
         }
     }
 

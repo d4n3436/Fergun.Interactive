@@ -786,7 +786,7 @@ namespace Fergun.Interactive
             bool moreThanOnePage = element is not Paginator pag || pag.MaxPageIndex > 0;
             if ((element.InputType.HasFlag(InputType.Buttons) || element.InputType.HasFlag(InputType.SelectMenus)) && moreThanOnePage)
             {
-                component = element.BuildComponents(false);
+                component = element.GetOrAddComponents(false).Build();
             }
 
             if (message is not null)
@@ -817,7 +817,7 @@ namespace Fergun.Interactive
             bool moreThanOnePage = element is not Paginator pag || pag.MaxPageIndex > 0;
             if ((element.InputType.HasFlag(InputType.Buttons) || element.InputType.HasFlag(InputType.SelectMenus)) && moreThanOnePage)
             {
-                component = element.BuildComponents(false);
+                component = element.GetOrAddComponents(false).Build();
             }
 
             var embeds = page.GetEmbedArray();
@@ -916,7 +916,7 @@ namespace Fergun.Interactive
             {
                 if (action.HasFlag(ActionOnStop.DisableInput))
                 {
-                    components = element.BuildComponents(true);
+                    components = element.GetOrAddComponents(true).Build();
                 }
                 else if (action.HasFlag(ActionOnStop.DeleteInput))
                 {

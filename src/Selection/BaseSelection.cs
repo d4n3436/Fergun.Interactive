@@ -157,14 +157,14 @@ namespace Fergun.Interactive.Selection
         }
 
         /// <inheritdoc/>
-        public virtual MessageComponent BuildComponents(bool disableAll)
+        public virtual ComponentBuilder GetOrAddComponents(bool disableAll, ComponentBuilder? builder = null)
         {
             if (!(InputType.HasFlag(InputType.Buttons) || InputType.HasFlag(InputType.SelectMenus)))
             {
                 throw new InvalidOperationException($"{nameof(InputType)} must have either {InputType.Buttons} or {InputType.SelectMenus}.");
             }
 
-            var builder = new ComponentBuilder();
+            builder ??= new ComponentBuilder();
             if (InputType.HasFlag(InputType.SelectMenus))
             {
                 var options = new List<SelectMenuOptionBuilder>();
@@ -217,7 +217,7 @@ namespace Fergun.Interactive.Selection
                 }
             }
 
-            return builder.Build();
+            return builder;
         }
 
         /// <inheritdoc cref="IInteractiveInputHandler.HandleMessageAsync"/>

@@ -167,9 +167,9 @@ namespace Fergun.Interactive.Pagination
             };
 
         /// <inheritdoc/>
-        public virtual MessageComponent BuildComponents(bool disableAll)
+        public virtual ComponentBuilder GetOrAddComponents(bool disableAll, ComponentBuilder? builder = null)
         {
-            var builder = new ComponentBuilder();
+            builder ??= new ComponentBuilder();
             foreach (var pair in Emotes)
             {
                 bool isDisabled = disableAll || pair.Value switch
@@ -190,7 +190,7 @@ namespace Fergun.Interactive.Pagination
                 builder.WithButton(button);
             }
 
-            return builder.Build();
+            return builder;
         }
 
         /// <inheritdoc cref="IInteractiveInputHandler.HandleMessageAsync(IMessage, IUserMessage)"/>
@@ -287,7 +287,7 @@ namespace Fergun.Interactive.Pagination
             if (refreshPage)
             {
                 var currentPage = await GetOrLoadCurrentPageAsync().ConfigureAwait(false);
-                var buttons = BuildComponents(false);
+                var buttons = GetOrAddComponents(false).Build();
 
                 await interaction.UpdateAsync(x =>
                 {

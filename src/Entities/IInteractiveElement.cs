@@ -50,11 +50,13 @@ namespace Fergun.Interactive
         ActionOnStop ActionOnTimeout { get; }
 
         /// <summary>
-        /// Builds the components that a message that represents this element would have.
+        /// Gets a <see cref="ComponentBuilder"/> containing the components that a message that represents this element would have.<br/>
+        /// If <paramref name="builder"/> is not <see langword="null"/>, it will be used to populate the components.
         /// </summary>
         /// <remarks>This is only used when <see cref="InputType"/> has <see cref="InputType.Buttons"/> or <see cref="InputType.SelectMenus"/>.</remarks>
         /// <param name="disableAll">Whether to disable all the components.</param>
-        /// <returns>A message component.</returns>
-        MessageComponent BuildComponents(bool disableAll);
+        /// <param name="builder">An existing builder to populate the components to.</param>
+        /// <returns>A builder containing the components of this element. This can be either a new <see cref="ComponentBuilder"/> or <paramref name="builder"/>.</returns>
+        ComponentBuilder GetOrAddComponents(bool disableAll, ComponentBuilder? builder = null);
     }
 }
