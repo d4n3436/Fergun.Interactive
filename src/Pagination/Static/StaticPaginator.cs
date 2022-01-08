@@ -22,6 +22,7 @@ namespace Fergun.Interactive.Pagination
         internal StaticPaginator(StaticPaginatorBuilder builder)
             : base(builder)
         {
+            InteractiveGuards.SupportedPaginatorInputType(builder.InputType);
             InteractiveGuards.NotNull(builder.Pages, nameof(builder.Pages));
             InteractiveGuards.NotEmpty(builder.Pages, nameof(builder.Pages));
             InteractiveGuards.IndexInRange(builder.Pages, builder.StartPageIndex, nameof(builder.StartPageIndex));

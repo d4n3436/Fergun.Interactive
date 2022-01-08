@@ -29,6 +29,7 @@ namespace Fergun.Interactive.Pagination
         internal LazyPaginator(LazyPaginatorBuilder builder)
             : base(builder)
         {
+            InteractiveGuards.SupportedPaginatorInputType(builder.InputType);
             InteractiveGuards.NotNull(builder.PageFactory, nameof(builder.PageFactory));
 
             PageFactory = AddPaginatorFooterAsync;

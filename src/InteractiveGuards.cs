@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using Discord;
 using Discord.WebSocket;
-using Fergun.Interactive.Pagination;
 
 namespace Fergun.Interactive
 {
@@ -85,6 +84,9 @@ namespace Fergun.Interactive
             }
         }
 
+        public static void SupportedInputType<TOption>(IInteractiveElement<TOption> element, bool ephemeral)
+            => SupportedInputType(element.InputType, ephemeral);
+
         public static void SupportedInputType(InputType inputType, bool ephemeral)
         {
             if (inputType == 0)
@@ -98,21 +100,17 @@ namespace Fergun.Interactive
             }
         }
 
-        public static void SupportedInputType<TOption>(IInteractiveElement<TOption> element, bool ephemeral)
+        // The paginators included in the library don't support messages or select menus as input
+        public static void SupportedPaginatorInputType(InputType inputType)
         {
-            SupportedInputType(element.InputType, ephemeral);
-
-            if (element is Paginator paginator)
+            if (inputType.HasFlag(InputType.Messages))
             {
-                if (paginator.InputType.HasFlag(InputType.Messages))
-                {
-                    throw new NotSupportedException("Paginators using messages as input are not supported (yet).");
-                }
+                throw new NotSupportedException("This paginator doesn't support using messages as inputs.");
+            }
 
-                if (paginator.InputType.HasFlag(InputType.SelectMenus))
-                {
-                    throw new NotSupportedException("Paginators using select menus as input are not supported (yet).");
-                }
+            if (inputType.HasFlag(InputType.SelectMenus))
+            {
+                throw new NotSupportedException("This paginator doesn't support using select menus as input.");
             }
         }
 
