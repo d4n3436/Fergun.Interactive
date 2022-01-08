@@ -105,7 +105,7 @@ namespace Fergun.Interactive.Selection
     /// <typeparam name="TOption">The type of the options the selection will have.</typeparam>
     /// <typeparam name="TBuilder">The type of this builder.</typeparam>
     public abstract class BaseSelectionBuilder<TSelection, TOption, TBuilder>
-        : BaseSelectionBuilderProperties<TOption>, IInteractiveBuilderMethods<TSelection, TOption, TBuilder>
+        : BaseSelectionBuilderProperties<TOption>, IInteractiveBuilder<TSelection, TOption, TBuilder>
         where TSelection : BaseSelection<TOption>
         where TBuilder : BaseSelectionBuilder<TSelection, TOption, TBuilder>
     {

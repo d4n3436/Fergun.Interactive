@@ -70,7 +70,7 @@ namespace Fergun.Interactive.Pagination
     /// Represents an abstract paginator builder.
     /// </summary>
     public abstract class PaginatorBuilder<TPaginator, TBuilder>
-        : PaginatorBuilderProperties, IInteractiveBuilderMethods<TPaginator, KeyValuePair<IEmote, PaginatorAction>, TBuilder>
+        : PaginatorBuilderProperties, IInteractiveBuilder<TPaginator, KeyValuePair<IEmote, PaginatorAction>, TBuilder>
         where TPaginator : Paginator
         where TBuilder : PaginatorBuilder<TPaginator, TBuilder>
     {

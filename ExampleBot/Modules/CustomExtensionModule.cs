@@ -99,10 +99,7 @@ public static class BuilderExtensions
     // Extension method that randomizes the specified pages and sets them.
     public static StaticPaginatorBuilder WithRandomizedPages(this StaticPaginatorBuilder builder, IEnumerable<PageBuilder> pages)
     {
-        var optionsArr = pages.ToArray();
-        optionsArr.Shuffle();
-
-        return builder.WithPages(optionsArr);
+        return builder.WithPages(pages.ToList().Shuffle());
     }
 
     // Extension method that randomizes the specified options and sets them.
@@ -111,21 +108,18 @@ public static class BuilderExtensions
         where TElement : IInteractiveElement<TOption>
         where TBuilder : IInteractiveBuilder<TElement, TOption, TBuilder>
     {
-        builder.Options.Clear();
-
-        var optionsArr = options.ToArray();
-        optionsArr.Shuffle();
-
-        return builder.WithOptions(optionsArr);
+        return builder.WithOptions(options.ToList().Shuffle());
     }
 
-    private static void Shuffle<T>(this T[] array)
+    private static IList<T> Shuffle<T>(this IList<T> list)
     {
-        int n = array.Length;
+        int n = list.Count;
         while (n > 1)
         {
             int k = Random.Shared.Next(n--);
-            (array[n], array[k]) = (array[k], array[n]);
+            (list[n], list[k]) = (list[k], list[n]);
         }
+
+        return list;
     }
 }
