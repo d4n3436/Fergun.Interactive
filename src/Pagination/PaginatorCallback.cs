@@ -48,6 +48,16 @@ namespace Fergun.Interactive.Pagination
         public SocketInteraction? LastInteraction { get; private set; }
 
         /// <summary>
+        /// Gets or sets the messages that was received to stop the paginator.
+        /// </summary>
+        public IMessage? StopMessage { get; private set; }
+
+        /// <summary>
+        /// Gets or sets the reaction that was received to stop the paginator.
+        /// </summary>
+        public SocketReaction? StopReaction { get; private set; }
+
+        /// <summary>
         /// Gets or sets the interaction that was received to stop the paginator.
         /// </summary>
         public SocketMessageComponent? StopInteraction { get; private set; }
@@ -66,6 +76,7 @@ namespace Fergun.Interactive.Pagination
                     break;
 
                 case InteractiveInputStatus.Canceled:
+                    StopMessage = message;
                     Cancel();
                     break;
 
@@ -86,6 +97,7 @@ namespace Fergun.Interactive.Pagination
                     break;
 
                 case InteractiveInputStatus.Canceled:
+                    StopReaction = reaction;
                     Cancel();
                     break;
 

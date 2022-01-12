@@ -538,7 +538,9 @@ namespace Fergun.Interactive
 
             if (paginator.MaxPageIndex == 0)
             {
-                return new InteractiveMessageResult(TimeSpan.Zero, message);
+                return new InteractiveMessageResultBuilder()
+                    .WithMessage(message)
+                    .Build();
             }
 
             var timeoutTaskSource = new TimeoutTaskCompletionSource<InteractiveStatus>(timeout ?? _config.DefaultTimeout,
@@ -564,7 +566,9 @@ namespace Fergun.Interactive
 
             if (paginator.MaxPageIndex == 0)
             {
-                return new InteractiveMessageResult(TimeSpan.Zero, message);
+                return new InteractiveMessageResultBuilder()
+                    .WithMessage(message)
+                    .Build();
             }
 
             var timeoutTaskSource = new TimeoutTaskCompletionSource<InteractiveStatus>(timeout ?? _config.DefaultTimeout,
@@ -725,7 +729,7 @@ namespace Fergun.Interactive
             cts?.Cancel();
             cts?.Dispose();
 
-            var result = new InteractiveMessageResult(callback.GetElapsedTime(status), callback.Message, status);
+            var result = InteractiveMessageResultBuilder.FromCallback(callback, status).Build();
 
             if (_callbacks.TryRemove(callback.Message.Id, out _))
             {
@@ -765,7 +769,7 @@ namespace Fergun.Interactive
             cts?.Cancel();
             cts?.Dispose();
 
-            var result = new InteractiveMessageResult<TOption?>(selected, callback.GetElapsedTime(status), callback.Message, status);
+            var result = InteractiveMessageResultBuilder<TOption?>.FromCallback(callback, selected, status).Build();
 
             if (_callbacks.TryRemove(callback.Message.Id, out _))
             {

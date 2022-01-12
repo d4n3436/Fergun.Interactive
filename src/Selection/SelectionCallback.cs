@@ -49,6 +49,16 @@ namespace Fergun.Interactive.Selection
         public SocketInteraction? LastInteraction { get; }
 
         /// <summary>
+        /// Gets or sets the messages that was received to stop the selection.
+        /// </summary>
+        public IMessage? StopMessage { get; private set; }
+
+        /// <summary>
+        /// Gets or sets the reaction that was received to stop the selection.
+        /// </summary>
+        public SocketReaction? StopReaction { get; private set; }
+
+        /// <summary>
         /// Gets or sets the interaction that was received to stop the selection.
         /// </summary>
         public SocketMessageComponent? StopInteraction { get; private set; }
@@ -64,10 +74,12 @@ namespace Fergun.Interactive.Selection
             switch (result.Status)
             {
                 case InteractiveInputStatus.Success:
+                    StopMessage = message;
                     TimeoutTaskSource.TrySetResult((result.SelectedOption, InteractiveStatus.Success));
                     break;
 
                 case InteractiveInputStatus.Canceled:
+                    StopMessage = message;
                     TimeoutTaskSource.TrySetResult((result.SelectedOption, InteractiveStatus.Canceled));
                     break;
 
@@ -85,10 +97,12 @@ namespace Fergun.Interactive.Selection
             switch (result.Status)
             {
                 case InteractiveInputStatus.Success:
+                    StopReaction = reaction;
                     TimeoutTaskSource.TrySetResult((result.SelectedOption, InteractiveStatus.Success));
                     break;
 
                 case InteractiveInputStatus.Canceled:
+                    StopReaction = reaction;
                     TimeoutTaskSource.TrySetResult((result.SelectedOption, InteractiveStatus.Canceled));
                     break;
 
