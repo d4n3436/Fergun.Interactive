@@ -961,8 +961,7 @@ namespace Fergun.Interactive
             {
                 Debug.Assert(!ephemeral, "Ephemeral messages cannot have InputType.Reactions");
 
-                bool manageMessages = result.Message.Channel is SocketGuildChannel guildChannel
-                                      && guildChannel.Guild.CurrentUser.GetPermissions(guildChannel).ManageMessages;
+                bool manageMessages = await result.Message.Channel.CurrentUserHasManageMessagesAsync();
 
                 if (manageMessages)
                 {
