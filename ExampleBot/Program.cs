@@ -6,25 +6,38 @@ using Discord.Commands;
 using Discord.WebSocket;
 using ExampleBot.Services;
 using Fergun.Interactive;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace ExampleBot;
 
 internal static class Program
 {
-    private static Task Main() => StartAsync();
-
-    private static async Task StartAsync()
+    private static async Task Main()
     {
-        var services = ConfigureServices();
+        var config = new ConfigurationBuilder()
+            .AddJsonFile("appsettings.json")
+            .Build();
+
+        await using var services = ConfigureServices();
         var client = services.GetRequiredService<DiscordSocketClient>();
 
         services.GetRequiredService<CommandService>().Log += LogAsync;
         services.GetRequiredService<InteractiveService>().Log += LogAsync;
         client.Log += LogAsync;
 
-        // Put your token here
-        string token = "Token";
+        string token = config["Token"];
+
+        try
+        {
+            TokenUtils.ValidateToken(TokenType.Bot, token);
+        }
+        catch (ArgumentException ex)
+        {
+            await LogAsync(new LogMessage(LogSeverity.Critical, "Bot", "Token is invalid, cannot continue. Make sure to put your bot token in appsettings.json", ex));
+            throw;
+        }
+
         await client.LoginAsync(TokenType.Bot, token);
         await client.StartAsync();
 
@@ -40,7 +53,7 @@ internal static class Program
         return Task.CompletedTask;
     }
 
-    private static IServiceProvider ConfigureServices()
+    private static ServiceProvider ConfigureServices()
         => new ServiceCollection()
             .AddSingleton(new DiscordSocketConfig { LogLevel = LogSeverity.Verbose })
             .AddSingleton(new CommandServiceConfig { LogLevel = LogSeverity.Verbose })
