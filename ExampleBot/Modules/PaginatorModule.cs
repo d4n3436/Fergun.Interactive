@@ -47,19 +47,17 @@ public class PaginatorModule : ModuleBase
     {
         var paginator = new LazyPaginatorBuilder()
             .AddUser(Context.User)
-            .WithPageFactory(GeneratePageAsync) // The pages are now generated on demand using a local method.
+            .WithPageFactory(GeneratePage) // The pages are now generated on demand using a local method.
             .WithMaxPageIndex(9) // You must specify the max. index the page factory can go. max. index 9 = 10 pages
             .Build();
 
         await Interactive.SendPaginatorAsync(paginator, Context.Channel, TimeSpan.FromMinutes(10));
 
-        static Task<PageBuilder> GeneratePageAsync(int index)
+        static PageBuilder GeneratePage(int index)
         {
-            var page = new PageBuilder()
+            return new PageBuilder()
                 .WithDescription($"This is page {index + 1}.")
                 .WithRandomColor();
-
-            return Task.FromResult(page);
         }
     }
 
@@ -72,7 +70,7 @@ public class PaginatorModule : ModuleBase
 
         var paginator = new LazyPaginatorBuilder()
             .AddUser(Context.User)
-            .WithPageFactory(GeneratePageAsync)
+            .WithPageFactory(GeneratePage)
             .WithMaxPageIndex(images.Count - 1) // You must specify the max. index the page factory can go.
             .AddOption(new Emoji("⏪"), PaginatorAction.SkipToStart) // Use different emojis and option order.
             .AddOption(new Emoji("◀"), PaginatorAction.Backward)
@@ -87,9 +85,9 @@ public class PaginatorModule : ModuleBase
 
         await Interactive.SendPaginatorAsync(paginator, Context.Channel, TimeSpan.FromMinutes(10));
 
-        Task<PageBuilder> GeneratePageAsync(int index)
+        PageBuilder GeneratePage(int index)
         {
-            var page = new PageBuilder()
+            return new PageBuilder()
                 .WithAuthor(Context.User)
                 .WithTitle(images[index].Title)
                 .WithUrl(images[index].SourceUrl)
@@ -97,8 +95,6 @@ public class PaginatorModule : ModuleBase
                 .WithImageUrl(images[index].Url)
                 .WithFooter($"Page {index + 1}/{images.Count}")
                 .WithRandomColor();
-
-            return Task.FromResult(page);
         }
     }
 }

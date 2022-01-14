@@ -46,6 +46,17 @@ namespace Fergun.Interactive.Pagination
         /// </summary>
         /// <param name="pageFactory">The page factory.</param>
         /// <returns>This builder.</returns>
+        public LazyPaginatorBuilder WithPageFactory(Func<int, IPageBuilder> pageFactory)
+        {
+            InteractiveGuards.NotNull(pageFactory, nameof(pageFactory));
+            return WithPageFactory(index => Task.FromResult(pageFactory(index)));
+        }
+
+        /// <summary>
+        /// Sets the <see cref="PageFactory"/> of the paginator.
+        /// </summary>
+        /// <param name="pageFactory">The page factory.</param>
+        /// <returns>This builder.</returns>
         public LazyPaginatorBuilder WithPageFactory<TPageBuilder>(Func<int, Task<TPageBuilder>> pageFactory)
             where TPageBuilder : IPageBuilder
         {

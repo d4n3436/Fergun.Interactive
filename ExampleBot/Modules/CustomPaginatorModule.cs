@@ -56,7 +56,7 @@ namespace ExampleBot.Modules
             var options = results
                 .Where(x => x.Value.Count > 0)
                 .ToDictionary(x => x.Key, x => new LazyPaginatorBuilder()
-                    .WithPageFactory(index => GeneratePageAsync(x.Value, x.Key, index))
+                    .WithPageFactory(index => GeneratePage(x.Value, x.Key, index))
                     .WithMaxPageIndex(x.Value.Count - 1)
                     .WithActionOnCancellation(ActionOnStop.DisableInput)
                     .WithActionOnTimeout(ActionOnStop.DisableInput)
@@ -73,7 +73,7 @@ namespace ExampleBot.Modules
 
             // We have to provide an initial page to the selection, there's no easy way do to this within the selection
             string first = options.First().Key;
-            var initialPage = await GeneratePageAsync(results[first], first, 0);
+            var initialPage = GeneratePage(results[first], first, 0);
 
             var pagedSelection = new PagedSelectionBuilder<string>()
                 .WithOptions(options)
@@ -85,17 +85,15 @@ namespace ExampleBot.Modules
 
             await Interactive.SendSelectionAsync(pagedSelection, Context.Channel, TimeSpan.FromMinutes(10));
 
-            Task<PageBuilder> GeneratePageAsync(IReadOnlyList<IImageResult> images, string scraper, int index)
+            PageBuilder GeneratePage(IReadOnlyList<IImageResult> images, string scraper, int index)
             {
-                var page = new PageBuilder()
+                return new PageBuilder()
                     .WithAuthor(Context.User)
                     .WithTitle(images[index].Title)
                     .WithDescription($"{scraper} Images")
                     .WithImageUrl(images[index].Url)
                     .WithFooter($"Page {index + 1}/{images.Count}")
                     .WithRandomColor();
-
-                return Task.FromResult(page);
             }
         }
     }
