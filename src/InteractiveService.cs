@@ -532,6 +532,7 @@ namespace Fergun.Interactive
             InteractiveGuards.DeleteAndDisableInputNotSet(paginator.ActionOnCancellation, nameof(paginator.ActionOnCancellation));
             InteractiveGuards.SupportedInputType(paginator, ephemeral);
             InteractiveGuards.ValidResponseType(responseType, nameof(responseType));
+            InteractiveGuards.NotCanceled(cancellationToken, nameof(cancellationToken));
 
             var message = await SendOrModifyMessageAsync(paginator, interaction, responseType, ephemeral).ConfigureAwait(false);
             messageAction?.Invoke(message);
@@ -560,6 +561,7 @@ namespace Fergun.Interactive
             InteractiveGuards.DeleteAndDisableInputNotSet(paginator.ActionOnTimeout, nameof(paginator.ActionOnTimeout));
             InteractiveGuards.DeleteAndDisableInputNotSet(paginator.ActionOnCancellation, nameof(paginator.ActionOnCancellation));
             InteractiveGuards.SupportedInputType(paginator, false);
+            InteractiveGuards.NotCanceled(cancellationToken, nameof(cancellationToken));
 
             message = await SendOrModifyMessageAsync(paginator, message, channel).ConfigureAwait(false);
             messageAction?.Invoke(message);
@@ -659,6 +661,7 @@ namespace Fergun.Interactive
             InteractiveGuards.DeleteAndDisableInputNotSet(selection.ActionOnSuccess, nameof(selection.ActionOnSuccess));
             InteractiveGuards.SupportedInputType(selection, ephemeral);
             InteractiveGuards.ValidResponseType(responseType, nameof(responseType));
+            InteractiveGuards.NotCanceled(cancellationToken, nameof(cancellationToken));
 
             var message = await SendOrModifyMessageAsync(selection, interaction, responseType, ephemeral).ConfigureAwait(false);
             messageAction?.Invoke(message);
@@ -681,6 +684,7 @@ namespace Fergun.Interactive
             InteractiveGuards.DeleteAndDisableInputNotSet(selection.ActionOnCancellation, nameof(selection.ActionOnCancellation));
             InteractiveGuards.DeleteAndDisableInputNotSet(selection.ActionOnSuccess, nameof(selection.ActionOnSuccess));
             InteractiveGuards.SupportedInputType(selection, false);
+            InteractiveGuards.NotCanceled(cancellationToken, nameof(cancellationToken));
 
             message = await SendOrModifyMessageAsync(selection, message, channel).ConfigureAwait(false);
             messageAction?.Invoke(message);
@@ -696,6 +700,8 @@ namespace Fergun.Interactive
         private async Task<InteractiveResult<T?>> NextEntityAsync<T>(Func<T, bool>? filter = null, Func<T, bool, Task>? action = null,
             TimeSpan? timeout = null, CancellationToken cancellationToken = default)
         {
+            InteractiveGuards.NotCanceled(cancellationToken, nameof(cancellationToken));
+
             filter ??= _ => true;
             action ??= (_, _) => Task.CompletedTask;
 

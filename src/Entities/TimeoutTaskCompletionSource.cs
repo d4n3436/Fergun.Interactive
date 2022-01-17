@@ -23,12 +23,12 @@ namespace Fergun.Interactive
         /// <summary>
         /// Gets the timeout result.
         /// </summary>
-        public TResult? TimeoutResult => _timeoutAction is null ? _timeoutResult : _timeoutAction();
+        public TResult? TimeoutResult { get; }
 
         /// <summary>
         /// Gets the cancel result.
         /// </summary>
-        public TResult? CancelResult => _cancelAction is null ? _cancelResult : _cancelAction();
+        public TResult? CancelResult { get; }
 
         /// <summary>
         /// Gets the <see cref="Task{TResult}"/> created by this <see cref="TimeoutTaskCompletionSource{TResult}"/>.
@@ -38,35 +38,18 @@ namespace Fergun.Interactive
         private bool _disposed;
         private readonly Timer _timer;
         private readonly TaskCompletionSource<TResult> _taskSource;
-        private readonly TResult? _timeoutResult;
-        private readonly TResult? _cancelResult;
-        private readonly Func<TResult>? _timeoutAction;
-        private readonly Func<TResult>? _cancelAction;
         private CancellationTokenRegistration _tokenRegistration; // Do not make readonly
-
-        private TimeoutTaskCompletionSource(TimeSpan delay, bool canReset = true, CancellationToken cancellationToken = default)
-        {
-            Delay = delay;
-            CanReset = canReset;
-            _taskSource = new TaskCompletionSource<TResult>(TaskCreationOptions.RunContinuationsAsynchronously);
-            _timer = new Timer(OnTimerFired, null, delay, Timeout.InfiniteTimeSpan);
-            _tokenRegistration = cancellationToken.Register(() => TryCancel());
-        }
 
         public TimeoutTaskCompletionSource(TimeSpan delay, bool canReset = true, TResult? timeoutResult = default,
             TResult? cancelResult = default, CancellationToken cancellationToken = default)
-            : this(delay, canReset, cancellationToken)
         {
-            _timeoutResult = timeoutResult;
-            _cancelResult = cancelResult;
-        }
-
-        public TimeoutTaskCompletionSource(TimeSpan delay, bool canReset = true, Func<TResult>? timeoutAction = default,
-            Func<TResult>? cancelAction = default, CancellationToken cancellationToken = default)
-            : this(delay, canReset, cancellationToken)
-        {
-            _timeoutAction = timeoutAction;
-            _cancelAction = cancelAction;
+            Delay = delay;
+            CanReset = canReset;
+            TimeoutResult = timeoutResult;
+            CancelResult = cancelResult;
+            _taskSource = new TaskCompletionSource<TResult>(TaskCreationOptions.RunContinuationsAsynchronously);
+            _timer = new Timer(OnTimerFired, null, delay, Timeout.InfiniteTimeSpan);
+            _tokenRegistration = cancellationToken.Register(() => TryCancel());
         }
 
         private void OnTimerFired(object state)

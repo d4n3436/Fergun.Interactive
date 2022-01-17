@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using Discord;
 using Discord.WebSocket;
 
@@ -21,6 +22,14 @@ namespace Fergun.Interactive
             if (collection.Count == 0)
             {
                 throw new ArgumentException("Collection must not be empty.", parameterName);
+            }
+        }
+
+        public static void NotCanceled(CancellationToken cancellationToken, string parameterName)
+        {
+            if (cancellationToken.IsCancellationRequested)
+            {
+                throw new ArgumentException("Cancellation token must not be canceled.", parameterName);
             }
         }
 
