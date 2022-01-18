@@ -317,37 +317,37 @@ namespace Fergun.Interactive.Selection
         }
 
         /// <inheritdoc cref="IInteractiveInputHandler.HandleInteractionAsync"/>
-        public virtual Task<InteractiveInputResult<TOption>> HandleInteractionAsync(SocketInteraction input, IUserMessage message)
+        public virtual Task<InteractiveInputResult<TOption>> HandleInteractionAsync(SocketMessageComponent input, IUserMessage message)
             => Task.FromResult(HandleInteraction(input, message));
 
-        private InteractiveInputResult<TOption> HandleInteraction(SocketInteraction input, IUserMessage message)
+        private InteractiveInputResult<TOption> HandleInteraction(SocketMessageComponent input, IUserMessage message)
         {
             InteractiveGuards.NotNull(input, nameof(input));
             InteractiveGuards.NotNull(message, nameof(message));
 
-            if ((!InputType.HasFlag(InputType.Buttons) && !InputType.HasFlag(InputType.SelectMenus)) || input is not SocketMessageComponent interaction)
+            if (!InputType.HasFlag(InputType.Buttons) && !InputType.HasFlag(InputType.SelectMenus))
             {
                 return InteractiveInputStatus.Ignored;
             }
 
-            if (interaction.Message.Id != message.Id || !this.CanInteract(interaction.User))
+            if (input.Message.Id != message.Id || !this.CanInteract(input.User))
             {
                 return InteractiveInputStatus.Ignored;
             }
 
             TOption? selected = default;
             string? selectedString = null;
-            string? customId = interaction.Data.Type switch
+            string? customId = input.Data.Type switch
             {
-                ComponentType.Button => interaction.Data.CustomId,
-                ComponentType.SelectMenu => (interaction
+                ComponentType.Button => input.Data.CustomId,
+                ComponentType.SelectMenu => (input
                         .Message
                         .Components
-                        .FirstOrDefault(x => x.Components.Any(y => y.Type == ComponentType.SelectMenu && y.CustomId == interaction.Data.CustomId))?
+                        .FirstOrDefault(x => x.Components.Any(y => y.Type == ComponentType.SelectMenu && y.CustomId == input.Data.CustomId))?
                         .Components
                         .FirstOrDefault() as SelectMenuComponent)?
                     .Options
-                    .FirstOrDefault(x => x.Value == interaction.Data.Values.FirstOrDefault())?
+                    .FirstOrDefault(x => x.Value == input.Data.Values.FirstOrDefault())?
                     .Value,
                 _ => null
             };
@@ -388,10 +388,10 @@ namespace Fergun.Interactive.Selection
         }
 
         /// <inheritdoc/>
-        async Task<IInteractiveResult<InteractiveInputStatus>> IInteractiveInputHandler.HandleInteractionAsync(IDiscordInteraction input, IUserMessage message)
+        async Task<IInteractiveResult<InteractiveInputStatus>> IInteractiveInputHandler.HandleInteractionAsync(IComponentInteraction input, IUserMessage message)
         {
-            InteractiveGuards.ExpectedType<IDiscordInteraction, SocketInteraction>(input, nameof(input), out var socketInteraction);
-            return await HandleInteractionAsync(socketInteraction, message).ConfigureAwait(false);
+            InteractiveGuards.ExpectedType<IComponentInteraction, SocketMessageComponent>(input, nameof(input), out var socketMessageComponent);
+            return await HandleInteractionAsync(socketMessageComponent, message).ConfigureAwait(false);
         }
     }
 }

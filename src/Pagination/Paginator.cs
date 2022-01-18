@@ -250,27 +250,27 @@ namespace Fergun.Interactive.Pagination
         }
 
         /// <inheritdoc cref="IInteractiveInputHandler.HandleInteractionAsync"/>
-        public virtual async Task<InteractiveInputResult> HandleInteractionAsync(SocketInteraction input, IUserMessage message)
+        public virtual async Task<InteractiveInputResult> HandleInteractionAsync(SocketMessageComponent input, IUserMessage message)
         {
             InteractiveGuards.NotNull(input, nameof(input));
             InteractiveGuards.NotNull(message, nameof(message));
 
-            if (!InputType.HasFlag(InputType.Buttons) || input is not SocketMessageComponent interaction)
+            if (!InputType.HasFlag(InputType.Buttons))
             {
                 return new(InteractiveInputStatus.Ignored);
             }
 
-            if (interaction.Message.Id != message.Id || !this.CanInteract(interaction.User))
+            if (input.Message.Id != message.Id || !this.CanInteract(input.User))
             {
                 return new(InteractiveInputStatus.Ignored);
             }
 
-            var emote = (interaction
+            var emote = (input
                     .Message
                     .Components
                     .FirstOrDefault()?
                     .Components?
-                    .FirstOrDefault(x => x is ButtonComponent button && button.CustomId == interaction.Data.CustomId) as ButtonComponent)?
+                    .FirstOrDefault(x => x is ButtonComponent button && button.CustomId == input.Data.CustomId) as ButtonComponent)?
                 .Emote;
 
             if (emote is null || !Emotes.TryGetValue(emote, out var action))
@@ -289,7 +289,7 @@ namespace Fergun.Interactive.Pagination
                 var currentPage = await GetOrLoadCurrentPageAsync().ConfigureAwait(false);
                 var buttons = GetOrAddComponents(false).Build();
 
-                await interaction.UpdateAsync(x =>
+                await input.UpdateAsync(x =>
                 {
                     x.Content = currentPage.Text ?? ""; // workaround for d.net bug
                     x.Embeds = currentPage.GetEmbedArray();
@@ -312,10 +312,10 @@ namespace Fergun.Interactive.Pagination
         }
 
         /// <inheritdoc />
-        async Task<IInteractiveResult<InteractiveInputStatus>> IInteractiveInputHandler.HandleInteractionAsync(IDiscordInteraction input, IUserMessage message)
+        async Task<IInteractiveResult<InteractiveInputStatus>> IInteractiveInputHandler.HandleInteractionAsync(IComponentInteraction input, IUserMessage message)
         {
-            InteractiveGuards.ExpectedType<IDiscordInteraction, SocketInteraction>(input, nameof(input), out var socketInteraction);
-            return await HandleInteractionAsync(socketInteraction, message).ConfigureAwait(false);
+            InteractiveGuards.ExpectedType<IComponentInteraction, SocketMessageComponent>(input, nameof(input), out var socketMessageComponent);
+            return await HandleInteractionAsync(socketMessageComponent, message).ConfigureAwait(false);
         }
     }
 }

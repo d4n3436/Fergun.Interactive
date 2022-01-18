@@ -25,11 +25,11 @@ namespace Fergun.Interactive
         Task<IInteractiveResult<InteractiveInputStatus>> HandleReactionAsync(IReaction input, IUserMessage message);
 
         /// <summary>
-        /// Handles an interaction.
+        /// Handles a component interaction.
         /// </summary>
-        /// <param name="input">The interaction to handle.</param>
+        /// <param name="input">The component interaction to handle.</param>
         /// <param name="message">The message containing the interactive element.</param>
         /// <returns>A <see cref="Task{TResult}"/> containing the result.</returns>
-        Task<IInteractiveResult<InteractiveInputStatus>> HandleInteractionAsync(IDiscordInteraction input, IUserMessage message);
+        Task<IInteractiveResult<InteractiveInputStatus>> HandleInteractionAsync(IComponentInteraction input, IUserMessage message);
     }
 }
