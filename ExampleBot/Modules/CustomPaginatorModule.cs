@@ -190,16 +190,16 @@ namespace ExampleBot.Modules
             return builder;
         }
 
-        public override async Task<InteractiveInputResult<KeyValuePair<TOption, Paginator>>> HandleInteractionAsync(SocketInteraction input, IUserMessage message)
+        public override async Task<InteractiveInputResult<KeyValuePair<TOption, Paginator>>> HandleInteractionAsync(SocketMessageComponent input, IUserMessage message)
         {
-            if (input is not SocketMessageComponent interaction || interaction.Message.Id != message.Id || !this.CanInteract(interaction.User))
+            if (input.Message.Id != message.Id || !this.CanInteract(input.User))
             {
                 return InteractiveInputStatus.Ignored;
             }
 
-            string option = interaction.Data.Values?.FirstOrDefault();
+            string option = input.Data.Values?.FirstOrDefault();
 
-            if (interaction.Data.Type == ComponentType.SelectMenu && option is not null)
+            if (input.Data.Type == ComponentType.SelectMenu && option is not null)
             {
                 KeyValuePair<TOption, Paginator> selected = default;
                 string selectedString = null;
@@ -229,7 +229,7 @@ namespace ExampleBot.Modules
             }
 
             var paginator = Options[CurrentOption];
-            var (emote, action) = paginator.Emotes.FirstOrDefault(x => x.Key.ToString() == interaction.Data.CustomId);
+            var (emote, action) = paginator.Emotes.FirstOrDefault(x => x.Key.ToString() == input.Data.CustomId);
 
             if (emote is not null)
             {
@@ -243,7 +243,7 @@ namespace ExampleBot.Modules
 
             var currentPage = await paginator.GetOrLoadCurrentPageAsync().ConfigureAwait(false);
 
-            await interaction.UpdateAsync(x =>
+            await input.UpdateAsync(x =>
             {
                 x.Content = currentPage.Text ?? "";
                 x.Embeds = currentPage.GetEmbedArray();

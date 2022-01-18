@@ -110,16 +110,19 @@ namespace Fergun.Interactive.Pagination
         /// <inheritdoc/>
         public async Task ExecuteAsync(SocketInteraction interaction)
         {
-            var result = await Paginator.HandleInteractionAsync(interaction, Message).ConfigureAwait(false);
+            if (interaction is not SocketMessageComponent component)
+                return;
+
+            var result = await Paginator.HandleInteractionAsync(component, Message).ConfigureAwait(false);
             switch (result.Status)
             {
                 case InteractiveInputStatus.Success:
-                    LastInteraction = interaction;
+                    LastInteraction = component;
                     TimeoutTaskSource.TryReset();
                     break;
 
                 case InteractiveInputStatus.Canceled:
-                    StopInteraction = interaction as SocketMessageComponent ?? StopInteraction;
+                    StopInteraction = component;
                     Cancel();
                     break;
 

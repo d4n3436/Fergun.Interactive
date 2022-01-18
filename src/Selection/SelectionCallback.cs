@@ -115,17 +115,20 @@ namespace Fergun.Interactive.Selection
         /// <inheritdoc/>
         public async Task ExecuteAsync(SocketInteraction interaction)
         {
-            var result = await Selection.HandleInteractionAsync(interaction, Message).ConfigureAwait(false);
+            if (interaction is not SocketMessageComponent component)
+                return;
+
+            var result = await Selection.HandleInteractionAsync(component, Message).ConfigureAwait(false);
 
             switch (result.Status)
             {
                 case InteractiveInputStatus.Success:
-                    StopInteraction = interaction as SocketMessageComponent ?? StopInteraction;
+                    StopInteraction = component;
                     TimeoutTaskSource.TrySetResult((result.SelectedOption, InteractiveStatus.Success));
                     break;
 
                 case InteractiveInputStatus.Canceled:
-                    StopInteraction = interaction as SocketMessageComponent ?? StopInteraction;
+                    StopInteraction = component;
                     TimeoutTaskSource.TrySetResult((result.SelectedOption, InteractiveStatus.Canceled));
                     break;
 
