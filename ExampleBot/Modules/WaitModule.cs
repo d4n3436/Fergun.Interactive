@@ -19,7 +19,7 @@ public class WaitModule : ModuleBase
         // Wait for a message in the same channel the command was executed.
         var result = await Interactive.NextMessageAsync(x => x.Channel.Id == Context.Channel.Id, timeout: TimeSpan.FromSeconds(30));
 
-        await msg.ModifyAsync(x => x.Content = result.IsTimeout ? "Timeout!" : $"{result.Value.Author} said: {result.Value.Content}");
+        await msg.ModifyAsync(x => x.Content = result.IsSuccess ? $"{result.Value!.Author} said: {result.Value.Content}" : $"Failed to get message. Status: {result.Status}");
     }
 
     [Command("reaction", RunMode = RunMode.Async)]
@@ -32,7 +32,7 @@ public class WaitModule : ModuleBase
 
         await msg.ModifyAsync(x =>
         {
-            x.Content = result.IsTimeout ? "Timeout!" : $"{MentionUtils.MentionUser(result.Value.UserId)} reacted: {result.Value.Emote}";
+            x.Content = result.IsSuccess ? $"{MentionUtils.MentionUser(result.Value!.UserId)} reacted: {result.Value.Emote}" : $"Failed to get reaction. Status: {result.Status}";
             x.AllowedMentions = AllowedMentions.None;
             x.Embeds = Array.Empty<Embed>(); // workaround for d.net bug
         });
@@ -47,18 +47,17 @@ public class WaitModule : ModuleBase
         var msg = await ReplyAsync("Press this button!", components: builder.Build());
 
         // Wait for a user to press the button
-        var result = await Interactive.NextMessageComponentAsync(x => x.Message.Id == msg.Id,
-            timeout: TimeSpan.FromSeconds(30));
+        var result = await Interactive.NextMessageComponentAsync(x => x.Message.Id == msg.Id, timeout: TimeSpan.FromSeconds(30));
 
         if (result.IsSuccess)
         {
             // Acknowledge the interaction
-            await result.Value.DeferAsync();
+            await result.Value!.DeferAsync();
         }
 
         await msg.ModifyAsync(x =>
         {
-            x.Content = result.IsTimeout ? "Timeout!" : $"{MentionUtils.MentionUser(result.Value.User?.Id ?? 0)} pressed the button!";
+            x.Content = result.IsSuccess ? $"{MentionUtils.MentionUser(result.Value!.User.Id)} pressed the button!" : $"Failed to get interaction. Status: {result.Status}";
             x.Components = new ComponentBuilder().Build(); // No components
             x.AllowedMentions = AllowedMentions.None;
             x.Embeds = Array.Empty<Embed>(); // workaround for d.net bug
