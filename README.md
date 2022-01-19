@@ -5,6 +5,31 @@ Fergun.Interactive is an addon that adds interactive functionality to commands.
 
 This is a fork of [Discord.InteractivityAddon](https://github.com/Playwo/Discord.InteractivityAddon) that adds several features, including more customization and support for interactions (buttons and select menus).
 
+## Features
+
+- Methods for sending and deleting a message after a timeout
+- Methods for receiving incoming messages/reactions/interactions
+- Fully customizable paginator
+  - Uses pages that can be changed through reactions or buttons
+  - Uses a dictionary of emotes and paginator actions that can be modified
+  - 2 included types of paginators: static and lazy loaded
+  - Support for restricting use to certain users
+  - Supports a canceled and timeout page
+  - Support for timeout and cancellation via a special option/choice or a cancellation token
+  - Support for actions that are executed when a paginator stops like modify/delete the message and/or remove/disable the reactions/components
+  - Support for extension methods that can be used in any paginator builder
+  - Support for custom paginators, inheriting from the `Paginator` and `PaginatorBuilder` classes
+- Fully customizable selection
+  - Uses a list of options to select from
+  - Supports messages, reactions, buttons and select menus
+  - Support for restricting use to certain users
+  - Supports a success, canceled and timeout page
+  - Support for timeout and cancellation via a special option/choice or a cancellation token
+  - Support for actions that are executed when a selection stops like modify/delete the message and/or remove/disable the reactions/components
+  - Support for extension methods that can be used in any selection builder
+  - Fully generic, supports any type of option (providing a string/emote converter for that type)
+  - Support for custom selections, inheriting from the `BaseSelection` and `BaseSelectionBuilder` classes
+
 ## Usage
 - Install via NuGet:
   - [Fergun.Interactive](https://www.nuget.org/packages/Fergun.Interactive) (For [Discord.Net](https://github.com/discord-net/Discord.Net))
@@ -40,13 +65,13 @@ Example modules:
   - [Selection with extra features](ExampleBot/Modules/SelectionModule.cs#L134) (`!select extra`)
   - [Menu](ExampleBot/Modules/SelectionModule.cs#L188) (`!select menu`) (How to reuse a selection message)
 
-- Paginator
+- Pagination
   - [Static paginator](ExampleBot/Modules/PaginatorModule.cs#L22) (`!paginator static`)
   - [Lazy paginator](ExampleBot/Modules/PaginatorModule.cs#L46) (`!paginator lazy`)
-  - [Image paginator](ExampleBot/Modules/PaginatorModule.cs#L68) (`!paginator img [query]`)
+  - [Image paginator](ExampleBot/Modules/PaginatorModule.cs#L66) (`!paginator img [query]`)
 
 - Customization
-  - [Selection with custom button colors](ExampleBot/Modules/CustomButtonModule.cs#L20) (`!custom button`)
+  - [Selection with custom button colors](ExampleBot/Modules/CustomButtonModule.cs#L18) (`!custom button`)
   - [Multi selection](ExampleBot/Modules/CustomSelectModule.cs#L19) (`!custom select`) (Selection message with multiple select menus)
   - [Extension methods in builders](ExampleBot/Modules/CustomExtensionModule.cs#L17) (`!custom extension`)
 

@@ -46,7 +46,7 @@ public partial class CustomModule : ModuleBase
     // Custom selection builder for ButtonSelections
     public class ButtonSelectionBuilder<T> : BaseSelectionBuilder<ButtonSelection<T>, ButtonOption<T>, ButtonSelectionBuilder<T>>
     {
-        // Since this is ButtonSelection is specifically created for buttons, it makes sense to make this option the default.
+        // Since this selection specifically created for buttons, it makes sense to make this option the default.
         public override InputType InputType => InputType.Buttons;
 
         // We must override the Build method
