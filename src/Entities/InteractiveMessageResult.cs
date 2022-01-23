@@ -6,6 +6,7 @@ namespace Fergun.Interactive
     /// <summary>
     /// Represents a generic result of an interactive action containing a message associated with the action, the user and input that ended the action.
     /// </summary>
+    /// <typeparam name="T">The type of the value of this result.</typeparam>
     public class InteractiveMessageResult<T> : InteractiveResult<T>, IInteractiveMessageResult
     {
         internal InteractiveMessageResult(InteractiveMessageResultBuilder<T> builder)

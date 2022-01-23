@@ -12,10 +12,12 @@ namespace Fergun.Interactive.Pagination
         /// Display nothing in the footer.
         /// </summary>
         None = 0,
+
         /// <summary>
         /// Displays the current page number in the footer.
         /// </summary>
         PageNumber = 1 << 0,
+
         /// <summary>
         /// Displays the users who can interact with the paginator.
         /// </summary>

@@ -9,6 +9,13 @@ namespace Fergun.Interactive.Pagination
     public sealed class LazyPaginatorBuilder : PaginatorBuilder<LazyPaginator, LazyPaginatorBuilder>
     {
         /// <summary>
+        /// Initializes a new instance of the <see cref="LazyPaginatorBuilder"/> class.
+        /// </summary>
+        public LazyPaginatorBuilder()
+        {
+        }
+
+        /// <summary>
         /// Gets or sets the method used to load the pages of the paginator lazily.
         /// </summary>
         public Func<int, Task<IPageBuilder>> PageFactory { get; set; } = null!;
@@ -19,16 +26,9 @@ namespace Fergun.Interactive.Pagination
         public int MaxPageIndex { get; set; }
 
         /// <summary>
-        /// Gets or sets whether to cache loaded pages. The default value is <see langword="true"/>.
+        /// Gets or sets a value indicating whether to cache loaded pages. The default value is <see langword="true"/>.
         /// </summary>
         public bool CacheLoadedPages { get; set; } = true;
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="LazyPaginatorBuilder"/> class.
-        /// </summary>
-        public LazyPaginatorBuilder()
-        {
-        }
 
         /// <inheritdoc/>
         public override LazyPaginator Build()
@@ -56,6 +56,7 @@ namespace Fergun.Interactive.Pagination
         /// Sets the <see cref="PageFactory"/> of the paginator.
         /// </summary>
         /// <param name="pageFactory">The page factory.</param>
+        /// <typeparam name="TPageBuilder">A type that is or implements <see cref="IPageBuilder"/>.</typeparam>
         /// <returns>This builder.</returns>
         public LazyPaginatorBuilder WithPageFactory<TPageBuilder>(Func<int, Task<TPageBuilder>> pageFactory)
             where TPageBuilder : IPageBuilder

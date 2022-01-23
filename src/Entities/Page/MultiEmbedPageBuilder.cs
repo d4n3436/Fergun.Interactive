@@ -10,6 +10,13 @@ namespace Fergun.Interactive
     public class MultiEmbedPageBuilder : IPageBuilder<MultiEmbedPage>, IPageBuilder
     {
         /// <summary>
+        /// Initializes a new instance of the <see cref="MultiEmbedPageBuilder"/> class.
+        /// </summary>
+        public MultiEmbedPageBuilder()
+        {
+        }
+
+        /// <summary>
         /// Gets or sets the text of a <see cref="MultiEmbedPage"/>.
         /// </summary>
         /// <returns>The text of the page.</returns>
@@ -20,13 +27,6 @@ namespace Fergun.Interactive
         /// </summary>
         /// <returns>The list of builders.</returns>
         public IList<EmbedBuilder> Builders { get; set; } = new List<EmbedBuilder>();
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="MultiEmbedPageBuilder"/> class.
-        /// </summary>
-        public MultiEmbedPageBuilder()
-        {
-        }
 
         /// <summary>
         /// Builds this builder into a <see cref="MultiEmbedPage"/>.

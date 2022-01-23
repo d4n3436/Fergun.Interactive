@@ -12,12 +12,6 @@ namespace Fergun.Interactive
     {
         private readonly Embed[] _embedArray;
 
-        /// <inheritdoc/>
-        public string? Text { get; }
-
-        /// <inheritdoc/>
-        public IReadOnlyCollection<Embed> Embeds => _embedArray;
-
         internal MultiEmbedPage(MultiEmbedPageBuilder builder)
         {
             InteractiveGuards.NotNull(builder, nameof(builder));
@@ -31,6 +25,12 @@ namespace Fergun.Interactive
             Text = builder.Text;
             _embedArray = builder.Builders.Select(x => x.Build()).ToArray();
         }
+
+        /// <inheritdoc/>
+        public string? Text { get; }
+
+        /// <inheritdoc/>
+        public IReadOnlyCollection<Embed> Embeds => _embedArray;
 
         /// <summary>
         /// Converts this <see cref="MultiEmbedPage"/> into a <see cref="MultiEmbedPageBuilder"/>.

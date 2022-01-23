@@ -42,23 +42,23 @@ namespace Fergun.Interactive.Pagination
         public DateTimeOffset StartTime { get; }
 
         /// <summary>
-        /// Gets or sets the last received interaction that is not <see cref="StopInteraction"/>.
+        /// Gets the last received interaction that is not <see cref="StopInteraction"/>.
         /// </summary>
         /// <remarks>For paginators, this is either the interaction that was received to update a message to a paginator or the interaction received to change the pages.</remarks>
         public SocketInteraction? LastInteraction { get; private set; }
 
         /// <summary>
-        /// Gets or sets the messages that was received to stop the paginator.
+        /// Gets the messages that was received to stop the paginator.
         /// </summary>
         public IMessage? StopMessage { get; private set; }
 
         /// <summary>
-        /// Gets or sets the reaction that was received to stop the paginator.
+        /// Gets the reaction that was received to stop the paginator.
         /// </summary>
         public SocketReaction? StopReaction { get; private set; }
 
         /// <summary>
-        /// Gets or sets the interaction that was received to stop the paginator.
+        /// Gets the interaction that was received to stop the paginator.
         /// </summary>
         public SocketMessageComponent? StopInteraction { get; private set; }
 
@@ -132,6 +132,9 @@ namespace Fergun.Interactive.Pagination
             }
         }
 
+        /// <inheritdoc/>
+        public void Dispose() => Dispose(true);
+
         private void Dispose(bool disposing)
         {
             if (_disposed) return;
@@ -142,8 +145,5 @@ namespace Fergun.Interactive.Pagination
 
             _disposed = true;
         }
-
-        /// <inheritdoc/>
-        public void Dispose() => Dispose(true);
     }
 }

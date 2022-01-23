@@ -88,6 +88,9 @@ namespace Fergun.Interactive
             throw new ArgumentException("Cannot execute this callback using an interaction.", nameof(interaction));
         }
 
+        /// <inheritdoc/>
+        public void Dispose() => Dispose(true);
+
         private void Dispose(bool disposing)
         {
             if (_disposed) return;
@@ -98,8 +101,5 @@ namespace Fergun.Interactive
 
             _disposed = true;
         }
-
-        /// <inheritdoc/>
-        public void Dispose() => Dispose(true);
     }
 }

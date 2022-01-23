@@ -20,6 +20,9 @@ namespace Fergun.Interactive.Extensions
             where TElement : IInteractiveElement<TOption>
             where TBuilder : IInteractiveBuilder<TElement, TOption, TBuilder>
         {
+            InteractiveGuards.NotNull(builder, nameof(builder));
+            InteractiveGuards.NotNull(action, nameof(action));
+
             action((TBuilder)builder);
             return (TBuilder)builder;
         }

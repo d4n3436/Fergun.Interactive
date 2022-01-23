@@ -12,14 +12,17 @@ namespace Fergun.Interactive
         /// Use reactions as input.
         /// </summary>
         Reactions = 1 << 0,
+
         /// <summary>
         /// Use messages as input.
         /// </summary>
         Messages = 1 << 1,
+
         /// <summary>
         /// Use buttons as input.
         /// </summary>
         Buttons = 1 << 2,
+
         /// <summary>
         /// Use select menus as input.
         /// </summary>

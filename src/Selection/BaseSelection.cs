@@ -17,7 +17,45 @@ namespace Fergun.Interactive.Selection
     public abstract class BaseSelection<TOption> : IInteractiveElement<TOption>
     {
         /// <summary>
-        /// Gets whether the selection is restricted to <see cref="Users"/>.
+        /// Initializes a new instance of the <see cref="BaseSelection{TOption}"/> class using the specified builder properties.
+        /// </summary>
+        /// <param name="builder">The builder to copy the properties from.</param>
+        protected BaseSelection(BaseSelectionBuilderProperties<TOption> builder)
+        {
+            InteractiveGuards.NotNull(builder, nameof(builder));
+            InteractiveGuards.SupportedInputType(builder.InputType, false);
+            InteractiveGuards.RequiredEmoteConverter(builder.InputType, builder.EmoteConverter);
+            InteractiveGuards.NotNull(builder.EqualityComparer, nameof(builder.EqualityComparer));
+            InteractiveGuards.NotNull(builder.SelectionPage, nameof(builder.SelectionPage));
+            InteractiveGuards.NotNull(builder.Options, nameof(builder.Options));
+            InteractiveGuards.NotNull(builder.Users, nameof(builder.Users));
+            InteractiveGuards.NotEmpty(builder.Options, nameof(builder.Options));
+
+            StringConverter = builder.StringConverter;
+            EmoteConverter = builder.EmoteConverter;
+            EqualityComparer = builder.EqualityComparer;
+            SelectionPage = builder.SelectionPage.Build();
+            AllowCancel = builder.AllowCancel && builder.Options.Count > 1;
+            CancelOption = AllowCancel ? builder.Options.Last() : default;
+            Users = builder.Users.ToArray();
+            Options = builder.Options.ToArray();
+            CanceledPage = builder.CanceledPage?.Build();
+            TimeoutPage = builder.TimeoutPage?.Build();
+            SuccessPage = builder.SuccessPage?.Build();
+            Deletion = builder.Deletion;
+            InputType = builder.InputType;
+            ActionOnCancellation = builder.ActionOnCancellation;
+            ActionOnTimeout = builder.ActionOnTimeout;
+            ActionOnSuccess = builder.ActionOnSuccess;
+
+            if (StringConverter is null && (!InputType.HasFlag(InputType.Buttons) || EmoteConverter is null))
+            {
+                StringConverter = x => x?.ToString()!;
+            }
+        }
+
+        /// <summary>
+        /// Gets a value indicating whether the selection is restricted to <see cref="Users"/>.
         /// </summary>
         public bool IsUserRestricted => Users.Count > 0;
 
@@ -37,7 +75,7 @@ namespace Fergun.Interactive.Selection
         public IEqualityComparer<TOption> EqualityComparer { get; }
 
         /// <summary>
-        /// Gets whether this selection allows for cancellation.
+        /// Gets a value indicating whether this selection allows for cancellation.
         /// </summary>
         [MemberNotNullWhen(true, nameof(CancelOption))]
         public bool AllowCancel { get; }
@@ -88,74 +126,6 @@ namespace Fergun.Interactive.Selection
         /// </summary>
         public ActionOnStop ActionOnSuccess { get; }
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="BaseSelection{TOption}"/> class using the specified builder properties.
-        /// </summary>
-        /// <param name="builder">The builder to copy the properties from.</param>
-        protected BaseSelection(BaseSelectionBuilderProperties<TOption> builder)
-        {
-            InteractiveGuards.SupportedInputType(builder.InputType, false);
-            InteractiveGuards.RequiredEmoteConverter(builder.InputType, builder.EmoteConverter);
-            InteractiveGuards.NotNull(builder.EqualityComparer, nameof(builder.EqualityComparer));
-            InteractiveGuards.NotNull(builder.SelectionPage, nameof(builder.SelectionPage));
-            InteractiveGuards.NotNull(builder.Options, nameof(builder.Options));
-            InteractiveGuards.NotNull(builder.Users, nameof(builder.Users));
-            InteractiveGuards.NotEmpty(builder.Options, nameof(builder.Options));
-
-            StringConverter = builder.StringConverter;
-            EmoteConverter = builder.EmoteConverter;
-            EqualityComparer = builder.EqualityComparer;
-            SelectionPage = builder.SelectionPage.Build();
-            AllowCancel = builder.AllowCancel && builder.Options.Count > 1;
-            CancelOption = AllowCancel ? builder.Options.Last() : default;
-            Users = builder.Users.ToArray();
-            Options = builder.Options.ToArray();
-            CanceledPage = builder.CanceledPage?.Build();
-            TimeoutPage = builder.TimeoutPage?.Build();
-            SuccessPage = builder.SuccessPage?.Build();
-            Deletion = builder.Deletion;
-            InputType = builder.InputType;
-            ActionOnCancellation = builder.ActionOnCancellation;
-            ActionOnTimeout = builder.ActionOnTimeout;
-            ActionOnSuccess = builder.ActionOnSuccess;
-
-            if (StringConverter is null && (!InputType.HasFlag(InputType.Buttons) || EmoteConverter is null))
-            {
-                StringConverter = x => x?.ToString()!;
-            }
-        }
-
-        /// <summary>
-        /// Initializes a message based on this selection.
-        /// </summary>
-        /// <remarks>By default this method adds the reactions to a message when <see cref="InputType"/> has <see cref="InputType.Reactions"/>.</remarks>
-        /// <param name="message">The message to initialize.</param>
-        /// <param name="cancellationToken">The <see cref="CancellationToken"/> to cancel this request.</param>
-        internal virtual async Task InitializeMessageAsync(IUserMessage message, CancellationToken cancellationToken = default)
-        {
-            if (!InputType.HasFlag(InputType.Reactions)) return;
-            if (EmoteConverter is null)
-            {
-                throw new InvalidOperationException($"Reaction-based selections must have a valid {nameof(EmoteConverter)}.");
-            }
-
-            foreach (var selection in Options)
-            {
-                if (cancellationToken.IsCancellationRequested)
-                {
-                    break;
-                }
-
-                var emote = EmoteConverter(selection);
-
-                // Only add missing reactions
-                if (!message.Reactions.ContainsKey(emote))
-                {
-                    await message.AddReactionAsync(emote).ConfigureAwait(false);
-                }
-            }
-        }
-
         /// <inheritdoc/>
         public virtual ComponentBuilder GetOrAddComponents(bool disableAll, ComponentBuilder? builder = null)
         {
@@ -193,6 +163,7 @@ namespace Fergun.Interactive.Selection
 
                 builder.WithSelectMenu(selectMenu);
             }
+
             if (InputType.HasFlag(InputType.Buttons))
             {
                 foreach (var selection in Options)
@@ -250,6 +221,7 @@ namespace Fergun.Interactive.Selection
                 {
                     await input.DeleteAsync().ConfigureAwait(false);
                 }
+
                 return InteractiveInputStatus.Ignored;
             }
 
@@ -298,6 +270,7 @@ namespace Fergun.Interactive.Selection
                 {
                     await message.RemoveReactionAsync(input.Emote, input.UserId).ConfigureAwait(false);
                 }
+
                 return InteractiveInputStatus.Ignored;
             }
 
@@ -318,21 +291,18 @@ namespace Fergun.Interactive.Selection
 
         /// <inheritdoc cref="IInteractiveInputHandler.HandleInteractionAsync"/>
         public virtual Task<InteractiveInputResult<TOption>> HandleInteractionAsync(SocketMessageComponent input, IUserMessage message)
-            => Task.FromResult(HandleInteraction(input, message));
-
-        private InteractiveInputResult<TOption> HandleInteraction(SocketMessageComponent input, IUserMessage message)
         {
             InteractiveGuards.NotNull(input, nameof(input));
             InteractiveGuards.NotNull(message, nameof(message));
 
             if (!InputType.HasFlag(InputType.Buttons) && !InputType.HasFlag(InputType.SelectMenus))
             {
-                return InteractiveInputStatus.Ignored;
+                return Task.FromResult<InteractiveInputResult<TOption>>(InteractiveInputStatus.Ignored);
             }
 
             if (input.Message.Id != message.Id || !this.CanInteract(input.User))
             {
-                return InteractiveInputStatus.Ignored;
+                return Task.FromResult<InteractiveInputResult<TOption>>(InteractiveInputStatus.Ignored);
             }
 
             TOption? selected = default;
@@ -354,7 +324,7 @@ namespace Fergun.Interactive.Selection
 
             if (customId is null)
             {
-                return InteractiveInputStatus.Ignored;
+                return Task.FromResult<InteractiveInputResult<TOption>>(InteractiveInputStatus.Ignored);
             }
 
             foreach (var value in Options)
@@ -368,12 +338,12 @@ namespace Fergun.Interactive.Selection
 
             if (selectedString is null)
             {
-                return InteractiveInputStatus.Ignored;
+                return Task.FromResult<InteractiveInputResult<TOption>>(InteractiveInputStatus.Ignored);
             }
 
             bool isCanceled = AllowCancel && (EmoteConverter?.Invoke(CancelOption)?.ToString() ?? StringConverter?.Invoke(CancelOption)) == selectedString;
 
-            return new(isCanceled ? InteractiveInputStatus.Canceled : InteractiveInputStatus.Success, selected);
+            return Task.FromResult<InteractiveInputResult<TOption>>(new(isCanceled ? InteractiveInputStatus.Canceled : InteractiveInputStatus.Success, selected));
         }
 
         /// <inheritdoc/>
@@ -392,6 +362,38 @@ namespace Fergun.Interactive.Selection
         {
             InteractiveGuards.ExpectedType<IComponentInteraction, SocketMessageComponent>(input, nameof(input), out var socketMessageComponent);
             return await HandleInteractionAsync(socketMessageComponent, message).ConfigureAwait(false);
+        }
+
+        /// <summary>
+        /// Initializes a message based on this selection.
+        /// </summary>
+        /// <remarks>By default this method adds the reactions to a message when <see cref="InputType"/> has <see cref="InputType.Reactions"/>.</remarks>
+        /// <param name="message">The message to initialize.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> to cancel this request.</param>
+        /// <returns>A task representing the asynchronous operation.</returns>
+        internal virtual async Task InitializeMessageAsync(IUserMessage message, CancellationToken cancellationToken = default)
+        {
+            if (!InputType.HasFlag(InputType.Reactions)) return;
+            if (EmoteConverter is null)
+            {
+                throw new InvalidOperationException($"Reaction-based selections must have a valid {nameof(EmoteConverter)}.");
+            }
+
+            foreach (var selection in Options)
+            {
+                if (cancellationToken.IsCancellationRequested)
+                {
+                    break;
+                }
+
+                var emote = EmoteConverter(selection);
+
+                // Only add missing reactions
+                if (!message.Reactions.ContainsKey(emote))
+                {
+                    await message.AddReactionAsync(emote).ConfigureAwait(false);
+                }
+            }
         }
     }
 }

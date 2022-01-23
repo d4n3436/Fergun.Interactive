@@ -12,18 +12,18 @@ namespace Fergun.Interactive.Selection
     public sealed class EmoteSelectionBuilder<TValue>
         : BaseSelectionBuilder<Selection<KeyValuePair<IEmote, TValue>>, KeyValuePair<IEmote, TValue>, EmoteSelectionBuilder<TValue>>
     {
-        /// <inheritdoc/>
-        public override Func<KeyValuePair<IEmote, TValue>, IEmote>? EmoteConverter { get; set; } = pair => pair.Key;
-
-        /// <inheritdoc/>
-        public override IEqualityComparer<KeyValuePair<IEmote, TValue>> EqualityComparer { get; set; } = new EmoteComparer<TValue>();
-
         /// <summary>
         /// Initializes a new instance of the <see cref="EmoteSelectionBuilder{TValue}"/> class.
         /// </summary>
         public EmoteSelectionBuilder()
         {
         }
+
+        /// <inheritdoc/>
+        public override Func<KeyValuePair<IEmote, TValue>, IEmote>? EmoteConverter { get; set; } = pair => pair.Key;
+
+        /// <inheritdoc/>
+        public override IEqualityComparer<KeyValuePair<IEmote, TValue>> EqualityComparer { get; set; } = new EmoteComparer<TValue>();
 
         /// <summary>
         /// Builds this <see cref="EmoteSelectionBuilder{TValue}"/> into an immutable <see cref="Selection{TOption}"/>.
@@ -38,7 +38,8 @@ namespace Fergun.Interactive.Selection
         /// <returns>This builder.</returns>
         public EmoteSelectionBuilder<TValue> WithOptions(IDictionary<IEmote, TValue> options)
         {
-            Options = options ?? throw new ArgumentNullException(nameof(options));
+            InteractiveGuards.NotNull(options, nameof(options));
+            Options = options;
             return this;
         }
 
@@ -61,18 +62,18 @@ namespace Fergun.Interactive.Selection
     /// </summary>
     public sealed class EmoteSelectionBuilder : BaseSelectionBuilder<Selection<IEmote>, IEmote, EmoteSelectionBuilder>
     {
-        /// <inheritdoc/>
-        public override Func<IEmote, IEmote>? EmoteConverter { get; set; } = emote => emote;
-
-        /// <inheritdoc/>
-        public override IEqualityComparer<IEmote> EqualityComparer { get; set; } = new EmoteComparer();
-
         /// <summary>
         /// Initializes a new instance of the <see cref="EmoteSelectionBuilder"/> class.
         /// </summary>
         public EmoteSelectionBuilder()
         {
         }
+
+        /// <inheritdoc/>
+        public override Func<IEmote, IEmote>? EmoteConverter { get; set; } = emote => emote;
+
+        /// <inheritdoc/>
+        public override IEqualityComparer<IEmote> EqualityComparer { get; set; } = new EmoteComparer();
 
         /// <summary>
         /// Builds this <see cref="EmoteSelectionBuilder"/> into an immutable <see cref="Selection{TOption}"/>.

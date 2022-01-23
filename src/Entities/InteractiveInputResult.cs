@@ -6,7 +6,7 @@ namespace Fergun.Interactive
     public class InteractiveInputResult : IInteractiveResult<InteractiveInputStatus>
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="InteractiveInputResult"/> structure with the specified action.
+        /// Initializes a new instance of the <see cref="InteractiveInputResult"/> class with the specified action.
         /// </summary>
         /// <param name="status">The action.</param>
         public InteractiveInputResult(InteractiveInputStatus status)
@@ -32,7 +32,7 @@ namespace Fergun.Interactive
     public class InteractiveInputResult<TOption> : InteractiveInputResult
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="InteractiveInputResult{TOption}"/> structure with the specified action.
+        /// Initializes a new instance of the <see cref="InteractiveInputResult{TOption}"/> class with the specified action.
         /// </summary>
         /// <param name="status">The action.</param>
         public InteractiveInputResult(InteractiveInputStatus status) : base(status)
@@ -40,7 +40,7 @@ namespace Fergun.Interactive
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="InteractiveInputResult{TOption}"/> structure with the specified action and selected option.
+        /// Initializes a new instance of the <see cref="InteractiveInputResult{TOption}"/> class with the specified action and selected option.
         /// </summary>
         /// <param name="status">The action.</param>
         /// <param name="selectedOption">The selected option.</param>

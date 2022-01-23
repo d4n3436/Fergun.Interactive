@@ -309,7 +309,10 @@ namespace Fergun.Interactive
         /// <param name="user">The user to put into the author.</param>
         /// <returns>The current builder.</returns>
         public PageBuilder WithAuthor(IUser user)
-            => WithAuthor(user.ToString(), user.GetAvatarUrl() ?? user.GetDefaultAvatarUrl());
+        {
+            InteractiveGuards.NotNull(user, nameof(user));
+            return WithAuthor(user.ToString(), user.GetAvatarUrl() ?? user.GetDefaultAvatarUrl());
+        }
 
         /// <summary>
         /// Sets the <see cref="EmbedFooterBuilder"/> of a <see cref="Page"/>.
@@ -347,6 +350,7 @@ namespace Fergun.Interactive
         /// Sets the fields of the <see cref="Page"/>.
         /// </summary>
         /// <param name="fields">The fields.</param>
+        /// <returns>The current builder.</returns>
         public PageBuilder WithFields(params EmbedFieldBuilder[] fields)
         {
             _builder.WithFields(fields);
@@ -357,6 +361,7 @@ namespace Fergun.Interactive
         /// Sets the fields of the <see cref="Page"/>.
         /// </summary>
         /// <param name="fields">The fields.</param>
+        /// <returns>The current builder.</returns>
         public PageBuilder WithFields(IEnumerable<EmbedFieldBuilder> fields)
         {
             _builder.WithFields(fields);
@@ -398,6 +403,9 @@ namespace Fergun.Interactive
             return this;
         }
 
+        /// <inheritdoc/>
+        IPage IPageBuilder<IPage>.Build() => Build();
+
         internal PageBuilder WithPaginatorFooter(PaginatorFooter footer, int page, int totalPages, ICollection<IUser>? users)
         {
             if (footer == PaginatorFooter.None)
@@ -424,6 +432,7 @@ namespace Fergun.Interactive
                     Footer.Text += $"Interactors: {string.Join(", ", users)}";
                 }
             }
+
             if (footer.HasFlag(PaginatorFooter.PageNumber))
             {
                 Footer.Text += $"Page {page + 1}/{totalPages + 1}";
@@ -431,8 +440,5 @@ namespace Fergun.Interactive
 
             return this;
         }
-
-        /// <inheritdoc/>
-        IPage IPageBuilder<IPage>.Build() => Build();
     }
 }

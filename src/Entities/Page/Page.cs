@@ -11,27 +11,6 @@ namespace Fergun.Interactive
     {
         private readonly Lazy<Embed[]> _lazyEmbeds;
 
-        /// <inheritdoc/>
-        public string? Text { get; }
-
-        /// <summary>
-        /// Gets the embed of this page.
-        /// </summary>
-        public Embed? Embed { get; }
-
-        /// <inheritdoc/>
-        IReadOnlyCollection<Embed> IPage<Embed>.Embeds => _lazyEmbeds.Value;
-
-        /// <inheritdoc />
-        Embed[] IPage.GetEmbedArray() => _lazyEmbeds.Value;
-
-        /// <summary>
-        /// Creates a <see cref="PageBuilder"/> with all the values of this <see cref="Page"/>.
-        /// </summary>
-        /// <returns>A <see cref="PageBuilder"/>.</returns>
-        public PageBuilder ToPageBuilder()
-            => new(Text, Embed?.ToEmbedBuilder());
-
         internal Page(string? text = null, EmbedBuilder? builder = null)
         {
             Text = text;
@@ -60,6 +39,20 @@ namespace Fergun.Interactive
             _lazyEmbeds = new Lazy<Embed[]>(() => Embed is null ? Array.Empty<Embed>() : new[] { Embed });
         }
 
+        /// <inheritdoc/>
+        public string? Text { get; }
+
+        /// <summary>
+        /// Gets the embed of this page.
+        /// </summary>
+        public Embed? Embed { get; }
+
+        /// <inheritdoc/>
+        IReadOnlyCollection<Embed> IPage<Embed>.Embeds => _lazyEmbeds.Value;
+
+        /// <inheritdoc />
+        Embed[] IPage.GetEmbedArray() => _lazyEmbeds.Value;
+
         /// <summary>
         /// Creates a new <see cref="Page"/> from an <see cref="Discord.Embed"/>.
         /// </summary>
@@ -75,5 +68,12 @@ namespace Fergun.Interactive
         /// <returns>A <see cref="Page"/>.</returns>
         public static Page FromEmbedBuilder(EmbedBuilder builder)
             => new(null, builder);
+
+        /// <summary>
+        /// Creates a <see cref="PageBuilder"/> with all the values of this <see cref="Page"/>.
+        /// </summary>
+        /// <returns>A <see cref="PageBuilder"/>.</returns>
+        public PageBuilder ToPageBuilder()
+            => new(Text, Embed?.ToEmbedBuilder());
     }
 }

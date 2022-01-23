@@ -29,17 +29,6 @@ namespace Fergun.Interactive
         private readonly InteractiveConfig _config;
 
         /// <summary>
-        /// Gets a dictionary of active callbacks.
-        /// </summary>
-        public IDictionary<ulong, IInteractiveCallback> Callbacks => _callbacks;
-
-        /// <summary>
-        /// Gets the default timeout for interactive actions provided by this service.
-        /// </summary>
-        [Obsolete("This property is deprecated and will be removed in a future version.")]
-        public TimeSpan DefaultTimeout { get; }
-
-        /// <summary>
         /// Initializes a new instance of the <see cref="InteractiveService"/> class using the default timeout.
         /// </summary>
         /// <param name="client">An instance of <see cref="BaseSocketClient"/>.</param>
@@ -143,6 +132,17 @@ namespace Fergun.Interactive
         /// Occurs when an interactive-related information is received.
         /// </summary>
         public event Func<LogMessage, Task> Log;
+
+        /// <summary>
+        /// Gets a dictionary of active callbacks.
+        /// </summary>
+        public IDictionary<ulong, IInteractiveCallback> Callbacks => _callbacks;
+
+        /// <summary>
+        /// Gets the default timeout for interactive actions provided by this service.
+        /// </summary>
+        [Obsolete("This property is deprecated and will be removed in a future version.")]
+        public TimeSpan DefaultTimeout { get; }
 
         /// <summary>
         /// Attempts to remove and return a callback.
@@ -268,8 +268,8 @@ namespace Fergun.Interactive
         /// Deletes a message after a delay.
         /// </summary>
         /// <remarks>Discard the returning task if you don't want to wait it for completion.</remarks>
-        /// <param name="message">The message to delete</param>
-        /// <param name="deleteDelay">The time to wait before deleting the message</param>
+        /// <param name="message">The message to delete.</param>
+        /// <param name="deleteDelay">The time to wait before deleting the message.</param>
         /// <returns>A task that represents the asynchronous delay and delete message operation.</returns>
         /// <exception cref="ArgumentNullException"/>
         public async Task DelayedDeleteMessageAsync(IMessage message, TimeSpan? deleteDelay = null)
@@ -553,34 +553,6 @@ namespace Fergun.Interactive
             return await WaitForPaginatorResultAsync(callback).ConfigureAwait(false);
         }
 
-        private async Task<InteractiveMessageResult> SendPaginatorInternalAsync(Paginator paginator, IMessageChannel? channel, TimeSpan? timeout = null,
-            IUserMessage? message = null, Action<IUserMessage>? messageAction = null, bool resetTimeoutOnInput = false, CancellationToken cancellationToken = default)
-        {
-            InteractiveGuards.NotNull(paginator, nameof(paginator));
-            InteractiveGuards.MessageFromCurrentUser(_client, message, nameof(message));
-            InteractiveGuards.DeleteAndDisableInputNotSet(paginator.ActionOnTimeout, nameof(paginator.ActionOnTimeout));
-            InteractiveGuards.DeleteAndDisableInputNotSet(paginator.ActionOnCancellation, nameof(paginator.ActionOnCancellation));
-            InteractiveGuards.SupportedInputType(paginator, false);
-            InteractiveGuards.NotCanceled(cancellationToken, nameof(cancellationToken));
-
-            message = await SendOrModifyMessageAsync(paginator, message, channel).ConfigureAwait(false);
-            messageAction?.Invoke(message);
-
-            if (paginator.MaxPageIndex == 0)
-            {
-                return new InteractiveMessageResultBuilder()
-                    .WithMessage(message)
-                    .Build();
-            }
-
-            var timeoutTaskSource = new TimeoutTaskCompletionSource<InteractiveStatus>(timeout ?? _config.DefaultTimeout,
-                resetTimeoutOnInput, InteractiveStatus.Timeout, InteractiveStatus.Canceled, cancellationToken);
-
-            var callback = new PaginatorCallback(paginator, message, timeoutTaskSource, DateTimeOffset.UtcNow);
-
-            return await WaitForPaginatorResultAsync(callback).ConfigureAwait(false);
-        }
-
         /// <summary>
         /// Sends a selection to the given message channel.
         /// </summary>
@@ -607,8 +579,8 @@ namespace Fergun.Interactive
         /// </summary>
         /// <typeparam name="TOption">The type of the options the selection contains.</typeparam>
         /// <param name="selection">The selection to send.</param>
-        /// <param name="timeout">The time until the selection times out.</param>
         /// <param name="message">An existing message to modify to display the <see cref="BaseSelection{TOption}"/>.</param>
+        /// <param name="timeout">The time until the selection times out.</param>
         /// <param name="messageAction">A method that gets executed once when a message containing the selection is sent or modified.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> to cancel the selection.</param>
         /// <returns>
@@ -673,6 +645,34 @@ namespace Fergun.Interactive
             var callback = new SelectionCallback<TOption>(selection, message, timeoutTaskSource, DateTimeOffset.UtcNow, initialInteraction);
 
             return await WaitForSelectionResultAsync(callback).ConfigureAwait(false);
+        }
+
+        private async Task<InteractiveMessageResult> SendPaginatorInternalAsync(Paginator paginator, IMessageChannel? channel, TimeSpan? timeout = null,
+            IUserMessage? message = null, Action<IUserMessage>? messageAction = null, bool resetTimeoutOnInput = false, CancellationToken cancellationToken = default)
+        {
+            InteractiveGuards.NotNull(paginator, nameof(paginator));
+            InteractiveGuards.MessageFromCurrentUser(_client, message, nameof(message));
+            InteractiveGuards.DeleteAndDisableInputNotSet(paginator.ActionOnTimeout, nameof(paginator.ActionOnTimeout));
+            InteractiveGuards.DeleteAndDisableInputNotSet(paginator.ActionOnCancellation, nameof(paginator.ActionOnCancellation));
+            InteractiveGuards.SupportedInputType(paginator, false);
+            InteractiveGuards.NotCanceled(cancellationToken, nameof(cancellationToken));
+
+            message = await SendOrModifyMessageAsync(paginator, message, channel).ConfigureAwait(false);
+            messageAction?.Invoke(message);
+
+            if (paginator.MaxPageIndex == 0)
+            {
+                return new InteractiveMessageResultBuilder()
+                    .WithMessage(message)
+                    .Build();
+            }
+
+            var timeoutTaskSource = new TimeoutTaskCompletionSource<InteractiveStatus>(timeout ?? _config.DefaultTimeout,
+                resetTimeoutOnInput, InteractiveStatus.Timeout, InteractiveStatus.Canceled, cancellationToken);
+
+            var callback = new PaginatorCallback(paginator, message, timeoutTaskSource, DateTimeOffset.UtcNow);
+
+            return await WaitForPaginatorResultAsync(callback).ConfigureAwait(false);
         }
 
         private async Task<InteractiveMessageResult<TOption?>> SendSelectionInternalAsync<TOption>(BaseSelection<TOption> selection, IMessageChannel? channel,
@@ -811,8 +811,7 @@ namespace Fergun.Interactive
             else
             {
                 InteractiveGuards.NotNull(channel, nameof(channel));
-                message = await channel!.SendMessageAsync(page.Text,
-                    embeds: page.GetEmbedArray(), components: component).ConfigureAwait(false);
+                message = await channel!.SendMessageAsync(page.Text, embeds: page.GetEmbedArray(), components: component).ConfigureAwait(false);
             }
 
             return message;
@@ -940,16 +939,19 @@ namespace Fergun.Interactive
             {
                 try
                 {
-                    if (stopInteraction is not null) // An interaction to stop the element has been received
+                    if (stopInteraction is not null)
                     {
+                        // An interaction to stop the element has been received
                         await stopInteraction.UpdateAsync(UpdateMessage).ConfigureAwait(false);
                     }
-                    else if (lastInteraction?.IsValidToken == true) // The element is from a message that was updated using an interaction, and its token is still valid
+                    else if (lastInteraction?.IsValidToken == true)
                     {
+                        // The element is from a message that was updated using an interaction, and its token is still valid
                         await lastInteraction.ModifyOriginalResponseAsync(UpdateMessage).ConfigureAwait(false);
                     }
-                    else if (!ephemeral) // Fallback for normal messages that don't use interactions or the token is no longer valid, only works for non-ephemeral messages
+                    else if (!ephemeral)
                     {
+                        // Fallback for normal messages that don't use interactions or the token is no longer valid, only works for non-ephemeral messages
                         await result.Message.ModifyAsync(UpdateMessage).ConfigureAwait(false);
                     }
                 }
@@ -967,7 +969,7 @@ namespace Fergun.Interactive
             {
                 Debug.Assert(!ephemeral, "Ephemeral messages cannot have InputType.Reactions");
 
-                bool manageMessages = await result.Message.Channel.CurrentUserHasManageMessagesAsync();
+                bool manageMessages = await result.Message.Channel.CurrentUserHasManageMessagesAsync().ConfigureAwait(false);
 
                 if (manageMessages)
                 {

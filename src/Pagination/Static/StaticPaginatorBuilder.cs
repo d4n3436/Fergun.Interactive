@@ -10,16 +10,16 @@ namespace Fergun.Interactive.Pagination
     public sealed class StaticPaginatorBuilder : PaginatorBuilder<StaticPaginator, StaticPaginatorBuilder>
     {
         /// <summary>
-        /// Gets or sets the pages of the paginator.
-        /// </summary>
-        public IList<IPageBuilder> Pages { get; set; } = new List<IPageBuilder>();
-
-        /// <summary>
         /// Initializes a new instance of the <see cref="StaticPaginatorBuilder"/> class.
         /// </summary>
         public StaticPaginatorBuilder()
         {
         }
+
+        /// <summary>
+        /// Gets or sets the pages of the paginator.
+        /// </summary>
+        public IList<IPageBuilder> Pages { get; set; } = new List<IPageBuilder>();
 
         /// <inheritdoc/>
         public override StaticPaginator Build()
@@ -39,7 +39,8 @@ namespace Fergun.Interactive.Pagination
         /// <returns>This builder.</returns>
         public StaticPaginatorBuilder WithPages(params IPageBuilder[] pages)
         {
-            Pages = pages?.ToList() ?? throw new ArgumentNullException(nameof(pages));
+            InteractiveGuards.NotNull(pages, nameof(pages));
+            Pages = pages.ToList();
             return this;
         }
 
@@ -50,7 +51,8 @@ namespace Fergun.Interactive.Pagination
         /// <returns>This builder.</returns>
         public StaticPaginatorBuilder WithPages(IEnumerable<IPageBuilder> pages)
         {
-            Pages = pages?.ToList() ?? throw new ArgumentNullException(nameof(pages));
+            InteractiveGuards.NotNull(pages, nameof(pages));
+            Pages = pages.ToList();
             return this;
         }
 
@@ -61,7 +63,8 @@ namespace Fergun.Interactive.Pagination
         /// <returns>This builder.</returns>
         public StaticPaginatorBuilder AddPage(IPageBuilder page)
         {
-            Pages.Add(page ?? throw new ArgumentNullException(nameof(page)));
+            InteractiveGuards.NotNull(page, nameof(page));
+            Pages.Add(page);
             return this;
         }
     }

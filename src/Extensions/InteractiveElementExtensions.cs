@@ -19,7 +19,12 @@ namespace Fergun.Interactive.Extensions
         /// <param name="user">The user.</param>
         /// <returns>Whether the user can interact with this element.</returns>
         public static bool CanInteract<TOption>(this IInteractiveElement<TOption> element, IUser user)
-            => CanInteract(element, user.Id);
+        {
+            InteractiveGuards.NotNull(element, nameof(element));
+            InteractiveGuards.NotNull(user, nameof(user));
+
+            return CanInteract(element, user.Id);
+        }
 
         /// <summary>
         /// Gets whether the specified user ID can interact with this element.
@@ -30,6 +35,8 @@ namespace Fergun.Interactive.Extensions
         /// <returns>Whether the user ID can interact with this element.</returns>
         public static bool CanInteract<TOption>(this IInteractiveElement<TOption> element, ulong userId)
         {
+            InteractiveGuards.NotNull(element, nameof(element));
+
             if (element.Users.Count == 0)
             {
                 return true;

@@ -50,17 +50,17 @@ namespace Fergun.Interactive
         public virtual InteractiveStatus Status { get; }
 
         /// <summary>
-        /// Gets whether the interactive action timed out.
+        /// Gets a value indicating whether the interactive action timed out.
         /// </summary>
         public virtual bool IsTimeout => Status == InteractiveStatus.Timeout;
 
         /// <summary>
-        /// Gets whether the interactive action was canceled.
+        /// Gets a value indicating whether the interactive action was canceled.
         /// </summary>
         public virtual bool IsCanceled => Status == InteractiveStatus.Canceled;
 
         /// <summary>
-        /// Gets whether the interactive action was successful.
+        /// Gets a value indicating whether the interactive action was successful.
         /// </summary>
         public virtual bool IsSuccess => Status == InteractiveStatus.Success;
     }

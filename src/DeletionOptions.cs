@@ -12,10 +12,12 @@ namespace Fergun.Interactive
         /// Don't delete anything.
         /// </summary>
         None = 0,
+
         /// <summary>
         /// Delete valid responses.
         /// </summary>
         Valid = 1 << 0,
+
         /// <summary>
         /// Delete invalid responses.
         /// </summary>

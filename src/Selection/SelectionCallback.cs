@@ -49,17 +49,17 @@ namespace Fergun.Interactive.Selection
         public SocketInteraction? LastInteraction { get; }
 
         /// <summary>
-        /// Gets or sets the messages that was received to stop the selection.
+        /// Gets the messages that was received to stop the selection.
         /// </summary>
         public IMessage? StopMessage { get; private set; }
 
         /// <summary>
-        /// Gets or sets the reaction that was received to stop the selection.
+        /// Gets the reaction that was received to stop the selection.
         /// </summary>
         public SocketReaction? StopReaction { get; private set; }
 
         /// <summary>
-        /// Gets or sets the interaction that was received to stop the selection.
+        /// Gets the interaction that was received to stop the selection.
         /// </summary>
         public SocketMessageComponent? StopInteraction { get; private set; }
 
@@ -138,6 +138,9 @@ namespace Fergun.Interactive.Selection
             }
         }
 
+        /// <inheritdoc/>
+        public void Dispose() => Dispose(true);
+
         private void Dispose(bool disposing)
         {
             if (_disposed) return;
@@ -148,8 +151,5 @@ namespace Fergun.Interactive.Selection
 
             _disposed = true;
         }
-
-        /// <inheritdoc/>
-        public void Dispose() => Dispose(true);
     }
 }

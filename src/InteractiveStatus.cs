@@ -9,14 +9,17 @@ namespace Fergun.Interactive
         /// The interactive action status is unknown.
         /// </summary>
         Unknown,
+
         /// <summary>
         /// The interactive action was successful.
         /// </summary>
         Success,
+
         /// <summary>
         /// The interactive action timed out.
         /// </summary>
         Timeout,
+
         /// <summary>
         /// The interactive action was canceled.
         /// </summary>

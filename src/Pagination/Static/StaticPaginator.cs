@@ -9,16 +9,6 @@ namespace Fergun.Interactive.Pagination
     /// </summary>
     public sealed class StaticPaginator : Paginator
     {
-        /// <summary>
-        /// Gets the pages of this paginator.
-        /// </summary>
-        public IReadOnlyCollection<IPage> Pages { get; }
-
-        /// <summary>
-        /// Gets the maximum page index of this paginator.
-        /// </summary>
-        public override int MaxPageIndex => Pages.Count - 1;
-
         internal StaticPaginator(StaticPaginatorBuilder builder)
             : base(builder)
         {
@@ -33,6 +23,16 @@ namespace Fergun.Interactive.Pagination
                 return x.Build();
             }).ToArray();
         }
+
+        /// <summary>
+        /// Gets the pages of this paginator.
+        /// </summary>
+        public IReadOnlyCollection<IPage> Pages { get; }
+
+        /// <summary>
+        /// Gets the maximum page index of this paginator.
+        /// </summary>
+        public override int MaxPageIndex => Pages.Count - 1;
 
         /// <inheritdoc/>
         public override Task<IPage> GetOrLoadPageAsync(int pageIndex)

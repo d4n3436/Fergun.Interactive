@@ -15,12 +15,35 @@ namespace Fergun.Interactive.Pagination
     public abstract class Paginator : IInteractiveElement<KeyValuePair<IEmote, PaginatorAction>>
     {
         /// <summary>
-        /// Gets whether this paginator is restricted to <see cref="Users"/>.
+        /// Initializes a new instance of the <see cref="Paginator"/> class.
+        /// </summary>
+        /// <param name="builder">The builder to copy the properties from.</param>
+        protected Paginator(PaginatorBuilderProperties builder)
+        {
+            InteractiveGuards.NotNull(builder, nameof(builder));
+            InteractiveGuards.NotNull(builder.Users, nameof(builder.Users));
+            InteractiveGuards.NotNull(builder.Options, nameof(builder.Options));
+            InteractiveGuards.NotEmpty(builder.Options, nameof(builder.Options));
+            InteractiveGuards.SupportedInputType(builder.InputType, false);
+
+            Users = builder.Users.ToArray();
+            Emotes = builder.Options.AsReadOnly();
+            CanceledPage = builder.CanceledPage?.Build();
+            TimeoutPage = builder.TimeoutPage?.Build();
+            Deletion = builder.Deletion;
+            InputType = builder.InputType;
+            ActionOnCancellation = builder.ActionOnCancellation;
+            ActionOnTimeout = builder.ActionOnTimeout;
+            CurrentPageIndex = builder.StartPageIndex;
+        }
+
+        /// <summary>
+        /// Gets a value indicating whether this paginator is restricted to <see cref="Users"/>.
         /// </summary>
         public bool IsUserRestricted => Users.Count > 0;
 
         /// <summary>
-        /// Gets the index of the current page of this paginator.
+        /// Gets or sets the index of the current page of this paginator.
         /// </summary>
         public int CurrentPageIndex { get; protected set; }
 
@@ -70,50 +93,6 @@ namespace Fergun.Interactive.Pagination
         IReadOnlyCollection<KeyValuePair<IEmote, PaginatorAction>> IInteractiveElement<KeyValuePair<IEmote, PaginatorAction>>.Options => Emotes;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="Paginator"/> class.
-        /// </summary>
-        /// <param name="builder">The builder to copy the properties from.</param>
-        protected Paginator(PaginatorBuilderProperties builder)
-        {
-            InteractiveGuards.NotNull(builder, nameof(builder));
-            InteractiveGuards.NotNull(builder.Users, nameof(builder.Users));
-            InteractiveGuards.NotNull(builder.Options, nameof(builder.Options));
-            InteractiveGuards.NotEmpty(builder.Options, nameof(builder.Options));
-            InteractiveGuards.SupportedInputType(builder.InputType, false);
-
-            Users = builder.Users.ToArray();
-            Emotes = builder.Options.AsReadOnly();
-            CanceledPage = builder.CanceledPage?.Build();
-            TimeoutPage = builder.TimeoutPage?.Build();
-            Deletion = builder.Deletion;
-            InputType = builder.InputType;
-            ActionOnCancellation = builder.ActionOnCancellation;
-            ActionOnTimeout = builder.ActionOnTimeout;
-            CurrentPageIndex = builder.StartPageIndex;
-        }
-
-        /// <summary>
-        /// Initializes a message based on this paginator.
-        /// </summary>
-        /// <remarks>By default this method adds the reactions to a message when <see cref="InputType"/> has <see cref="InputType.Reactions"/>.</remarks>
-        /// <param name="message">The message to initialize.</param>
-        /// <param name="cancellationToken">The <see cref="CancellationToken"/> to cancel this request.</param>
-        internal virtual async Task InitializeMessageAsync(IUserMessage message, CancellationToken cancellationToken = default)
-        {
-            if (!InputType.HasFlag(InputType.Reactions)) return;
-
-            foreach (var emote in Emotes.Keys)
-            {
-                if (cancellationToken.IsCancellationRequested)
-                {
-                    break;
-                }
-
-                await message.AddReactionAsync(emote).ConfigureAwait(false);
-            }
-        }
-
-        /// <summary>
         /// Sets the <see cref="CurrentPageIndex"/> of this paginator.
         /// </summary>
         /// <param name="pageIndex">The index of the page to set.</param>
@@ -154,7 +133,7 @@ namespace Fergun.Interactive.Pagination
         /// <summary>
         /// Applies a <see cref="PaginatorAction"/> to this paginator.
         /// </summary>
-        /// <param name="action">The paginator action</param>
+        /// <param name="action">The paginator action.</param>
         /// <returns>A task representing the asynchronous operation. The task result contains whether the action succeeded.</returns>
         public virtual ValueTask<bool> ApplyActionAsync(PaginatorAction action) =>
             action switch
@@ -316,6 +295,28 @@ namespace Fergun.Interactive.Pagination
         {
             InteractiveGuards.ExpectedType<IComponentInteraction, SocketMessageComponent>(input, nameof(input), out var socketMessageComponent);
             return await HandleInteractionAsync(socketMessageComponent, message).ConfigureAwait(false);
+        }
+
+        /// <summary>
+        /// Initializes a message based on this paginator.
+        /// </summary>
+        /// <remarks>By default this method adds the reactions to a message when <see cref="InputType"/> has <see cref="InputType.Reactions"/>.</remarks>
+        /// <param name="message">The message to initialize.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> to cancel this request.</param>
+        /// <returns>A task representing the asynchronous operation.</returns>
+        internal virtual async Task InitializeMessageAsync(IUserMessage message, CancellationToken cancellationToken = default)
+        {
+            if (!InputType.HasFlag(InputType.Reactions)) return;
+
+            foreach (var emote in Emotes.Keys)
+            {
+                if (cancellationToken.IsCancellationRequested)
+                {
+                    break;
+                }
+
+                await message.AddReactionAsync(emote).ConfigureAwait(false);
+            }
         }
     }
 }

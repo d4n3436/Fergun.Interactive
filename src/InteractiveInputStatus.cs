@@ -10,10 +10,12 @@ namespace Fergun.Interactive
         /// The handling of the input was successful.
         /// </summary>
         Success,
+
         /// <summary>
         /// The input was ignored.
         /// </summary>
         Ignored,
+
         /// <summary>
         /// The handling of the input was canceled, or it was successful and the interactive entity should be canceled.
         /// </summary>
