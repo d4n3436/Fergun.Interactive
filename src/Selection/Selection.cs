@@ -6,8 +6,8 @@ namespace Fergun.Interactive.Selection
     /// <typeparam name="TOption">The type of the options.</typeparam>
     public class Selection<TOption> : BaseSelection<TOption>
     {
-        internal Selection(BaseSelectionBuilderProperties<TOption> builder)
-            : base(builder)
+        internal Selection(IBaseSelectionBuilderProperties<TOption> properties)
+            : base(properties)
         {
         }
     }

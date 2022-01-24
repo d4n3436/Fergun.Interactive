@@ -19,34 +19,34 @@ namespace Fergun.Interactive.Selection
         /// <summary>
         /// Initializes a new instance of the <see cref="BaseSelection{TOption}"/> class using the specified builder properties.
         /// </summary>
-        /// <param name="builder">The builder to copy the properties from.</param>
-        protected BaseSelection(BaseSelectionBuilderProperties<TOption> builder)
+        /// <param name="properties">The builder properties to copy from.</param>
+        protected BaseSelection(IBaseSelectionBuilderProperties<TOption> properties)
         {
-            InteractiveGuards.NotNull(builder, nameof(builder));
-            InteractiveGuards.SupportedInputType(builder.InputType, false);
-            InteractiveGuards.RequiredEmoteConverter(builder.InputType, builder.EmoteConverter);
-            InteractiveGuards.NotNull(builder.EqualityComparer, nameof(builder.EqualityComparer));
-            InteractiveGuards.NotNull(builder.SelectionPage, nameof(builder.SelectionPage));
-            InteractiveGuards.NotNull(builder.Options, nameof(builder.Options));
-            InteractiveGuards.NotNull(builder.Users, nameof(builder.Users));
-            InteractiveGuards.NotEmpty(builder.Options, nameof(builder.Options));
+            InteractiveGuards.NotNull(properties, nameof(properties));
+            InteractiveGuards.SupportedInputType(properties.InputType, false);
+            InteractiveGuards.RequiredEmoteConverter(properties.InputType, properties.EmoteConverter);
+            InteractiveGuards.NotNull(properties.EqualityComparer, nameof(properties.EqualityComparer));
+            InteractiveGuards.NotNull(properties.SelectionPage, nameof(properties.SelectionPage));
+            InteractiveGuards.NotNull(properties.Options, nameof(properties.Options));
+            InteractiveGuards.NotNull(properties.Users, nameof(properties.Users));
+            InteractiveGuards.NotEmpty(properties.Options, nameof(properties.Options));
 
-            StringConverter = builder.StringConverter;
-            EmoteConverter = builder.EmoteConverter;
-            EqualityComparer = builder.EqualityComparer;
-            SelectionPage = builder.SelectionPage.Build();
-            AllowCancel = builder.AllowCancel && builder.Options.Count > 1;
-            CancelOption = AllowCancel ? builder.Options.Last() : default;
-            Users = builder.Users.ToArray();
-            Options = builder.Options.ToArray();
-            CanceledPage = builder.CanceledPage?.Build();
-            TimeoutPage = builder.TimeoutPage?.Build();
-            SuccessPage = builder.SuccessPage?.Build();
-            Deletion = builder.Deletion;
-            InputType = builder.InputType;
-            ActionOnCancellation = builder.ActionOnCancellation;
-            ActionOnTimeout = builder.ActionOnTimeout;
-            ActionOnSuccess = builder.ActionOnSuccess;
+            StringConverter = properties.StringConverter;
+            EmoteConverter = properties.EmoteConverter;
+            EqualityComparer = properties.EqualityComparer;
+            SelectionPage = properties.SelectionPage.Build();
+            AllowCancel = properties.AllowCancel && properties.Options.Count > 1;
+            CancelOption = AllowCancel ? properties.Options.Last() : default;
+            Users = properties.Users.ToArray();
+            Options = properties.Options.ToArray();
+            CanceledPage = properties.CanceledPage?.Build();
+            TimeoutPage = properties.TimeoutPage?.Build();
+            SuccessPage = properties.SuccessPage?.Build();
+            Deletion = properties.Deletion;
+            InputType = properties.InputType;
+            ActionOnCancellation = properties.ActionOnCancellation;
+            ActionOnTimeout = properties.ActionOnTimeout;
+            ActionOnSuccess = properties.ActionOnSuccess;
 
             if (StringConverter is null && (!InputType.HasFlag(InputType.Buttons) || EmoteConverter is null))
             {

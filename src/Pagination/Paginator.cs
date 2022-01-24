@@ -17,24 +17,24 @@ namespace Fergun.Interactive.Pagination
         /// <summary>
         /// Initializes a new instance of the <see cref="Paginator"/> class.
         /// </summary>
-        /// <param name="builder">The builder to copy the properties from.</param>
-        protected Paginator(PaginatorBuilderProperties builder)
+        /// <param name="properties">The builder properties to copy from.</param>
+        protected Paginator(IBasePaginatorBuilderProperties properties)
         {
-            InteractiveGuards.NotNull(builder, nameof(builder));
-            InteractiveGuards.NotNull(builder.Users, nameof(builder.Users));
-            InteractiveGuards.NotNull(builder.Options, nameof(builder.Options));
-            InteractiveGuards.NotEmpty(builder.Options, nameof(builder.Options));
-            InteractiveGuards.SupportedInputType(builder.InputType, false);
+            InteractiveGuards.NotNull(properties, nameof(properties));
+            InteractiveGuards.NotNull(properties.Users, nameof(properties.Users));
+            InteractiveGuards.NotNull(properties.Options, nameof(properties.Options));
+            InteractiveGuards.NotEmpty(properties.Options, nameof(properties.Options));
+            InteractiveGuards.SupportedInputType(properties.InputType, false);
 
-            Users = builder.Users.ToArray();
-            Emotes = builder.Options.AsReadOnly();
-            CanceledPage = builder.CanceledPage?.Build();
-            TimeoutPage = builder.TimeoutPage?.Build();
-            Deletion = builder.Deletion;
-            InputType = builder.InputType;
-            ActionOnCancellation = builder.ActionOnCancellation;
-            ActionOnTimeout = builder.ActionOnTimeout;
-            CurrentPageIndex = builder.StartPageIndex;
+            Users = properties.Users.ToArray();
+            Emotes = properties.Options.AsReadOnly();
+            CanceledPage = properties.CanceledPage?.Build();
+            TimeoutPage = properties.TimeoutPage?.Build();
+            Deletion = properties.Deletion;
+            InputType = properties.InputType;
+            ActionOnCancellation = properties.ActionOnCancellation;
+            ActionOnTimeout = properties.ActionOnTimeout;
+            CurrentPageIndex = properties.StartPageIndex;
         }
 
         /// <summary>
