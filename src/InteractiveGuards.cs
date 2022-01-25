@@ -43,7 +43,7 @@ namespace Fergun.Interactive
 
         public static void IndexInRange<T>(ICollection<T> collection, int index, string parameterName)
         {
-            if (index < 0 || index + 1 >= collection.Count)
+            if (index < 0 || index >= collection.Count)
             {
                 throw new ArgumentOutOfRangeException(parameterName, index, $"Index must be greater than or equal to 0 and lower than {collection.Count}.");
             }
