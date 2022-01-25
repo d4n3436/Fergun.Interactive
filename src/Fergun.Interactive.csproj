@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <Version>1.4-pre</Version>
+    <Version>1.4</Version>
     <LangVersion>9</LangVersion>
     <Nullable>enable</Nullable>
     <Authors>d4n3436</Authors>
