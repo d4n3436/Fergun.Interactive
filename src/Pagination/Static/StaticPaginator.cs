@@ -1,13 +1,12 @@
-namespace Fergun.Interactive.Pagination
+namespace Fergun.Interactive.Pagination;
+
+/// <summary>
+/// Represents a static paginator.
+/// </summary>
+public sealed class StaticPaginator : BaseStaticPaginator
 {
-    /// <summary>
-    /// Represents a static paginator.
-    /// </summary>
-    public sealed class StaticPaginator : BaseStaticPaginator
+    internal StaticPaginator(StaticPaginatorBuilder properties)
+        : base(properties)
     {
-        internal StaticPaginator(StaticPaginatorBuilder properties)
-            : base(properties)
-        {
-        }
     }
 }
