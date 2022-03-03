@@ -1,5 +1,5 @@
 # Fergun.Interactive
-[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE) [![NuGet](https://img.shields.io/nuget/vpre/Fergun.Interactive)](https://www.nuget.org/packages/Fergun.Interactive) [![Nuget](https://img.shields.io/nuget/vpre/Fergun.Interactive.Labs?label=nuget%20%28D.Net%20Labs%29)](https://www.nuget.org/packages/Fergun.Interactive.Labs) [![Discord](https://discord.com/api/guilds/460627183501574144/widget.png)](https://discord.gg/V3TgaZRUPX)
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE) [![NuGet](https://img.shields.io/nuget/vpre/Fergun.Interactive)](https://www.nuget.org/packages/Fergun.Interactive) [![Discord](https://discord.com/api/guilds/460627183501574144/widget.png)](https://discord.gg/V3TgaZRUPX)
 
 Fergun.Interactive is an addon that adds interactive functionality to commands.
 
@@ -31,9 +31,7 @@ This is a fork of [Discord.InteractivityAddon](https://github.com/Playwo/Discord
   - Support for custom selections, inheriting from the `BaseSelection` and `BaseSelectionBuilder` classes
 
 ## Usage
-- Install via NuGet:
-  - [Fergun.Interactive](https://www.nuget.org/packages/Fergun.Interactive) (For [Discord.Net](https://github.com/discord-net/Discord.Net))
-  - [Fergun.Interactive.Labs](https://www.nuget.org/packages/Fergun.Interactive.Labs) (For [Discord.Net.Labs](https://github.com/Discord-Net-Labs/Discord.Net-Labs))
+- Install via [NuGet](https://www.nuget.org/packages/Fergun.Interactive)
   
 - Add the `InteractiveService` into your service provider:
 ```cs
@@ -49,8 +47,6 @@ var provider = new ServiceCollection()
 ## Examples
 
 The [Example Bot](ExampleBot) contains multiple examples with comments. The default prefix is `!`.
-
-Compile with the `DebugLabs` or `ReleaseLabs` configuration to use Discord.Net Labs instead of Discord.Net.
 
 Example modules:
 - Waiting for socket entities (messages, reactions, etc.)
