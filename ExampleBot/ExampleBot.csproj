@@ -4,33 +4,10 @@
     <OutputType>Exe</OutputType>
     <TargetFramework>net6.0</TargetFramework>
     <LangVersion>latest</LangVersion>
-    <Configurations>Debug;Release;DebugLabs;ReleaseLabs</Configurations>
-    <RestoreAdditionalProjectSources>https://www.myget.org/F/discord-net/api/v3/index.json</RestoreAdditionalProjectSources>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)'=='ReleaseLabs' Or '$(Configuration)'=='DebugLabs'">
-    <DefineConstants>$(DefineConstants)TRACE;DNETLABS</DefineConstants>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(Configuration)'=='ReleaseLabs'">
-    <Optimize>True</Optimize>
-  </PropertyGroup>
-
-
-  <Choose>
-    <When Condition="'$(Configuration)'=='Release' Or '$(Configuration)'=='Debug'">
-      <ItemGroup>
-        <PackageReference Include="Discord.Net.Commands" Version="3.0.0" />
-      </ItemGroup>
-    </When>
-    <Otherwise>
-      <ItemGroup>
-        <PackageReference Include="Discord.Net.Labs.Commands" Version="3.5.0" />
-      </ItemGroup>
-    </Otherwise>
-  </Choose>
-
-  <ItemGroup>
+	<ItemGroup>
+    <PackageReference Include="Discord.Net.Commands" Version="3.0.0" />
     <PackageReference Include="GScraper" Version="1.0.2" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="6.0.0" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="6.0.0" />

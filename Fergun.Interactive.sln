@@ -10,27 +10,17 @@ EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
-		DebugLabs|Any CPU = DebugLabs|Any CPU
 		Release|Any CPU = Release|Any CPU
-		ReleaseLabs|Any CPU = ReleaseLabs|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{DF665E3D-B5E5-42C4-A037-AD2E865F7408}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{DF665E3D-B5E5-42C4-A037-AD2E865F7408}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{DF665E3D-B5E5-42C4-A037-AD2E865F7408}.DebugLabs|Any CPU.ActiveCfg = DebugLabs|Any CPU
-		{DF665E3D-B5E5-42C4-A037-AD2E865F7408}.DebugLabs|Any CPU.Build.0 = DebugLabs|Any CPU
 		{DF665E3D-B5E5-42C4-A037-AD2E865F7408}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{DF665E3D-B5E5-42C4-A037-AD2E865F7408}.Release|Any CPU.Build.0 = Release|Any CPU
-		{DF665E3D-B5E5-42C4-A037-AD2E865F7408}.ReleaseLabs|Any CPU.ActiveCfg = ReleaseLabs|Any CPU
-		{DF665E3D-B5E5-42C4-A037-AD2E865F7408}.ReleaseLabs|Any CPU.Build.0 = ReleaseLabs|Any CPU
 		{8DC5AD83-2DD6-495A-A160-C39BC7CE76A0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{8DC5AD83-2DD6-495A-A160-C39BC7CE76A0}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{8DC5AD83-2DD6-495A-A160-C39BC7CE76A0}.DebugLabs|Any CPU.ActiveCfg = DebugLabs|Any CPU
-		{8DC5AD83-2DD6-495A-A160-C39BC7CE76A0}.DebugLabs|Any CPU.Build.0 = DebugLabs|Any CPU
 		{8DC5AD83-2DD6-495A-A160-C39BC7CE76A0}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8DC5AD83-2DD6-495A-A160-C39BC7CE76A0}.Release|Any CPU.Build.0 = Release|Any CPU
-		{8DC5AD83-2DD6-495A-A160-C39BC7CE76A0}.ReleaseLabs|Any CPU.ActiveCfg = ReleaseLabs|Any CPU
-		{8DC5AD83-2DD6-495A-A160-C39BC7CE76A0}.ReleaseLabs|Any CPU.Build.0 = ReleaseLabs|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
