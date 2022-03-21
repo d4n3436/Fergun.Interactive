@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using Discord;
 
@@ -28,4 +29,39 @@ public interface IBasePaginatorBuilderProperties : IInteractiveBuilderProperties
     /// Gets or sets the emotes and their related actions of the paginator.
     /// </summary>
     new IDictionary<IEmote, PaginatorAction> Options { get; set; }
+
+    /// <summary>
+    /// Gets or sets the maximum time to wait for a "jump to page" input.
+    /// </summary>
+    TimeSpan JumpInputTimeout { get; set; }
+
+    /// <summary>
+    /// Gets or sets the "jump to page" prompt that is displayed to the user.
+    /// </summary>
+    /// <remarks>
+    /// In button inputs, this is the title of the modal that is displayed.<br/>
+    /// In reaction inputs, this is the content of the temporary message that is sent.
+    /// </remarks>
+    string? JumpInputPrompt { get; set; }
+
+    /// <summary>
+    /// Gets or sets the "jump to page" text label that is displayed in the modal.
+    /// </summary>
+    string? JumpInputTextLabel { get; set; }
+
+    /// <summary>
+    /// Gets or sets the message to display when receiving an invalid "jump to page" input.
+    /// </summary>
+    /// <remarks>An invalid input may be one that isn't a number, or a number that is outside the valid range.</remarks>
+    string? InvalidJumpInputMessage { get; set; }
+
+    /// <summary>
+    /// Gets or sets the message to display when a user attempts to use the "jump to page" action while other user is using it.
+    /// </summary>
+    string? JumpInputInUseMessage { get; set; }
+
+    /// <summary>
+    /// Gets or sets the message to display when receiving an expired "jump to page" input.
+    /// </summary>
+    string? ExpiredJumpInputMessage { get; set; }
 }

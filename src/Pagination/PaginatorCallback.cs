@@ -110,10 +110,18 @@ internal sealed class PaginatorCallback : IInteractiveCallback
     /// <inheritdoc/>
     public async Task ExecuteAsync(SocketInteraction interaction)
     {
+        if (interaction is SocketModal modal)
+        {
+            await Paginator.HandleModalAsync(modal, Message).ConfigureAwait(false);
+        }
+
         if (interaction is not SocketMessageComponent component)
+        {
             return;
+        }
 
         var result = await Paginator.HandleInteractionAsync(component, Message).ConfigureAwait(false);
+
         switch (result.Status)
         {
             case InteractiveInputStatus.Success:
@@ -140,7 +148,7 @@ internal sealed class PaginatorCallback : IInteractiveCallback
         if (_disposed) return;
         if (disposing)
         {
-            TimeoutTaskSource.TryDispose();
+            TimeoutTaskSource.Dispose();
         }
 
         _disposed = true;

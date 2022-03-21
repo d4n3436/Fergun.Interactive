@@ -54,6 +54,25 @@ public abstract class PaginatorBuilder<TPaginator, TBuilder>
     public virtual ActionOnStop ActionOnTimeout { get; set; } = ActionOnStop.ModifyMessage;
 
     /// <inheritdoc/>
+    /// <remarks>The default value is 30 seconds.</remarks>
+    public TimeSpan JumpInputTimeout { get; set; } = TimeSpan.FromSeconds(30);
+
+    /// <inheritdoc/>
+    public string? JumpInputPrompt { get; set; }
+
+    /// <inheritdoc/>
+    public string? JumpInputTextLabel { get; set; }
+
+    /// <inheritdoc/>
+    public string? InvalidJumpInputMessage { get; set; }
+
+    /// <inheritdoc/>
+    public string? JumpInputInUseMessage { get; set; }
+
+    /// <inheritdoc/>
+    public string? ExpiredJumpInputMessage { get; set; }
+
+    /// <inheritdoc/>
     ICollection<KeyValuePair<IEmote, PaginatorAction>> IInteractiveBuilderProperties<KeyValuePair<IEmote, PaginatorAction>>.Options
     {
         get => Options;

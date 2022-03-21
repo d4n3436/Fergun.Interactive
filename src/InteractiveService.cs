@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
@@ -547,7 +548,7 @@ public class InteractiveService
             resetTimeoutOnInput, InteractiveStatus.Timeout, InteractiveStatus.Canceled, cancellationToken);
 
         var initialInteraction = responseType is InteractionResponseType.DeferredUpdateMessage or InteractionResponseType.UpdateMessage ? interaction : null;
-        var callback = new PaginatorCallback(paginator, message, timeoutTaskSource, DateTimeOffset.UtcNow, initialInteraction);
+        using var callback = new PaginatorCallback(paginator, message, timeoutTaskSource, DateTimeOffset.UtcNow, initialInteraction);
 
         return await WaitForPaginatorResultAsync(callback).ConfigureAwait(false);
     }
@@ -641,7 +642,7 @@ public class InteractiveService
             false, (default, InteractiveStatus.Timeout), (default, InteractiveStatus.Canceled), cancellationToken);
 
         var initialInteraction = responseType is InteractionResponseType.DeferredUpdateMessage or InteractionResponseType.UpdateMessage ? interaction : null;
-        var callback = new SelectionCallback<TOption>(selection, message, timeoutTaskSource, DateTimeOffset.UtcNow, initialInteraction);
+        using var callback = new SelectionCallback<TOption>(selection, message, timeoutTaskSource, DateTimeOffset.UtcNow, initialInteraction);
 
         return await WaitForSelectionResultAsync(callback).ConfigureAwait(false);
     }
@@ -669,7 +670,7 @@ public class InteractiveService
         var timeoutTaskSource = new TimeoutTaskCompletionSource<InteractiveStatus>(timeout ?? _config.DefaultTimeout,
             resetTimeoutOnInput, InteractiveStatus.Timeout, InteractiveStatus.Canceled, cancellationToken);
 
-        var callback = new PaginatorCallback(paginator, message, timeoutTaskSource, DateTimeOffset.UtcNow);
+        using var callback = new PaginatorCallback(paginator, message, timeoutTaskSource, DateTimeOffset.UtcNow);
 
         return await WaitForPaginatorResultAsync(callback).ConfigureAwait(false);
     }
@@ -691,7 +692,7 @@ public class InteractiveService
         var timeoutTaskSource = new TimeoutTaskCompletionSource<(TOption?, InteractiveStatus)>(timeout ?? _config.DefaultTimeout,
             false, (default, InteractiveStatus.Timeout), (default, InteractiveStatus.Canceled), cancellationToken);
 
-        var callback = new SelectionCallback<TOption>(selection, message, timeoutTaskSource, DateTimeOffset.UtcNow);
+        using var callback = new SelectionCallback<TOption>(selection, message, timeoutTaskSource, DateTimeOffset.UtcNow);
 
         return await WaitForSelectionResultAsync(callback).ConfigureAwait(false);
     }
@@ -716,7 +717,6 @@ public class InteractiveService
         var (result, status) = await callback.TimeoutTaskSource.Task.ConfigureAwait(false);
 
         _filteredCallbacks.TryRemove(guid, out _);
-        callback.Dispose();
 
         return new InteractiveResult<T?>(result, callback.GetElapsedTime(status), status);
     }
@@ -724,11 +724,21 @@ public class InteractiveService
     private async Task<InteractiveMessageResult> WaitForPaginatorResultAsync(PaginatorCallback callback)
     {
         _callbacks[callback.Message.Id] = callback;
+        bool hasJumpAction = callback.Paginator.Emotes.Values.Any(x => x == PaginatorAction.Jump);
 
-        // A CancellationTokenSource is used here to cancel InitializeMessageAsync() to avoid adding reactions after TimeoutTaskSource.Task has returned.
-        var cts = callback.Paginator.InputType.HasFlag(InputType.Reactions) ? new CancellationTokenSource() : null;
+        // A CancellationTokenSource is used here for 2 things:
+        // 1. To stop WaitForMessagesAsync() to avoid memory leaks
+        // 2. To cancel InitializeMessageAsync() to avoid adding reactions after TimeoutTaskSource.Task has returned.
+        using var cts = callback.Paginator.InputType.HasFlag(InputType.Reactions) || hasJumpAction
+            ? new CancellationTokenSource()
+            : null;
 
         _ = callback.Paginator.InitializeMessageAsync(callback.Message, cts?.Token ?? default).ConfigureAwait(false);
+
+        if (callback.Paginator.InputType.HasFlag(InputType.Reactions) && hasJumpAction)
+        {
+            _ = WaitForMessagesAsync().ConfigureAwait(false);
+        }
 
         var status = await callback.TimeoutTaskSource.Task.ConfigureAwait(false);
         cts?.Cancel();
@@ -741,9 +751,25 @@ public class InteractiveService
             await ApplyActionOnStopAsync(callback.Paginator, result, callback.LastInteraction, callback.StopInteraction).ConfigureAwait(false);
         }
 
-        callback.Dispose();
-
         return result;
+
+        async Task WaitForMessagesAsync()
+        {
+            if (cts is null)
+            {
+                return;
+            }
+
+            while (!cts.IsCancellationRequested)
+            {
+                var messageResult = await NextMessageAsync(msg => msg.Channel.Id == callback.Message.Channel.Id && msg.Source == MessageSource.User,
+                    null, callback.TimeoutTaskSource.Delay, cts.Token).ConfigureAwait(false);
+                if (messageResult.IsSuccess)
+                {
+                    await callback.ExecuteAsync(messageResult.Value).ConfigureAwait(false);
+                }
+            }
+        }
     }
 
     private async Task<InteractiveMessageResult<TOption?>> WaitForSelectionResultAsync<TOption>(SelectionCallback<TOption> callback)
@@ -753,7 +779,7 @@ public class InteractiveService
         // A CancellationTokenSource is used here for 2 things:
         // 1. To cancel NextMessageAsync() to avoid memory leaks
         // 2. To cancel InitializeMessageAsync() to avoid adding reactions after TimeoutTaskSource.Task has returned.
-        var cts = callback.Selection.InputType.HasFlag(InputType.Messages) || callback.Selection.InputType.HasFlag(InputType.Reactions)
+        using var cts = callback.Selection.InputType.HasFlag(InputType.Messages) || callback.Selection.InputType.HasFlag(InputType.Reactions)
             ? new CancellationTokenSource()
             : null;
 
@@ -780,8 +806,6 @@ public class InteractiveService
         {
             await ApplyActionOnStopAsync(callback.Selection, result, callback.LastInteraction, callback.StopInteraction).ConfigureAwait(false);
         }
-
-        callback.TimeoutTaskSource.TryDispose();
 
         return result;
     }
@@ -1053,20 +1077,23 @@ public class InteractiveService
 
     private Task InteractionCreated(SocketInteraction interaction)
     {
-        if (interaction.User?.Id != _client.CurrentUser.Id
-            && interaction.Type == InteractionType.MessageComponent
-            && interaction is SocketMessageComponent componentInteraction
-            && _callbacks.TryGetValue(componentInteraction.Message.Id, out var callback))
+        ulong messageId = 0;
+
+        if (interaction is SocketMessageComponent componentInteraction
+            && _callbacks.TryGetValue(componentInteraction.Message.Id, out var callback)
+            || interaction is SocketModal modal
+            && ulong.TryParse(modal.Data.CustomId, out messageId)
+            && _callbacks.TryGetValue(messageId, out callback))
         {
             _ = Task.Run(async () =>
             {
                 try
                 {
-                    await callback.ExecuteAsync(componentInteraction).ConfigureAwait(false);
+                    await callback.ExecuteAsync(interaction).ConfigureAwait(false);
                 }
                 catch (Exception ex)
                 {
-                    LogError("InteractiveService", $"Failed to execute interaction callback (message Id: {componentInteraction.Message.Id})", ex);
+                    LogError("InteractiveService", $"Failed to execute interaction callback (message Id: {(interaction as SocketMessageComponent)?.Message?.Id ?? messageId})", ex);
                 }
             });
         }

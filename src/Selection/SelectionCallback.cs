@@ -146,7 +146,7 @@ internal sealed class SelectionCallback<TOption> : IInteractiveCallback
         if (_disposed) return;
         if (disposing)
         {
-            TimeoutTaskSource.TryDispose();
+            TimeoutTaskSource.Dispose();
         }
 
         _disposed = true;

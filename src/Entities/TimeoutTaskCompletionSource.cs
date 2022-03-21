@@ -8,20 +8,29 @@ namespace Fergun.Interactive;
 /// Represents a <see cref="TaskCompletionSource{TResult}"/> with a timeout timer which can be reset.
 /// </summary>
 /// <typeparam name="TResult">The type of the result value associated with this <see cref="TimeoutTaskCompletionSource{TResult}"/>.</typeparam>
-internal sealed class TimeoutTaskCompletionSource<TResult>
+public class TimeoutTaskCompletionSource<TResult> : IDisposable
 {
     private readonly Timer _timer;
-    private readonly TaskCompletionSource<TResult> _taskSource;
+    private readonly bool _canReset;
+    private TaskCompletionSource<TResult> _taskSource;
     private bool _disposed;
     private CancellationTokenRegistration _tokenRegistration; // Do not make readonly
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="TimeoutTaskCompletionSource{TResult}"/> class.
+    /// </summary>
+    /// <param name="delay">The delay before the timeout.</param>
+    /// <param name="canReset">Whether the internal <see cref="Timer"/> can be reset.</param>
+    /// <param name="timeoutResult">The timeout result.</param>
+    /// <param name="cancelResult">The cancel result.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
     public TimeoutTaskCompletionSource(TimeSpan delay, bool canReset = true, TResult? timeoutResult = default,
         TResult? cancelResult = default, CancellationToken cancellationToken = default)
     {
         Delay = delay;
-        CanReset = canReset;
         TimeoutResult = timeoutResult;
         CancelResult = cancelResult;
+        _canReset = canReset;
         _taskSource = new TaskCompletionSource<TResult>(TaskCreationOptions.RunContinuationsAsynchronously);
         _timer = new Timer(OnTimerFired, null, delay, Timeout.InfiniteTimeSpan);
         _tokenRegistration = cancellationToken.Register(() => TryCancel());
@@ -35,7 +44,7 @@ internal sealed class TimeoutTaskCompletionSource<TResult>
     /// <summary>
     /// Gets a value indicating whether the internal <see cref="Timer"/> can be reset.
     /// </summary>
-    public bool CanReset { get; }
+    public bool CanReset => !_disposed && _canReset;
 
     /// <summary>
     /// Gets the timeout result.
@@ -51,6 +60,11 @@ internal sealed class TimeoutTaskCompletionSource<TResult>
     /// Gets the <see cref="Task{TResult}"/> created by this <see cref="TimeoutTaskCompletionSource{TResult}"/>.
     /// </summary>
     public Task<TResult> Task => _taskSource.Task;
+
+    /// <summary>
+    /// Resets the underlying <see cref="TaskCompletionSource{TResult}"/>.
+    /// </summary>
+    public void ResetTaskSource() => _taskSource = new TaskCompletionSource<TResult>(TaskCreationOptions.RunContinuationsAsynchronously);
 
     /// <summary>
     /// Attempts to reset the internal <see cref="Timer"/>.
@@ -72,29 +86,28 @@ internal sealed class TimeoutTaskCompletionSource<TResult>
     public bool TrySetResult(TResult? result) => _taskSource.TrySetResult(result!);
 
     /// <summary>
-    /// Attempts to dispose the internal <see cref="Timer"/> and cancel the underlying <see cref="TaskCompletionSource{TResult}"/>.
+    /// Disposes the internal <see cref="Timer"/> and cancels the underlying <see cref="TaskCompletionSource{TResult}"/>.
     /// </summary>
-    /// <returns><see langword="true"/> if the operation was successful; otherwise, <see langword="false"/>.</returns>
-    public bool TryDispose()
+    public void Dispose()
     {
-        if (_disposed)
+        GC.SuppressFinalize(this);
+        Dispose(true);
+    }
+
+    /// <inheritdoc cref="Dispose()"/>
+    protected virtual void Dispose(bool disposing)
+    {
+        if (disposing && !_disposed)
         {
-            return false;
+            _timer.Dispose();
+            TryCancel();
+            _tokenRegistration.Dispose();
+            _disposed = true;
         }
-
-        _timer.Dispose();
-        TryCancel();
-        _tokenRegistration.Dispose();
-        _disposed = true;
-
-        return true;
     }
 
     private void OnTimerFired(object state)
     {
-        _disposed = true;
-        _timer.Dispose();
         TrySetResult(TimeoutResult);
-        _tokenRegistration.Dispose();
     }
 }

@@ -28,5 +28,10 @@ public enum PaginatorAction
     /// <summary>
     /// Exit the paginator.
     /// </summary>
-    Exit
+    Exit,
+
+    /// <summary>
+    /// Jump to a specific page.
+    /// </summary>
+    Jump
 }

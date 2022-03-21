@@ -96,7 +96,7 @@ internal sealed class FilteredCallback<TInput> : IInteractiveCallback<TInput>
         if (_disposed) return;
         if (disposing)
         {
-            TimeoutTaskSource.TryDispose();
+            TimeoutTaskSource.Dispose();
         }
 
         _disposed = true;
