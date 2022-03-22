@@ -670,9 +670,22 @@ public class InteractiveService
         var timeoutTaskSource = new TimeoutTaskCompletionSource<InteractiveStatus>(timeout ?? _config.DefaultTimeout,
             resetTimeoutOnInput, InteractiveStatus.Timeout, InteractiveStatus.Canceled, cancellationToken);
 
-        using var callback = new PaginatorCallback(paginator, message, timeoutTaskSource, DateTimeOffset.UtcNow);
+        if (_config.ReturnAfterSendingPaginator)
+        {
+            _ = WaitForPaginatorResultUsingCallbackAsync().ConfigureAwait(false);
 
-        return await WaitForPaginatorResultAsync(callback).ConfigureAwait(false);
+            return new InteractiveMessageResultBuilder()
+                .WithMessage(message)
+                .Build();
+        }
+
+        return await WaitForPaginatorResultUsingCallbackAsync().ConfigureAwait(false);
+
+        async Task<InteractiveMessageResult> WaitForPaginatorResultUsingCallbackAsync()
+        {
+            using var callback = new PaginatorCallback(paginator, message, timeoutTaskSource, DateTimeOffset.UtcNow);
+            return await WaitForPaginatorResultAsync(callback).ConfigureAwait(false);
+        }
     }
 
     private async Task<InteractiveMessageResult<TOption?>> SendSelectionInternalAsync<TOption>(BaseSelection<TOption> selection, IMessageChannel? channel,
@@ -748,7 +761,7 @@ public class InteractiveService
 
         if (_callbacks.TryRemove(callback.Message.Id, out _))
         {
-            await ApplyActionOnStopAsync(callback.Paginator, result, callback.LastInteraction, callback.StopInteraction).ConfigureAwait(false);
+            await ApplyActionOnStopAsync(callback.Paginator, result, callback.LastInteraction, callback.StopInteraction, _config.DeferStopInteractions).ConfigureAwait(false);
         }
 
         return result;
@@ -804,7 +817,7 @@ public class InteractiveService
 
         if (_callbacks.TryRemove(callback.Message.Id, out _))
         {
-            await ApplyActionOnStopAsync(callback.Selection, result, callback.LastInteraction, callback.StopInteraction).ConfigureAwait(false);
+            await ApplyActionOnStopAsync(callback.Selection, result, callback.LastInteraction, callback.StopInteraction, _config.DeferStopInteractions).ConfigureAwait(false);
         }
 
         return result;
@@ -885,7 +898,7 @@ public class InteractiveService
     }
 
     private static async Task ApplyActionOnStopAsync<TOption>(IInteractiveElement<TOption> element, IInteractiveMessageResult result,
-        SocketInteraction? lastInteraction, SocketMessageComponent? stopInteraction)
+        SocketInteraction? lastInteraction, SocketMessageComponent? stopInteraction, bool deferInteraction)
     {
         bool ephemeral = result.Message.Flags.GetValueOrDefault().HasFlag(MessageFlags.Ephemeral);
 
@@ -900,7 +913,7 @@ public class InteractiveService
 
         if (action == ActionOnStop.None)
         {
-            if (stopInteraction is not null)
+            if (deferInteraction && stopInteraction is not null)
             {
                 await stopInteraction.DeferAsync().ConfigureAwait(false);
             }
@@ -923,7 +936,7 @@ public class InteractiveService
                     // We want to delete the message so we don't care if the message has been already deleted.
                 }
             }
-            else if (stopInteraction is not null)
+            else if (deferInteraction && stopInteraction is not null)
             {
                 await stopInteraction.DeferAsync().ConfigureAwait(false);
             }
@@ -983,7 +996,7 @@ public class InteractiveService
                 // Ignore 10008 (Unknown Message) error.
             }
         }
-        else if (stopInteraction is not null)
+        else if (deferInteraction && stopInteraction is not null)
         {
             await stopInteraction.DeferAsync().ConfigureAwait(false);
         }

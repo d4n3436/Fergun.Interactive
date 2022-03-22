@@ -31,4 +31,25 @@ public class InteractiveConfig
     /// Gets or sets the minimum log level severity that will be sent to the <see cref="InteractiveService.Log"/> event.
     /// </summary>
     public LogSeverity LogLevel { get; set; } = LogSeverity.Info;
+
+    /// <summary>
+    /// Gets or sets a value indicating if the SendPaginatorAsync() methods should immediately return after sending the paginated message instead of waiting for a timeout or a cancellation.
+    /// </summary>
+    /// <remarks>
+    /// The default value is <see langword="false"/>. If set to <see langword="true"/>, the SendPaginatorAsync() methods will return an <see cref="InteractiveMessageResult"/> with status <see cref="InteractiveStatus.Success"/>.<br/>
+    /// Note that any exceptions that would otherwise be thrown will be swallowed instead.
+    /// </remarks>
+    public bool ReturnAfterSendingPaginator { get; set; } = false;
+
+    /// <summary>
+    /// Gets or sets a value indicating if the interactions that stops the interactive elements should be deferred.
+    /// </summary>
+    /// <remarks>
+    /// These interactions get deferred depending of the <see cref="ActionOnStop"/> and some specific circumstances:<br/>
+    /// 1. <see cref="ActionOnStop.None"/>: Always deferred.<br/>.
+    /// 2. <see cref="ActionOnStop.DeleteMessage"/>: If the interaction message is ephemeral.<br/>
+    /// 3. <see cref="ActionOnStop.ModifyMessage"/>: If there's no page to modify to.<br/>
+    /// 4. <see cref="ActionOnStop.DeleteInput"/> and <see cref="ActionOnStop.DisableInput"/>: If the input type is neither <see cref="InputType.Buttons"/> nor <see cref="InputType.SelectMenus"/>.
+    /// </remarks>
+    public bool DeferStopInteractions { get; set; } = true;
 }
