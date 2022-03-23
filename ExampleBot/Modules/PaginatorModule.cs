@@ -82,10 +82,9 @@ public class PaginatorModule : ModuleBase
             .AddUser(Context.User)
             .WithPageFactory(GeneratePage)
             .WithMaxPageIndex(images.Count - 1) // You must specify the max. index the page factory can go.
-            .AddOption(new Emoji("⏪"), PaginatorAction.SkipToStart) // Use different emojis and option order.
-            .AddOption(new Emoji("◀"), PaginatorAction.Backward)
+            .AddOption(new Emoji("◀"), PaginatorAction.Backward) // Use different emojis and option order.
             .AddOption(new Emoji("▶"), PaginatorAction.Forward)
-            .AddOption(new Emoji("⏩"), PaginatorAction.SkipToEnd)
+            .AddOption(new Emoji("🔢"), PaginatorAction.Jump) // Use the jump feature
             .AddOption(new Emoji("🛑"), PaginatorAction.Exit)
             .WithCacheLoadedPages(false) // The lazy paginator caches generated pages by default but it's possible to disable this.
             .WithActionOnCancellation(ActionOnStop.DeleteMessage) // Delete the message after pressing the stop emoji.
