@@ -234,6 +234,71 @@ public abstract class PaginatorBuilder<TPaginator, TBuilder>
     }
 
     /// <summary>
+    /// Sets the maximum time to wait for a "jump to page" input.
+    /// </summary>
+    /// <remarks>The default value is 30 seconds.</remarks>
+    public virtual TBuilder WithJumpInputTimeout(TimeSpan jumpInputTimeout)
+    {
+        JumpInputTimeout = jumpInputTimeout;
+        return (TBuilder)this;
+    }
+
+    /// <summary>
+    /// Sets the "jump to page" prompt that is displayed to the user.
+    /// </summary>
+    /// <remarks>
+    /// In button inputs, this is the title of the modal that is displayed.<br/>
+    /// In reaction inputs, this is the content of the temporary message that is sent.
+    /// </remarks>
+    public virtual TBuilder WithJumpInputPrompt(string jumpInputPrompt)
+    {
+        JumpInputPrompt = jumpInputPrompt;
+        return (TBuilder)this;
+    }
+
+    /// <summary>
+    /// Gets or sets the "jump to page" text label that is displayed in the modal.
+    /// </summary>
+    public virtual TBuilder WithJumpInputTextLabel(string jumpInputTextLabel)
+    {
+        JumpInputTextLabel = jumpInputTextLabel;
+        return (TBuilder)this;
+    }
+
+    /// <summary>
+    /// Sets the message to display when receiving an invalid "jump to page" input.
+    /// </summary>
+    /// <remarks>
+    /// An invalid input may be one that isn't a number, or a number that is outside the valid range.<br/>
+    /// To avoid sending a warning message about this, set the value to an empty string.
+    /// </remarks>
+    public virtual TBuilder WithInvalidJumpInputMessage(string invalidJumpInputMessage)
+    {
+        InvalidJumpInputMessage = invalidJumpInputMessage;
+        return (TBuilder)this;
+    }
+
+    /// <summary>
+    /// Sets the message to display when a user attempts to use the "jump to page" action while other user is using it.
+    /// </summary>
+    /// <remarks>To avoid sending a warning message about this, set the value to an empty string.</remarks>
+    public virtual TBuilder WithJumpInputInUseMessage(string jumpInputInUseMessage)
+    {
+        JumpInputInUseMessage = jumpInputInUseMessage;
+        return (TBuilder)this;
+    }
+
+    /// <summary>
+    /// Sets the message to display when receiving an expired "jump to page" input.
+    /// </summary>
+    /// <remarks>To avoid sending a warning message about this, set the value to an empty string.</remarks>
+    public virtual TBuilder WithExpiredJumpInputMessage(string expiredJumpInputMessage)
+    {
+        ExpiredJumpInputMessage = expiredJumpInputMessage;
+        return (TBuilder)this;
+    }
+
+    /// <summary>
     /// Clears all existing emote-action pairs and adds the default emote-action pairs of the <typeparamref name="TPaginator"/>.
     /// </summary>
     /// <returns>This builder.</returns>
