@@ -42,14 +42,26 @@ public class InteractiveConfig
     public bool ReturnAfterSendingPaginator { get; set; } = false;
 
     /// <summary>
-    /// Gets or sets a value indicating if the interactions that stops the interactive elements should be deferred.
+    /// Gets or sets a value indicating if the interactions that stop paginators should be deferred.
     /// </summary>
     /// <remarks>
     /// These interactions get deferred depending of the <see cref="ActionOnStop"/> and some specific circumstances:<br/>
-    /// 1. <see cref="ActionOnStop.None"/>: Always deferred.<br/>.
-    /// 2. <see cref="ActionOnStop.DeleteMessage"/>: If the interaction message is ephemeral.<br/>
-    /// 3. <see cref="ActionOnStop.ModifyMessage"/>: If there's no page to modify to.<br/>
-    /// 4. <see cref="ActionOnStop.DeleteInput"/> and <see cref="ActionOnStop.DisableInput"/>: If the input type is neither <see cref="InputType.Buttons"/> nor <see cref="InputType.SelectMenus"/>.
+    /// - <see cref="ActionOnStop.None"/>: Always deferred.<br/>
+    /// - <see cref="ActionOnStop.DeleteMessage"/>: If the interaction message is ephemeral.<br/>
+    /// - <see cref="ActionOnStop.ModifyMessage"/>: If there's no page to modify to.<br/>
+    /// - <see cref="ActionOnStop.DeleteInput"/> and <see cref="ActionOnStop.DisableInput"/>: If the input type is neither <see cref="InputType.Buttons"/> nor <see cref="InputType.SelectMenus"/>.
     /// </remarks>
-    public bool DeferStopInteractions { get; set; } = true;
+    public bool DeferStopPaginatorInteractions { get; set; } = true;
+
+    /// <summary>
+    /// Gets or sets a value indicating if the interactions that stop selections should be deferred.
+    /// </summary>
+    /// <remarks>
+    /// These interactions get deferred depending of the <see cref="ActionOnStop"/> and some specific circumstances:<br/>
+    /// - <see cref="ActionOnStop.None"/>: Always deferred.<br/>
+    /// - <see cref="ActionOnStop.DeleteMessage"/>: If the interaction message is ephemeral.<br/>
+    /// - <see cref="ActionOnStop.ModifyMessage"/>: If there's no page to modify to.<br/>
+    /// - <see cref="ActionOnStop.DeleteInput"/> and <see cref="ActionOnStop.DisableInput"/>: If the input type is neither <see cref="InputType.Buttons"/> nor <see cref="InputType.SelectMenus"/>.
+    /// </remarks>
+    public bool DeferStopSelectionInteractions { get; set; } = true;
 }

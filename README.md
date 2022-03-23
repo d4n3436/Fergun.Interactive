@@ -39,6 +39,7 @@ using Fergun.Interactive;
 ...
 
 var provider = new ServiceCollection()
+    .AddSingleton(new InteractiveConfig { DefaultTimeout = TimeSpan.FromMinutes(5) }) // Optional config
     .AddSingleton<InteractiveService>()
     ...
 ```
@@ -107,6 +108,26 @@ There's more info about the limitations in the description of the `ephemeral` pa
 ~~A: Currently no, but I'm planning to add support for multiple input types.~~
 
 A: Yes, update to the latest version.
+
+### Q: How can I get the last interaction of a paginator/selection to use it somewhere else, eg. send a modal?
+
+A: You can get the interaction that stopped the paginator/selection through the `StopInteraction` property, in `InteractiveMessageResult`.
+
+Note that this interaction will already be deferred by default (if nothing else has already been done to the interaction before, like update the message).
+
+You can prevent the library from doing this, use the following options in `InteractiveService`s' config:
+
+```cs
+var collection = new ServiceCollection()
+    ...
+    .AddSingleton(new InteractiveConfig
+    {
+        DeferStopPaginatorInteractions = false,
+        DeferStopSelectionInteractions = false
+    })
+    .AddSingleton<InteractiveService>()
+    ...
+```
 
 ## Additions/Changes from Discord.InteractivityAddon
 

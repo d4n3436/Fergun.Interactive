@@ -761,7 +761,7 @@ public class InteractiveService
 
         if (_callbacks.TryRemove(callback.Message.Id, out _))
         {
-            await ApplyActionOnStopAsync(callback.Paginator, result, callback.LastInteraction, callback.StopInteraction, _config.DeferStopInteractions).ConfigureAwait(false);
+            await ApplyActionOnStopAsync(callback.Paginator, result, callback.LastInteraction, callback.StopInteraction, _config.DeferStopPaginatorInteractions).ConfigureAwait(false);
         }
 
         return result;
@@ -817,7 +817,7 @@ public class InteractiveService
 
         if (_callbacks.TryRemove(callback.Message.Id, out _))
         {
-            await ApplyActionOnStopAsync(callback.Selection, result, callback.LastInteraction, callback.StopInteraction, _config.DeferStopInteractions).ConfigureAwait(false);
+            await ApplyActionOnStopAsync(callback.Selection, result, callback.LastInteraction, callback.StopInteraction, _config.DeferStopSelectionInteractions).ConfigureAwait(false);
         }
 
         return result;
