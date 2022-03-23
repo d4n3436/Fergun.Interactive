@@ -227,7 +227,12 @@ public abstract class Paginator : IInteractiveElement<KeyValuePair<IEmote, Pagin
                 return false;
             }
 
-            await reaction.Channel.SendMessageAsync($"{MentionUtils.MentionUser(reaction.UserId)}, {JumpInputInUseMessage}", allowedMentions: AllowedMentions.None, messageReference: new MessageReference(reaction.MessageId)).ConfigureAwait(false);
+            if (!string.IsNullOrEmpty(JumpInputInUseMessage))
+            {
+                await reaction.Channel.SendMessageAsync($"{MentionUtils.MentionUser(reaction.UserId)}, {JumpInputInUseMessage}",
+                    allowedMentions: AllowedMentions.None, messageReference: new MessageReference(reaction.MessageId)).ConfigureAwait(false);
+            }
+
             return false;
         }
 
@@ -262,7 +267,12 @@ public abstract class Paginator : IInteractiveElement<KeyValuePair<IEmote, Pagin
         string? rawInput = message.Content;
         if (rawInput is null || !int.TryParse(rawInput, out int pageNumber) || !await SetPageAsync(pageNumber - 1).ConfigureAwait(false))
         {
-            await message.Channel.SendMessageAsync(InvalidJumpInputMessage, allowedMentions: AllowedMentions.None, messageReference: new MessageReference(message.Id)).ConfigureAwait(false);
+            if (!string.IsNullOrEmpty(InvalidJumpInputMessage))
+            {
+                await message.Channel.SendMessageAsync(InvalidJumpInputMessage, allowedMentions: AllowedMentions.None,
+                    messageReference: new MessageReference(message.Id)).ConfigureAwait(false);
+            }
+
             return false;
         }
 
@@ -293,7 +303,15 @@ public abstract class Paginator : IInteractiveElement<KeyValuePair<IEmote, Pagin
             else
             {
                 // We don't know if the user is viewing the modal or they just dismissed it, the former is assumed
-                await interaction.RespondAsync(JumpInputInUseMessage, ephemeral: true);
+                if (!string.IsNullOrEmpty(JumpInputInUseMessage))
+                {
+                    await interaction.RespondAsync(JumpInputInUseMessage, ephemeral: true);
+                }
+                else
+                {
+                    await interaction.DeferAsync().ConfigureAwait(false);
+                }
+
                 return false;
             }
         }
@@ -326,7 +344,15 @@ public abstract class Paginator : IInteractiveElement<KeyValuePair<IEmote, Pagin
         string? rawInput = res.Data.Components.FirstOrDefault(x => x.CustomId == "text_input")?.Value;
         if (rawInput is null || !int.TryParse(rawInput, out int pageNumber) || !await SetPageAsync(pageNumber - 1).ConfigureAwait(false))
         {
-            await res.RespondAsync(InvalidJumpInputMessage, ephemeral: true).ConfigureAwait(false);
+            if (!string.IsNullOrEmpty(InvalidJumpInputMessage))
+            {
+                await res.RespondAsync(InvalidJumpInputMessage, ephemeral: true).ConfigureAwait(false);
+            }
+            else
+            {
+                await res.DeferAsync().ConfigureAwait(false);
+            }
+
             return false;
         }
 
@@ -526,7 +552,15 @@ public abstract class Paginator : IInteractiveElement<KeyValuePair<IEmote, Pagin
         // Expired modal
         if (JumpInputUserId == 0)
         {
-            await input.RespondAsync(ExpiredJumpInputMessage, ephemeral: true);
+            if (!string.IsNullOrEmpty(ExpiredJumpInputMessage))
+            {
+                await input.RespondAsync(ExpiredJumpInputMessage, ephemeral: true);
+            }
+            else
+            {
+                await input.DeferAsync().ConfigureAwait(false);
+            }
+
             return new(InteractiveInputStatus.Ignored);
         }
 
