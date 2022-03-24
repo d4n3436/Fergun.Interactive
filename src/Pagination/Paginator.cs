@@ -42,9 +42,9 @@ public abstract class Paginator : IInteractiveElement<KeyValuePair<IEmote, Pagin
         ActionOnTimeout = properties.ActionOnTimeout;
         CurrentPageIndex = properties.StartPageIndex;
         JumpInputTimeout = properties.JumpInputTimeout;
-        JumpInputPrompt = properties.JumpInputPrompt ?? "Enter the page to jump";
+        JumpInputPrompt = properties.JumpInputPrompt ?? "Enter a page number";
         JumpInputInUseMessage = properties.JumpInputInUseMessage ?? "Another user is currently using this action. Try again later.";
-        ExpiredJumpInputMessage = properties.ExpiredJumpInputMessage ?? $"Expired modal interaction. you must respond within {JumpInputTimeout.TotalSeconds} seconds.";
+        ExpiredJumpInputMessage = properties.ExpiredJumpInputMessage ?? $"Expired modal interaction. You must respond within {JumpInputTimeout.TotalSeconds} seconds.";
 
         _lazyJumpInputTextLabel = new Lazy<string>(() => properties.JumpInputTextLabel ?? $"Page number (1-{MaxPageIndex + 1})");
         _lazyInvalidJumpInputMessage = new Lazy<string>(() => properties.InvalidJumpInputMessage ?? $"Invalid input. The number must be in the range of 1 to {MaxPageIndex + 1}, excluding the current page.");
