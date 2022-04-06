@@ -522,7 +522,7 @@ public class InteractiveService
     /// <exception cref="ArgumentException"/>
     /// <exception cref="ArgumentNullException"/>
     /// <exception cref="NotSupportedException"/>
-    public async Task<InteractiveMessageResult> SendPaginatorAsync(Paginator paginator, SocketInteraction interaction, TimeSpan? timeout = null,
+    public async Task<InteractiveMessageResult> SendPaginatorAsync(Paginator paginator, IDiscordInteraction interaction, TimeSpan? timeout = null,
         InteractionResponseType responseType = InteractionResponseType.ChannelMessageWithSource, bool ephemeral = false,
         Action<IUserMessage>? messageAction = null, bool resetTimeoutOnInput = false, CancellationToken cancellationToken = default)
     {
@@ -622,7 +622,7 @@ public class InteractiveService
     /// <exception cref="ArgumentException"/>
     /// <exception cref="ArgumentNullException"/>
     /// <exception cref="NotSupportedException"/>
-    public async Task<InteractiveMessageResult<TOption?>> SendSelectionAsync<TOption>(BaseSelection<TOption> selection, SocketInteraction interaction,
+    public async Task<InteractiveMessageResult<TOption?>> SendSelectionAsync<TOption>(BaseSelection<TOption> selection, IDiscordInteraction interaction,
         TimeSpan? timeout = null, InteractionResponseType responseType = InteractionResponseType.ChannelMessageWithSource, bool ephemeral = false,
         Action<IUserMessage>? messageAction = null, CancellationToken cancellationToken = default)
     {
@@ -854,7 +854,7 @@ public class InteractiveService
         return message;
     }
 
-    private static async Task<IUserMessage> SendOrModifyMessageAsync<TOption>(IInteractiveElement<TOption> element, SocketInteraction interaction,
+    private static async Task<IUserMessage> SendOrModifyMessageAsync<TOption>(IInteractiveElement<TOption> element, IDiscordInteraction interaction,
         InteractionResponseType responseType, bool ephemeral)
     {
         var page = await element.GetCurrentPageAsync().ConfigureAwait(false);
@@ -883,7 +883,7 @@ public class InteractiveService
 
             case InteractionResponseType.UpdateMessage:
                 InteractiveGuards.ValidResponseType(responseType, interaction);
-                await ((SocketMessageComponent)interaction).UpdateAsync(UpdateMessage).ConfigureAwait(false);
+                await ((IComponentInteraction)interaction).UpdateAsync(UpdateMessage).ConfigureAwait(false);
                 return await interaction.GetOriginalResponseAsync().ConfigureAwait(false);
 
             default:
@@ -900,7 +900,7 @@ public class InteractiveService
     }
 
     private static async Task ApplyActionOnStopAsync<TOption>(IInteractiveElement<TOption> element, IInteractiveMessageResult result,
-        SocketInteraction? lastInteraction, SocketMessageComponent? stopInteraction, bool deferInteraction)
+        IDiscordInteraction? lastInteraction, SocketMessageComponent? stopInteraction, bool deferInteraction)
     {
         bool ephemeral = result.Message.Flags.GetValueOrDefault().HasFlag(MessageFlags.Ephemeral);
 
@@ -982,7 +982,7 @@ public class InteractiveService
                     // An interaction to stop the element has been received
                     await stopInteraction.UpdateAsync(UpdateMessage).ConfigureAwait(false);
                 }
-                else if (lastInteraction?.IsValidToken == true)
+                else if (lastInteraction is not null && (DateTimeOffset.UtcNow - lastInteraction.CreatedAt).TotalMinutes <= 15.0)
                 {
                     // The element is from a message that was updated using an interaction, and its token is still valid
                     await lastInteraction.ModifyOriginalResponseAsync(UpdateMessage).ConfigureAwait(false);

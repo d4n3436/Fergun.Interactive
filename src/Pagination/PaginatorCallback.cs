@@ -14,7 +14,7 @@ internal sealed class PaginatorCallback : IInteractiveCallback
 
     public PaginatorCallback(Paginator paginator, IUserMessage message,
         TimeoutTaskCompletionSource<InteractiveStatus> timeoutTaskSource,
-        DateTimeOffset startTime, SocketInteraction? initialInteraction = null)
+        DateTimeOffset startTime, IDiscordInteraction? initialInteraction = null)
     {
         Paginator = paginator;
         Message = message;
@@ -45,7 +45,7 @@ internal sealed class PaginatorCallback : IInteractiveCallback
     /// Gets the last received interaction that is not <see cref="StopInteraction"/>.
     /// </summary>
     /// <remarks>For paginators, this is either the interaction that was received to update a message to a paginator or the interaction received to change the pages.</remarks>
-    public SocketInteraction? LastInteraction { get; private set; }
+    public IDiscordInteraction? LastInteraction { get; private set; }
 
     /// <summary>
     /// Gets the messages that was received to stop the paginator.

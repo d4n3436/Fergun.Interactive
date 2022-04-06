@@ -15,7 +15,7 @@ internal sealed class SelectionCallback<TOption> : IInteractiveCallback
 
     public SelectionCallback(BaseSelection<TOption> selection, IUserMessage message,
         TimeoutTaskCompletionSource<(TOption?, InteractiveStatus)> timeoutTaskSource,
-        DateTimeOffset startTime, SocketInteraction? initialInteraction = null)
+        DateTimeOffset startTime, IDiscordInteraction? initialInteraction = null)
     {
         Selection = selection;
         Message = message;
@@ -46,7 +46,7 @@ internal sealed class SelectionCallback<TOption> : IInteractiveCallback
     /// Gets the last received interaction that is not <see cref="StopInteraction"/>.
     /// </summary>
     /// <remarks>For selections, this is the interaction that was received to update a message to a selection.</remarks>
-    public SocketInteraction? LastInteraction { get; }
+    public IDiscordInteraction? LastInteraction { get; }
 
     /// <summary>
     /// Gets the messages that was received to stop the selection.
