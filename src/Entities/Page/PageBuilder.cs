@@ -11,7 +11,7 @@ namespace Fergun.Interactive;
 /// </summary>
 public class PageBuilder : IPageBuilder<Page>, IPageBuilder
 {
-    private readonly EmbedBuilder _builder;
+    internal readonly EmbedBuilder _builder;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="PageBuilder"/> class.
@@ -26,20 +26,41 @@ public class PageBuilder : IPageBuilder<Page>, IPageBuilder
         _builder = builder ?? new EmbedBuilder();
     }
 
-    internal PageBuilder(string? text, EmbedBuilder? builder)
-        : this(builder)
+    internal PageBuilder(Page page)
+        : this(page.Embed?.ToEmbedBuilder())
     {
-        Text = text;
+        Text = page.Text;
+        IsTTS = page.IsTTS;
     }
 
     /// <summary>
-    /// Gets or sets the text of a <see cref="Page"/>.
+    /// Gets or sets the text of the <see cref="Page"/>.
     /// </summary>
     /// <returns>The text of the page.</returns>
     public string? Text { get; set; }
 
     /// <summary>
-    /// Gets or sets the title of a <see cref="Page"/>.
+    /// Gets or sets a value that determines whether the text of the <see cref="Page"/> should be read aloud by Discord.
+    /// </summary>
+    public bool IsTTS { get; set; }
+
+    /// <summary>
+    /// Gets or sets the allowed mentions of the <see cref="Page"/>.
+    /// </summary>
+    public AllowedMentions? AllowedMentions { get; set; }
+
+    /// <summary>
+    /// Gets or sets the message reference of the <see cref="Page"/>.
+    /// </summary>
+    public MessageReference? MessageReference { get; set; }
+
+    /// <summary>
+    /// Gets or sets the stickers of the <see cref="Page"/>.
+    /// </summary>
+    public IReadOnlyCollection<ISticker> Stickers { get; set; } = Array.Empty<ISticker>();
+
+    /// <summary>
+    /// Gets or sets the title of the <see cref="Page"/>.
     /// </summary>
     /// <returns>The title of the page.</returns>
     public string Title
@@ -49,7 +70,7 @@ public class PageBuilder : IPageBuilder<Page>, IPageBuilder
     }
 
     /// <summary>
-    /// Gets or sets the description of a <see cref="Page"/>.
+    /// Gets or sets the description of the <see cref="Page"/>.
     /// </summary>
     /// <returns>The description of the page.</returns>
     public string Description
@@ -59,7 +80,7 @@ public class PageBuilder : IPageBuilder<Page>, IPageBuilder
     }
 
     /// <summary>
-    /// Gets or sets the URL of a <see cref="Page"/>.
+    /// Gets or sets the URL of the <see cref="Page"/>.
     /// </summary>
     /// <returns>The URL of the page.</returns>
     public string Url
@@ -69,7 +90,7 @@ public class PageBuilder : IPageBuilder<Page>, IPageBuilder
     }
 
     /// <summary>
-    /// Gets or sets the thumbnail URL of a <see cref="Page"/>.
+    /// Gets or sets the thumbnail URL of the <see cref="Page"/>.
     /// </summary>
     /// <returns>The thumbnail URL of the page.</returns>
     public string ThumbnailUrl
@@ -79,7 +100,7 @@ public class PageBuilder : IPageBuilder<Page>, IPageBuilder
     }
 
     /// <summary>
-    /// Gets or sets the image URL of a <see cref="Page"/>.
+    /// Gets or sets the image URL of the <see cref="Page"/>.
     /// </summary>
     /// <returns>The image URL of the page.</returns>
     public string ImageUrl
@@ -89,7 +110,7 @@ public class PageBuilder : IPageBuilder<Page>, IPageBuilder
     }
 
     /// <summary>
-    /// Gets or sets the list of <see cref="PageBuilder"/> of a <see cref="Page"/>.
+    /// Gets or sets the list of <see cref="PageBuilder"/> of the <see cref="Page"/>.
     /// </summary>
     /// <returns>The list of existing <see cref="EmbedFieldBuilder"/>.</returns>
     public List<EmbedFieldBuilder> Fields
@@ -99,7 +120,7 @@ public class PageBuilder : IPageBuilder<Page>, IPageBuilder
     }
 
     /// <summary>
-    /// Gets or sets the timestamp of a <see cref="Page"/>.
+    /// Gets or sets the timestamp of the <see cref="Page"/>.
     /// </summary>
     /// <returns>The timestamp of the page, or <c>null</c> if none is set.</returns>
     public DateTimeOffset? Timestamp
@@ -109,7 +130,7 @@ public class PageBuilder : IPageBuilder<Page>, IPageBuilder
     }
 
     /// <summary>
-    /// Gets or sets the sidebar color of a <see cref="Page"/>.
+    /// Gets or sets the sidebar color of the <see cref="Page"/>.
     /// </summary>
     /// <returns>The color of the page, or <c>null</c> if none is set.</returns>
     public Color? Color
@@ -119,7 +140,7 @@ public class PageBuilder : IPageBuilder<Page>, IPageBuilder
     }
 
     /// <summary>
-    /// Gets or sets the <see cref="EmbedAuthorBuilder"/> of a <see cref="Page"/>.
+    /// Gets or sets the <see cref="EmbedAuthorBuilder"/> of the <see cref="Page"/>.
     /// </summary>
     /// <returns>The author field builder of the page, or <c>null</c> if none is set.</returns>
     public EmbedAuthorBuilder Author
@@ -129,7 +150,7 @@ public class PageBuilder : IPageBuilder<Page>, IPageBuilder
     }
 
     /// <summary>
-    /// Gets or sets the <see cref="EmbedFooterBuilder"/> of a <see cref="Page"/>.
+    /// Gets or sets the <see cref="EmbedFooterBuilder"/> of the <see cref="Page"/>.
     /// </summary>
     /// <returns>The footer field builder of the page, or <c>null</c> if none is set.</returns>
     public EmbedFooterBuilder Footer
@@ -168,10 +189,10 @@ public class PageBuilder : IPageBuilder<Page>, IPageBuilder
     /// </summary>
     /// <returns>A <see cref="Page"/>.</returns>
     public Page Build()
-        => new(Text, _builder);
+        => new(this);
 
     /// <summary>
-    /// Sets the text of a <see cref="Page"/>.
+    /// Sets the text of the <see cref="Page"/>.
     /// </summary>
     /// <param name="text">The text to be set.</param>
     /// <returns>The current builder.</returns>
@@ -182,7 +203,7 @@ public class PageBuilder : IPageBuilder<Page>, IPageBuilder
     }
 
     /// <summary>
-    /// Sets the title of a <see cref="Page"/>.
+    /// Sets the title of the <see cref="Page"/>.
     /// </summary>
     /// <param name="title">The title to be set.</param>
     /// <returns>The current builder.</returns>
@@ -193,7 +214,7 @@ public class PageBuilder : IPageBuilder<Page>, IPageBuilder
     }
 
     /// <summary>
-    /// Sets the description of a <see cref="Page"/>.
+    /// Sets the description of the <see cref="Page"/>.
     /// </summary>
     /// <param name="description"> The description to be set.</param>
     /// <returns>The current builder.</returns>
@@ -204,7 +225,7 @@ public class PageBuilder : IPageBuilder<Page>, IPageBuilder
     }
 
     /// <summary>
-    /// Sets the URL of a <see cref="Page"/>.
+    /// Sets the URL of the <see cref="Page"/>.
     /// </summary>
     /// <param name="url"> The URL to be set.</param>
     /// <returns>The current builder.</returns>
@@ -215,7 +236,7 @@ public class PageBuilder : IPageBuilder<Page>, IPageBuilder
     }
 
     /// <summary>
-    /// Sets the thumbnail URL of a <see cref="Page"/>.
+    /// Sets the thumbnail URL of the <see cref="Page"/>.
     /// </summary>
     /// <param name="thumbnailUrl"> The thumbnail URL to be set.</param>
     /// <returns>The current builder.</returns>
@@ -226,7 +247,7 @@ public class PageBuilder : IPageBuilder<Page>, IPageBuilder
     }
 
     /// <summary>
-    /// Sets the image URL of a <see cref="Page"/>.
+    /// Sets the image URL of the <see cref="Page"/>.
     /// </summary>
     /// <param name="imageUrl">The image URL to be set.</param>
     /// <returns>The current builder.</returns>
@@ -237,7 +258,7 @@ public class PageBuilder : IPageBuilder<Page>, IPageBuilder
     }
 
     /// <summary>
-    /// Sets the timestamp of a <see cref="Page"/> to the current time.
+    /// Sets the timestamp of the <see cref="Page"/> to the current time.
     /// </summary>
     /// <returns>The current builder.</returns>
     public PageBuilder WithCurrentTimestamp()
@@ -247,7 +268,7 @@ public class PageBuilder : IPageBuilder<Page>, IPageBuilder
     }
 
     /// <summary>
-    /// Sets the timestamp of a <see cref="Page"/>.
+    /// Sets the timestamp of the <see cref="Page"/>.
     /// </summary>
     /// <param name="dateTimeOffset">The timestamp to be set.</param>
     /// <returns>The current builder.</returns>
@@ -258,7 +279,7 @@ public class PageBuilder : IPageBuilder<Page>, IPageBuilder
     }
 
     /// <summary>
-    /// Sets the sidebar color of a <see cref="Page"/>.
+    /// Sets the sidebar color of the <see cref="Page"/>.
     /// </summary>
     /// <param name="color">The color to be set.</param>
     /// <returns>The current builder.</returns>
@@ -269,7 +290,7 @@ public class PageBuilder : IPageBuilder<Page>, IPageBuilder
     }
 
     /// <summary>
-    /// Sets the <see cref="EmbedAuthorBuilder"/> of a <see cref="Page"/>.
+    /// Sets the <see cref="EmbedAuthorBuilder"/> of the <see cref="Page"/>.
     /// </summary>
     /// <param name="author">The author builder class containing the author field properties.</param>
     /// <returns>The current builder.</returns>
@@ -280,7 +301,7 @@ public class PageBuilder : IPageBuilder<Page>, IPageBuilder
     }
 
     /// <summary>
-    /// Sets the author field of a <see cref="Page"/> with the provided properties.
+    /// Sets the author field of the <see cref="Page"/> with the provided properties.
     /// </summary>
     /// <param name="action">The delegate containing the author field properties.</param>
     /// <returns>The current builder.</returns>
@@ -291,7 +312,7 @@ public class PageBuilder : IPageBuilder<Page>, IPageBuilder
     }
 
     /// <summary>
-    /// Sets the author field of a <see cref="Page"/> with the provided name, icon URL, and URL.
+    /// Sets the author field of the <see cref="Page"/> with the provided name, icon URL, and URL.
     /// </summary>
     /// <param name="name">The title of the author field.</param>
     /// <param name="iconUrl">The icon URL of the author field.</param>
@@ -315,7 +336,7 @@ public class PageBuilder : IPageBuilder<Page>, IPageBuilder
     }
 
     /// <summary>
-    /// Sets the <see cref="EmbedFooterBuilder"/> of a <see cref="Page"/>.
+    /// Sets the <see cref="EmbedFooterBuilder"/> of the <see cref="Page"/>.
     /// </summary>
     /// <param name="footer">The footer builder class containing the footer field properties.</param>
     /// <returns>The current builder.</returns>
@@ -326,7 +347,7 @@ public class PageBuilder : IPageBuilder<Page>, IPageBuilder
     }
 
     /// <summary>
-    /// Sets the footer field of a <see cref="Page"/> with the provided properties.
+    /// Sets the footer field of the <see cref="Page"/> with the provided properties.
     /// </summary>
     /// <param name="action">The delegate containing the footer field properties.</param>
     /// <returns>The current builder.</returns>
@@ -336,7 +357,7 @@ public class PageBuilder : IPageBuilder<Page>, IPageBuilder
         return this;
     }
 
-    /// <summary>Sets the footer field of a <see cref="Page"/> with the provided name, icon URL.</summary>
+    /// <summary>Sets the footer field of the <see cref="Page"/> with the provided name, icon URL.</summary>
     /// <param name="text">The title of the footer field.</param>
     /// <param name="iconUrl">The icon URL of the footer field.</param>
     /// <returns>The current builder.</returns>
@@ -400,6 +421,51 @@ public class PageBuilder : IPageBuilder<Page>, IPageBuilder
     public PageBuilder AddField(Action<EmbedFieldBuilder> action)
     {
         _builder.AddField(action);
+        return this;
+    }
+
+    /// <summary>
+    /// Sets the <see cref="IsTTS"/> value of the <see cref="Page"/>.
+    /// </summary>
+    /// <param name="isTTs">Whether the text of the page should be read aloud by Discord.</param>
+    /// <returns>The current builder.</returns>
+    public PageBuilder WithIsTTS(bool isTTs)
+    {
+        IsTTS = isTTs;
+        return this;
+    }
+
+    /// <summary>
+    /// Sets the allowed mentions the <see cref="Page"/>.
+    /// </summary>
+    /// <param name="allowedMentions">The allowed mentions.</param>
+    /// <returns>The current builder.</returns>
+    public PageBuilder WithAllowedMentions(AllowedMentions? allowedMentions)
+    {
+        AllowedMentions = allowedMentions;
+        return this;
+    }
+
+    /// <summary>
+    /// Sets the message reference of the <see cref="Page"/>.
+    /// </summary>
+    /// <param name="messageReference">The message reference.</param>
+    /// <returns>The current builder.</returns>
+    public PageBuilder WithMessageReference(MessageReference? messageReference)
+    {
+        MessageReference = messageReference;
+        return this;
+    }
+
+    /// <summary>
+    /// Sets the stickers of the <see cref="Page"/>.
+    /// </summary>
+    /// <param name="stickers">The stickers.</param>
+    /// <returns>The current builder.</returns>
+    public PageBuilder WithStickers(IReadOnlyCollection<ISticker> stickers)
+    {
+        InteractiveGuards.NotNull(stickers);
+        Stickers = stickers;
         return this;
     }
 

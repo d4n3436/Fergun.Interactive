@@ -11,10 +11,19 @@ public class Page : IPage
 {
     private readonly Lazy<Embed[]> _lazyEmbeds;
 
-    internal Page(string? text = null, EmbedBuilder? builder = null)
+    internal Page(PageBuilder page)
     {
-        Text = text;
+        InteractiveGuards.NotNull(page);
+        InteractiveGuards.NotNull(page.Stickers);
+
+        Text = page.Text;
+        IsTTS = page.IsTTS;
+        AllowedMentions = page.AllowedMentions;
+        MessageReference = page.MessageReference;
+        Stickers = page.Stickers;
+
         bool isEmpty = false;
+        var builder = page._builder;
 
         if (builder?.Author is null &&
             builder?.Color is null &&
@@ -27,9 +36,9 @@ public class Page : IPage
             builder?.Title is null &&
             builder?.Url is null)
         {
-            if (string.IsNullOrEmpty(text))
+            if (string.IsNullOrEmpty(page.Text))
             {
-                throw new ArgumentNullException(nameof(text));
+                throw new InvalidOperationException("Either a text or a valid EmbedBuilder must be present.");
             }
 
             isEmpty = true;
@@ -41,6 +50,18 @@ public class Page : IPage
 
     /// <inheritdoc/>
     public string? Text { get; }
+
+    /// <inheritdoc/>
+    public bool IsTTS { get; }
+
+    /// <inheritdoc/>
+    public AllowedMentions? AllowedMentions { get; }
+
+    /// <inheritdoc/>
+    public MessageReference? MessageReference { get; }
+
+    /// <inheritdoc/>
+    public IReadOnlyCollection<ISticker> Stickers { get; }
 
     /// <summary>
     /// Gets the embed of this page.
@@ -59,7 +80,7 @@ public class Page : IPage
     /// <param name="embed">The embed.</param>
     /// <returns>A <see cref="Page"/>.</returns>
     public static Page FromEmbed(Embed embed)
-        => new(null, embed?.ToEmbedBuilder());
+        => new(PageBuilder.FromEmbed(embed));
 
     /// <summary>
     /// Creates a new <see cref="Page"/> from an <see cref="EmbedBuilder"/>.
@@ -67,12 +88,12 @@ public class Page : IPage
     /// <param name="builder">The builder.</param>
     /// <returns>A <see cref="Page"/>.</returns>
     public static Page FromEmbedBuilder(EmbedBuilder builder)
-        => new(null, builder);
+        => new(PageBuilder.FromEmbedBuilder(builder));
 
     /// <summary>
     /// Creates a <see cref="PageBuilder"/> with all the values of this <see cref="Page"/>.
     /// </summary>
     /// <returns>A <see cref="PageBuilder"/>.</returns>
     public PageBuilder ToPageBuilder()
-        => new(Text, Embed?.ToEmbedBuilder());
+        => new(this);
 }

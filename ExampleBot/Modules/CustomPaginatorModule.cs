@@ -248,6 +248,7 @@ public class PagedSelection<TOption> : BaseSelection<KeyValuePair<TOption, Pagin
             x.Content = currentPage.Text ?? "";
             x.Embeds = currentPage.GetEmbedArray();
             x.Components = GetOrAddComponents(false).Build();
+            x.AllowedMentions = currentPage.AllowedMentions;
         }).ConfigureAwait(false);
 
         return InteractiveInputStatus.Ignored;

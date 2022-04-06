@@ -453,6 +453,7 @@ public abstract class Paginator : IInteractiveElement<KeyValuePair<IEmote, Pagin
             {
                 x.Embeds = currentPage.GetEmbedArray();
                 x.Content = currentPage.Text;
+                x.AllowedMentions = currentPage.AllowedMentions;
             }).ConfigureAwait(false);
         }
 
@@ -464,6 +465,7 @@ public abstract class Paginator : IInteractiveElement<KeyValuePair<IEmote, Pagin
             {
                 x.Embeds = currentPage.GetEmbedArray();
                 x.Content = currentPage.Text;
+                x.AllowedMentions = currentPage.AllowedMentions;
             }).ConfigureAwait(false);
         }
 
@@ -513,6 +515,7 @@ public abstract class Paginator : IInteractiveElement<KeyValuePair<IEmote, Pagin
                 x.Content = currentPage.Text ?? ""; // workaround for d.net bug
                 x.Embeds = currentPage.GetEmbedArray();
                 x.Components = buttons;
+                x.AllowedMentions = currentPage.AllowedMentions;
             }).ConfigureAwait(false);
         }
 
@@ -527,6 +530,7 @@ public abstract class Paginator : IInteractiveElement<KeyValuePair<IEmote, Pagin
                 x.Content = currentPage.Text ?? ""; // workaround for d.net bug
                 x.Embeds = currentPage.GetEmbedArray();
                 x.Components = buttons;
+                x.AllowedMentions = currentPage.AllowedMentions;
             }).ConfigureAwait(false);
         }
 

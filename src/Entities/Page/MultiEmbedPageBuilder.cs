@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Discord;
 
@@ -17,10 +18,30 @@ public class MultiEmbedPageBuilder : IPageBuilder<MultiEmbedPage>, IPageBuilder
     }
 
     /// <summary>
-    /// Gets or sets the text of a <see cref="MultiEmbedPage"/>.
+    /// Gets or sets the text of the <see cref="MultiEmbedPage"/>.
     /// </summary>
     /// <returns>The text of the page.</returns>
     public string? Text { get; set; }
+
+    /// <summary>
+    /// Gets or sets a value that determines whether the text in <see cref="MultiEmbedPage"/> should be read aloud by Discord.
+    /// </summary>
+    public bool IsTTS { get; set; }
+
+    /// <summary>
+    /// Gets or sets the allowed mentions of the <see cref="MultiEmbedPage"/>.
+    /// </summary>
+    public AllowedMentions? AllowedMentions { get; set; }
+
+    /// <summary>
+    /// Gets or sets the message reference of the <see cref="MultiEmbedPage"/>.
+    /// </summary>
+    public MessageReference? MessageReference { get; set; }
+
+    /// <summary>
+    /// Gets or sets the stickers of the <see cref="MultiEmbedPage"/>.
+    /// </summary>
+    public IReadOnlyCollection<ISticker> Stickers { get; set; } = Array.Empty<ISticker>();
 
     /// <summary>
     /// Gets or sets the builders that will be in the page.
@@ -115,6 +136,51 @@ public class MultiEmbedPageBuilder : IPageBuilder<MultiEmbedPage>, IPageBuilder
     {
         InteractiveGuards.NotNull(embed);
         return AddBuilder(embed.ToEmbedBuilder());
+    }
+
+    /// <summary>
+    /// Sets the <see cref="IsTTS"/> value of the <see cref="MultiEmbedPage"/>.
+    /// </summary>
+    /// <param name="isTTS">Whether the text should be read aloud by Discord.</param>
+    /// <returns>The current builder.</returns>
+    public MultiEmbedPageBuilder WithIsTTS(bool isTTS)
+    {
+        IsTTS = isTTS;
+        return this;
+    }
+
+    /// <summary>
+    /// Sets the allowed mentions the <see cref="MultiEmbedPage"/>.
+    /// </summary>
+    /// <param name="allowedMentions">The allowed mentions.</param>
+    /// <returns>The current builder.</returns>
+    public MultiEmbedPageBuilder WithAllowedMentions(AllowedMentions? allowedMentions)
+    {
+        AllowedMentions = allowedMentions;
+        return this;
+    }
+
+    /// <summary>
+    /// Sets the message reference of the <see cref="MultiEmbedPage"/>.
+    /// </summary>
+    /// <param name="messageReference">The message reference.</param>
+    /// <returns>The current builder.</returns>
+    public MultiEmbedPageBuilder WithMessageReference(MessageReference? messageReference)
+    {
+        MessageReference = messageReference;
+        return this;
+    }
+
+    /// <summary>
+    /// Sets the stickers of the <see cref="MultiEmbedPage"/>.
+    /// </summary>
+    /// <param name="stickers">The stickers.</param>
+    /// <returns>The current builder.</returns>
+    public MultiEmbedPageBuilder WithStickers(IReadOnlyCollection<ISticker> stickers)
+    {
+        InteractiveGuards.NotNull(stickers);
+        Stickers = stickers;
+        return this;
     }
 
     /// <inheritdoc/>

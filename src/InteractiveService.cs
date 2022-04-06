@@ -842,12 +842,13 @@ public class InteractiveService
                 x.Content = page.Text;
                 x.Embeds = page.GetEmbedArray();
                 x.Components = component;
+                x.AllowedMentions = page.AllowedMentions;
             }).ConfigureAwait(false);
         }
         else
         {
             InteractiveGuards.NotNull(channel);
-            message = await channel!.SendMessageAsync(page.Text, embeds: page.GetEmbedArray(), components: component).ConfigureAwait(false);
+            message = await channel!.SendMessageAsync(page.Text, page.IsTTS, null, null, page.AllowedMentions, page.MessageReference, component, page.Stickers.ToArray(), page.GetEmbedArray()).ConfigureAwait(false);
         }
 
         return message;
@@ -870,11 +871,11 @@ public class InteractiveService
         switch (responseType)
         {
             case InteractionResponseType.ChannelMessageWithSource:
-                await interaction.RespondAsync(page.Text, embeds, ephemeral: ephemeral, components: component).ConfigureAwait(false);
+                await interaction.RespondAsync(page.Text, embeds, page.IsTTS, ephemeral, page.AllowedMentions, component).ConfigureAwait(false);
                 return await interaction.GetOriginalResponseAsync().ConfigureAwait(false);
 
             case InteractionResponseType.DeferredChannelMessageWithSource:
-                return await interaction.FollowupAsync(page.Text, embeds, ephemeral: ephemeral, components: component).ConfigureAwait(false);
+                return await interaction.FollowupAsync(page.Text, embeds, page.IsTTS, ephemeral, page.AllowedMentions, component).ConfigureAwait(false);
 
             case InteractionResponseType.DeferredUpdateMessage:
                 InteractiveGuards.ValidResponseType(responseType, interaction);
@@ -894,6 +895,7 @@ public class InteractiveService
             props.Content = page.Text;
             props.Embeds = embeds;
             props.Components = component;
+            props.AllowedMentions = page.AllowedMentions;
         }
     }
 
@@ -1018,6 +1020,7 @@ public class InteractiveService
             props.Content = page?.Text ?? new Optional<string>();
             props.Embeds = page?.GetEmbedArray() ?? new Optional<Embed[]>();
             props.Components = components ?? new Optional<MessageComponent>();
+            props.AllowedMentions = page?.AllowedMentions ?? new Optional<AllowedMentions>();
         }
     }
 

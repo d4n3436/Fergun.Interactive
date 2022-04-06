@@ -15,6 +15,7 @@ public class MultiEmbedPage : IPage
     internal MultiEmbedPage(MultiEmbedPageBuilder builder)
     {
         InteractiveGuards.NotNull(builder);
+        InteractiveGuards.NotNull(builder.Stickers);
         InteractiveGuards.NotNull(builder.Builders);
         InteractiveGuards.EmbedCountInRange(builder.Builders);
         if (string.IsNullOrEmpty(builder.Text) && builder.Builders.Count == 0)
@@ -23,11 +24,27 @@ public class MultiEmbedPage : IPage
         }
 
         Text = builder.Text;
+        IsTTS = builder.IsTTS;
+        AllowedMentions = builder.AllowedMentions;
+        MessageReference = builder.MessageReference;
+        Stickers = builder.Stickers;
         _embedArray = builder.Builders.Select(x => x.Build()).ToArray();
     }
 
     /// <inheritdoc/>
     public string? Text { get; }
+
+    /// <inheritdoc/>
+    public bool IsTTS { get; }
+
+    /// <inheritdoc/>
+    public AllowedMentions? AllowedMentions { get; }
+
+    /// <inheritdoc/>
+    public MessageReference? MessageReference { get; }
+
+    /// <inheritdoc/>
+    public IReadOnlyCollection<ISticker> Stickers { get; }
 
     /// <inheritdoc/>
     public IReadOnlyCollection<Embed> Embeds => _embedArray;
