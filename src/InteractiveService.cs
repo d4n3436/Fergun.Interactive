@@ -547,10 +547,23 @@ public class InteractiveService
         var timeoutTaskSource = new TimeoutTaskCompletionSource<InteractiveStatus>(timeout ?? _config.DefaultTimeout,
             resetTimeoutOnInput, InteractiveStatus.Timeout, InteractiveStatus.Canceled, cancellationToken);
 
-        var initialInteraction = responseType is InteractionResponseType.DeferredUpdateMessage or InteractionResponseType.UpdateMessage ? interaction : null;
-        using var callback = new PaginatorCallback(paginator, message, timeoutTaskSource, DateTimeOffset.UtcNow, initialInteraction);
+        if (_config.ReturnAfterSendingPaginator)
+        {
+            _ = WaitForPaginatorResultUsingCallbackAsync().ConfigureAwait(false);
 
-        return await WaitForPaginatorResultAsync(callback).ConfigureAwait(false);
+            return new InteractiveMessageResultBuilder()
+                .WithMessage(message)
+                .Build();
+        }
+
+        return await WaitForPaginatorResultUsingCallbackAsync().ConfigureAwait(false);
+
+        async Task<InteractiveMessageResult> WaitForPaginatorResultUsingCallbackAsync()
+        {
+            var initialInteraction = responseType is InteractionResponseType.DeferredUpdateMessage or InteractionResponseType.UpdateMessage ? interaction : null;
+            using var callback = new PaginatorCallback(paginator, message, timeoutTaskSource, DateTimeOffset.UtcNow, initialInteraction);
+            return await WaitForPaginatorResultAsync(callback).ConfigureAwait(false);
+        }
     }
 
     /// <summary>
