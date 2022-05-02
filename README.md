@@ -19,6 +19,7 @@ This is a fork of [Discord.InteractivityAddon](https://github.com/Playwo/Discord
   - Support for actions that are executed when a paginator stops like modify/delete the message and/or remove/disable the reactions/components
   - Support for extension methods that can be used in any paginator builder
   - Support for custom paginators, inheriting from the `Paginator` and `PaginatorBuilder` classes
+  - Jump (skip) to a specific page using a message input or modals (more info [here](https://github.com/d4n3436/Fergun.Interactive/releases/tag/v1.5))
 - Fully customizable selection
   - Uses a list of options to select from
   - Supports messages, reactions, buttons and select menus
