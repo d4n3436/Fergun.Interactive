@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 using Discord;
 
 namespace Fergun.Interactive;
@@ -38,6 +40,11 @@ public interface IPage<out TEmbed> where TEmbed : IEmbed
     /// Gets the embeds of this page.
     /// </summary>
     IReadOnlyCollection<TEmbed> Embeds { get; }
+
+    /// <summary>
+    /// Gets the factory of attachments.
+    /// </summary>
+    Func<ValueTask<IEnumerable<FileAttachment>?>>? AttachmentsFactory { get; }
 }
 
 /// <inheritdoc/>

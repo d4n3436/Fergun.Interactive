@@ -848,6 +848,8 @@ public class InteractiveService
             component = element.GetOrAddComponents(false).Build();
         }
 
+        var attachments = page.AttachmentsFactory is null ? null : await page.AttachmentsFactory().ConfigureAwait(false);
+
         if (message is not null)
         {
             await message.ModifyAsync(x =>
@@ -856,12 +858,14 @@ public class InteractiveService
                 x.Embeds = page.GetEmbedArray();
                 x.Components = component;
                 x.AllowedMentions = page.AllowedMentions;
+                x.Attachments = attachments is null ? new Optional<IEnumerable<FileAttachment>>() : new Optional<IEnumerable<FileAttachment>>(attachments);
             }).ConfigureAwait(false);
         }
         else
         {
             InteractiveGuards.NotNull(channel);
-            message = await channel!.SendMessageAsync(page.Text, page.IsTTS, null, null, page.AllowedMentions, page.MessageReference, component, page.Stickers.ToArray(), page.GetEmbedArray()).ConfigureAwait(false);
+            message = await channel!.SendFilesAsync(attachments ?? Enumerable.Empty<FileAttachment>(), page.Text, page.IsTTS, null, null,
+                page.AllowedMentions, page.MessageReference, component, page.Stickers.ToArray(), page.GetEmbedArray()).ConfigureAwait(false);
         }
 
         return message;
@@ -880,15 +884,18 @@ public class InteractiveService
         }
 
         var embeds = page.GetEmbedArray();
+        var attachments = page.AttachmentsFactory is null ? null : await page.AttachmentsFactory().ConfigureAwait(false);
 
         switch (responseType)
         {
             case InteractionResponseType.ChannelMessageWithSource:
-                await interaction.RespondAsync(page.Text, embeds, page.IsTTS, ephemeral, page.AllowedMentions, component).ConfigureAwait(false);
+                await interaction.RespondWithFilesAsync(attachments ?? Enumerable.Empty<FileAttachment>(),
+                    page.Text, embeds, page.IsTTS, ephemeral, page.AllowedMentions, component).ConfigureAwait(false);
                 return await interaction.GetOriginalResponseAsync().ConfigureAwait(false);
 
             case InteractionResponseType.DeferredChannelMessageWithSource:
-                return await interaction.FollowupAsync(page.Text, embeds, page.IsTTS, ephemeral, page.AllowedMentions, component).ConfigureAwait(false);
+                return await interaction.FollowupWithFilesAsync(attachments ?? Enumerable.Empty<FileAttachment>(),
+                    page.Text, embeds, page.IsTTS, ephemeral, page.AllowedMentions, component).ConfigureAwait(false);
 
             case InteractionResponseType.DeferredUpdateMessage:
                 InteractiveGuards.ValidResponseType(responseType, interaction);
@@ -909,6 +916,7 @@ public class InteractiveService
             props.Embeds = embeds;
             props.Components = component;
             props.AllowedMentions = page.AllowedMentions;
+            props.Attachments = attachments is null ? new Optional<IEnumerable<FileAttachment>>() : new Optional<IEnumerable<FileAttachment>>(attachments);
         }
     }
 
@@ -960,6 +968,7 @@ public class InteractiveService
         }
 
         IPage? page = null;
+        IEnumerable<FileAttachment>? attachments = null;
         if (action.HasFlag(ActionOnStop.ModifyMessage))
         {
             page = result.Status switch
@@ -969,6 +978,8 @@ public class InteractiveService
                 InteractiveStatus.Success when element is BaseSelection<TOption> selection => selection.SuccessPage,
                 _ => throw new ArgumentException("Unknown action.", nameof(result))
             };
+
+            attachments = page?.AttachmentsFactory is null ? null : await page.AttachmentsFactory().ConfigureAwait(false);
         }
 
         MessageComponent? components = null;
@@ -984,7 +995,7 @@ public class InteractiveService
             }
         }
 
-        bool modifyMessage = page?.Text is not null || page?.Embeds.Count > 0 || components is not null;
+        bool modifyMessage = page?.Text is not null || page?.Embeds.Count > 0 || components is not null || attachments is not null;
 
         if (modifyMessage)
         {
@@ -1034,6 +1045,7 @@ public class InteractiveService
             props.Embeds = page?.GetEmbedArray() ?? new Optional<Embed[]>();
             props.Components = components ?? new Optional<MessageComponent>();
             props.AllowedMentions = page?.AllowedMentions ?? new Optional<AllowedMentions>();
+            props.Attachments = attachments is null ? new Optional<IEnumerable<FileAttachment>>() : new Optional<IEnumerable<FileAttachment>>(attachments);
         }
     }
 

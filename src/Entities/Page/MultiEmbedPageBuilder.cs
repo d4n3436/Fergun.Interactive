@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Discord;
 
 namespace Fergun.Interactive;
@@ -48,6 +49,11 @@ public class MultiEmbedPageBuilder : IPageBuilder<MultiEmbedPage>, IPageBuilder
     /// </summary>
     /// <returns>The list of builders.</returns>
     public IList<EmbedBuilder> Builders { get; set; } = new List<EmbedBuilder>();
+
+    /// <summary>
+    /// Gets or sets the factory of attachments.
+    /// </summary>
+    public Func<ValueTask<IEnumerable<FileAttachment>?>>? AttachmentsFactory { get; set; }
 
     /// <summary>
     /// Builds this builder into a <see cref="MultiEmbedPage"/>.
@@ -180,6 +186,62 @@ public class MultiEmbedPageBuilder : IPageBuilder<MultiEmbedPage>, IPageBuilder
     {
         InteractiveGuards.NotNull(stickers);
         Stickers = stickers;
+        return this;
+    }
+
+    /// <summary>
+    /// Sets the function that generates the attachment.
+    /// </summary>
+    /// <remarks>To leave the attachment in the message unmodified, <paramref name="attachmentFactory"/> must return <see langword="null"/> instead of a <see cref="FileAttachment"/> object.</remarks>
+    /// <param name="attachmentFactory">The attachment factory. To leave the attachment in the message unmodified, <paramref name="attachmentFactory"/> must return <see langword="null"/> instead of a <see cref="FileAttachment"/> object.</param>
+    /// <returns>The current builder.</returns>
+    public MultiEmbedPageBuilder WithAttachmentFactory(Func<FileAttachment?> attachmentFactory)
+    {
+        InteractiveGuards.NotNull(attachmentFactory);
+        return WithAttachmentsFactory(() =>
+        {
+            var attachment = attachmentFactory();
+            return new ValueTask<IEnumerable<FileAttachment>?>(attachment is null ? null : new[] { attachment.Value });
+        });
+    }
+
+    /// <summary>
+    /// Sets the function that generates the attachment.
+    /// </summary>
+    /// <remarks>To leave the attachment in the message unmodified, <paramref name="attachmentFactory"/> must return <see langword="null"/> instead of a <see cref="FileAttachment"/> object.</remarks>
+    /// <param name="attachmentFactory">The attachment factory. To leave the attachment in the message unmodified, <paramref name="attachmentFactory"/> must return <see langword="null"/> instead of a <see cref="FileAttachment"/> object.</param>
+    /// <returns>The current builder.</returns>
+    public MultiEmbedPageBuilder WithAttachmentFactory(Func<ValueTask<FileAttachment?>> attachmentFactory)
+    {
+        InteractiveGuards.NotNull(attachmentFactory);
+        return WithAttachmentsFactory(async () =>
+        {
+            var attachment = await attachmentFactory().ConfigureAwait(false);
+            return attachment is null ? null : new[] { attachment.Value };
+        });
+    }
+
+    /// <summary>
+    /// Sets the function that generates the attachments.
+    /// </summary>
+    /// <remarks>To leave the attachments in the message unmodified, <paramref name="attachmentsFactory"/> must return <see langword="null"/> instead of a <see cref="FileAttachment"/> object.</remarks>
+    /// <param name="attachmentsFactory">The attachments factory. To leave the attachments in the message unmodified, <paramref name="attachmentsFactory"/> must return <see langword="null"/> instead of a <see cref="FileAttachment"/> object.</param>
+    /// <returns>The current builder.</returns>
+    public MultiEmbedPageBuilder WithAttachmentsFactory(Func<IEnumerable<FileAttachment>?> attachmentsFactory)
+    {
+        InteractiveGuards.NotNull(attachmentsFactory);
+        return WithAttachmentsFactory(() => new ValueTask<IEnumerable<FileAttachment>?>(attachmentsFactory()));
+    }
+
+    /// <summary>
+    /// Sets the function that generates the attachments.
+    /// </summary>
+    /// <remarks>To leave the attachments in the message unmodified, <paramref name="attachmentsFactory"/> must return <see langword="null"/> instead of a <see cref="FileAttachment"/> object.</remarks>
+    /// <param name="attachmentsFactory">The attachments factory. To leave the attachments in the message unmodified, <paramref name="attachmentsFactory"/> must return <see langword="null"/> instead of a <see cref="FileAttachment"/> object.</param>
+    /// <returns>The current builder.</returns>
+    public MultiEmbedPageBuilder WithAttachmentsFactory(Func<ValueTask<IEnumerable<FileAttachment>?>>? attachmentsFactory)
+    {
+        AttachmentsFactory = attachmentsFactory;
         return this;
     }
 
