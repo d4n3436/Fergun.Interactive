@@ -449,11 +449,14 @@ public abstract class Paginator : IInteractiveElement<KeyValuePair<IEmote, Pagin
         if (action == PaginatorAction.Jump && await JumpToPageAsync(input).ConfigureAwait(false))
         {
             var currentPage = await GetOrLoadCurrentPageAsync().ConfigureAwait(false);
+            var attachments = currentPage.AttachmentsFactory is null ? null : await currentPage.AttachmentsFactory().ConfigureAwait(false);
+
             await message.ModifyAsync(x =>
             {
                 x.Embeds = currentPage.GetEmbedArray();
                 x.Content = currentPage.Text;
                 x.AllowedMentions = currentPage.AllowedMentions;
+                x.Attachments = attachments is null ? new Optional<IEnumerable<FileAttachment>>() : new Optional<IEnumerable<FileAttachment>>(attachments);
             }).ConfigureAwait(false);
         }
 
@@ -461,11 +464,14 @@ public abstract class Paginator : IInteractiveElement<KeyValuePair<IEmote, Pagin
         if (refreshPage)
         {
             var currentPage = await GetOrLoadCurrentPageAsync().ConfigureAwait(false);
+            var attachments = currentPage.AttachmentsFactory is null ? null : await currentPage.AttachmentsFactory().ConfigureAwait(false);
+
             await message.ModifyAsync(x =>
             {
                 x.Embeds = currentPage.GetEmbedArray();
                 x.Content = currentPage.Text;
                 x.AllowedMentions = currentPage.AllowedMentions;
+                x.Attachments = attachments is null ? new Optional<IEnumerable<FileAttachment>>() : new Optional<IEnumerable<FileAttachment>>(attachments);
             }).ConfigureAwait(false);
         }
 
@@ -508,6 +514,7 @@ public abstract class Paginator : IInteractiveElement<KeyValuePair<IEmote, Pagin
         if (action == PaginatorAction.Jump && await JumpToPageAsync(input).ConfigureAwait(false))
         {
             var currentPage = await GetOrLoadCurrentPageAsync().ConfigureAwait(false);
+            var attachments = currentPage.AttachmentsFactory is null ? null : await currentPage.AttachmentsFactory().ConfigureAwait(false);
             var buttons = GetOrAddComponents(false).Build();
 
             await input.ModifyOriginalResponseAsync(x =>
@@ -516,6 +523,7 @@ public abstract class Paginator : IInteractiveElement<KeyValuePair<IEmote, Pagin
                 x.Embeds = currentPage.GetEmbedArray();
                 x.Components = buttons;
                 x.AllowedMentions = currentPage.AllowedMentions;
+                x.Attachments = attachments is null ? new Optional<IEnumerable<FileAttachment>>() : new Optional<IEnumerable<FileAttachment>>(attachments);
             }).ConfigureAwait(false);
         }
 
@@ -523,6 +531,7 @@ public abstract class Paginator : IInteractiveElement<KeyValuePair<IEmote, Pagin
         if (refreshPage)
         {
             var currentPage = await GetOrLoadCurrentPageAsync().ConfigureAwait(false);
+            var attachments = currentPage.AttachmentsFactory is null ? null : await currentPage.AttachmentsFactory().ConfigureAwait(false);
             var buttons = GetOrAddComponents(false).Build();
 
             await input.UpdateAsync(x =>
@@ -531,6 +540,7 @@ public abstract class Paginator : IInteractiveElement<KeyValuePair<IEmote, Pagin
                 x.Embeds = currentPage.GetEmbedArray();
                 x.Components = buttons;
                 x.AllowedMentions = currentPage.AllowedMentions;
+                x.Attachments = attachments is null ? new Optional<IEnumerable<FileAttachment>>() : new Optional<IEnumerable<FileAttachment>>(attachments);
             }).ConfigureAwait(false);
         }
 

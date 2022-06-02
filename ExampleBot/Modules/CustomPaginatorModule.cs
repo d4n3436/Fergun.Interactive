@@ -242,6 +242,7 @@ public class PagedSelection<TOption> : BaseSelection<KeyValuePair<TOption, Pagin
         }
 
         var currentPage = await paginator.GetOrLoadCurrentPageAsync().ConfigureAwait(false);
+        var attachments = currentPage.AttachmentsFactory is null ? null : await currentPage.AttachmentsFactory().ConfigureAwait(false);
 
         await input.UpdateAsync(x =>
         {
@@ -249,6 +250,7 @@ public class PagedSelection<TOption> : BaseSelection<KeyValuePair<TOption, Pagin
             x.Embeds = currentPage.GetEmbedArray();
             x.Components = GetOrAddComponents(false).Build();
             x.AllowedMentions = currentPage.AllowedMentions;
+            x.Attachments = attachments is null ? new Optional<IEnumerable<FileAttachment>>() : new Optional<IEnumerable<FileAttachment>>(attachments);
         }).ConfigureAwait(false);
 
         return InteractiveInputStatus.Ignored;

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Discord;
 using Fergun.Interactive.Pagination;
 
@@ -31,6 +32,10 @@ public class PageBuilder : IPageBuilder<Page>, IPageBuilder
     {
         Text = page.Text;
         IsTTS = page.IsTTS;
+        AllowedMentions = page.AllowedMentions;
+        MessageReference = page.MessageReference;
+        Stickers = page.Stickers;
+        AttachmentsFactory = page.AttachmentsFactory;
     }
 
     /// <summary>
@@ -58,6 +63,11 @@ public class PageBuilder : IPageBuilder<Page>, IPageBuilder
     /// Gets or sets the stickers of the <see cref="Page"/>.
     /// </summary>
     public IReadOnlyCollection<ISticker> Stickers { get; set; } = Array.Empty<ISticker>();
+
+    /// <summary>
+    /// Gets or sets the factory of attachments.
+    /// </summary>
+    public Func<ValueTask<IEnumerable<FileAttachment>?>>? AttachmentsFactory { get; set; }
 
     /// <summary>
     /// Gets or sets the title of the <see cref="Page"/>.
@@ -466,6 +476,62 @@ public class PageBuilder : IPageBuilder<Page>, IPageBuilder
     {
         InteractiveGuards.NotNull(stickers);
         Stickers = stickers;
+        return this;
+    }
+
+    /// <summary>
+    /// Sets the function that generates the attachment.
+    /// </summary>
+    /// <remarks>To leave the attachment in the message unmodified, <paramref name="attachmentFactory"/> must return <see langword="null"/> instead of a <see cref="FileAttachment"/> object.</remarks>
+    /// <param name="attachmentFactory">The attachment factory. To leave the attachment in the message unmodified, <paramref name="attachmentFactory"/> must return <see langword="null"/> instead of a <see cref="FileAttachment"/> object.</param>
+    /// <returns>The current builder.</returns>
+    public PageBuilder WithAttachmentFactory(Func<FileAttachment?> attachmentFactory)
+    {
+        InteractiveGuards.NotNull(attachmentFactory);
+        return WithAttachmentsFactory(() =>
+        {
+            var attachment = attachmentFactory();
+            return new ValueTask<IEnumerable<FileAttachment>?>(attachment is null ? null : new[] { attachment.Value });
+        });
+    }
+
+    /// <summary>
+    /// Sets the function that generates the attachment.
+    /// </summary>
+    /// <remarks>To leave the attachment in the message unmodified, <paramref name="attachmentFactory"/> must return <see langword="null"/> instead of a <see cref="FileAttachment"/> object.</remarks>
+    /// <param name="attachmentFactory">The attachment factory. To leave the attachment in the message unmodified, <paramref name="attachmentFactory"/> must return <see langword="null"/> instead of a <see cref="FileAttachment"/> object.</param>
+    /// <returns>The current builder.</returns>
+    public PageBuilder WithAttachmentFactory(Func<ValueTask<FileAttachment?>> attachmentFactory)
+    {
+        InteractiveGuards.NotNull(attachmentFactory);
+        return WithAttachmentsFactory(async () =>
+        {
+            var attachment = await attachmentFactory().ConfigureAwait(false);
+            return attachment is null ? null : new[] { attachment.Value };
+        });
+    }
+
+    /// <summary>
+    /// Sets the function that generates the attachments.
+    /// </summary>
+    /// <remarks>To leave the attachments in the message unmodified, <paramref name="attachmentsFactory"/> must return <see langword="null"/> instead of a <see cref="FileAttachment"/> object.</remarks>
+    /// <param name="attachmentsFactory">The attachments factory. To leave the attachments in the message unmodified, <paramref name="attachmentsFactory"/> must return <see langword="null"/> instead of a <see cref="FileAttachment"/> object.</param>
+    /// <returns>The current builder.</returns>
+    public PageBuilder WithAttachmentsFactory(Func<IEnumerable<FileAttachment>?> attachmentsFactory)
+    {
+        InteractiveGuards.NotNull(attachmentsFactory);
+        return WithAttachmentsFactory(() => new ValueTask<IEnumerable<FileAttachment>?>(attachmentsFactory()));
+    }
+
+    /// <summary>
+    /// Sets the function that generates the attachments.
+    /// </summary>
+    /// <remarks>To leave the attachments in the message unmodified, <paramref name="attachmentsFactory"/> must return <see langword="null"/> instead of a <see cref="FileAttachment"/> object.</remarks>
+    /// <param name="attachmentsFactory">The attachments factory. To leave the attachments in the message unmodified, <paramref name="attachmentsFactory"/> must return <see langword="null"/> instead of a <see cref="FileAttachment"/> object.</param>
+    /// <returns>The current builder.</returns>
+    public PageBuilder WithAttachmentsFactory(Func<ValueTask<IEnumerable<FileAttachment>?>>? attachmentsFactory)
+    {
+        AttachmentsFactory = attachmentsFactory;
         return this;
     }
 

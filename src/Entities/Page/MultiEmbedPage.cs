@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Discord;
 
 namespace Fergun.Interactive;
@@ -18,9 +19,9 @@ public class MultiEmbedPage : IPage
         InteractiveGuards.NotNull(builder.Stickers);
         InteractiveGuards.NotNull(builder.Builders);
         InteractiveGuards.EmbedCountInRange(builder.Builders);
-        if (string.IsNullOrEmpty(builder.Text) && builder.Builders.Count == 0)
+        if (string.IsNullOrEmpty(builder.Text) && builder.Builders.Count == 0 && builder.AttachmentsFactory is null)
         {
-            throw new ArgumentException("At least 1 EmbedBuilder is required when Text is null or empty.", nameof(builder));
+            throw new ArgumentException("Either a text, at least one embed builder, or an AttachmentsFactory is required.", nameof(builder));
         }
 
         Text = builder.Text;
@@ -28,6 +29,7 @@ public class MultiEmbedPage : IPage
         AllowedMentions = builder.AllowedMentions;
         MessageReference = builder.MessageReference;
         Stickers = builder.Stickers;
+        AttachmentsFactory = builder.AttachmentsFactory;
         _embedArray = builder.Builders.Select(x => x.Build()).ToArray();
     }
 
@@ -49,11 +51,22 @@ public class MultiEmbedPage : IPage
     /// <inheritdoc/>
     public IReadOnlyCollection<Embed> Embeds => _embedArray;
 
+    /// <inheritdoc/>
+    public Func<ValueTask<IEnumerable<FileAttachment>?>>? AttachmentsFactory { get; }
+
     /// <summary>
     /// Converts this <see cref="MultiEmbedPage"/> into a <see cref="MultiEmbedPageBuilder"/>.
     /// </summary>
     /// <returns>A <see cref="MultiEmbedPageBuilder"/>.</returns>
-    public MultiEmbedPageBuilder ToMultiEmbedPageBuilder() => new MultiEmbedPageBuilder().WithText(Text).WithBuilders(Embeds);
+    public MultiEmbedPageBuilder ToMultiEmbedPageBuilder()
+        => new MultiEmbedPageBuilder()
+        .WithText(Text)
+        .WithIsTTS(IsTTS)
+        .WithAllowedMentions(AllowedMentions)
+        .WithMessageReference(MessageReference)
+        .WithStickers(Stickers)
+        .WithBuilders(Embeds)
+        .WithAttachmentsFactory(AttachmentsFactory);
 
     /// <inheritdoc />
     Embed[] IPage.GetEmbedArray() => _embedArray;
