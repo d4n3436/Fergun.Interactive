@@ -23,9 +23,9 @@ public class Page : IPage
         MessageReference = page.MessageReference;
         Stickers = page.Stickers;
         AttachmentsFactory = page.AttachmentsFactory;
-
+        
         bool isEmpty = false;
-        var builder = page._builder;
+        var builder = page.GetEmbedBuilder();
 
         if (builder?.Author is null &&
             builder?.Color is null &&

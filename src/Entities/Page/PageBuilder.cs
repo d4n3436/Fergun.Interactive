@@ -12,7 +12,7 @@ namespace Fergun.Interactive;
 /// </summary>
 public class PageBuilder : IPageBuilder<Page>, IPageBuilder
 {
-    internal readonly EmbedBuilder _builder;
+    private readonly EmbedBuilder _builder;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="PageBuilder"/> class.
@@ -200,6 +200,12 @@ public class PageBuilder : IPageBuilder<Page>, IPageBuilder
     /// <returns>A <see cref="Page"/>.</returns>
     public Page Build()
         => new(this);
+
+    /// <summary>
+    /// Gets the inner <see cref="EmbedBuilder"/> used by this builder.
+    /// </summary>
+    /// <returns>The inner <see cref="EmbedBuilder"/>.</returns>
+    public EmbedBuilder GetEmbedBuilder() => _builder;
 
     /// <summary>
     /// Sets the text of the <see cref="Page"/>.
@@ -437,11 +443,11 @@ public class PageBuilder : IPageBuilder<Page>, IPageBuilder
     /// <summary>
     /// Sets the <see cref="IsTTS"/> value of the <see cref="Page"/>.
     /// </summary>
-    /// <param name="isTTs">Whether the text of the page should be read aloud by Discord.</param>
+    /// <param name="isTTS">Whether the text of the page should be read aloud by Discord.</param>
     /// <returns>The current builder.</returns>
-    public PageBuilder WithIsTTS(bool isTTs)
+    public PageBuilder WithIsTTS(bool isTTS)
     {
-        IsTTS = isTTs;
+        IsTTS = isTTS;
         return this;
     }
 
