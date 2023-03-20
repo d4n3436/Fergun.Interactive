@@ -33,6 +33,12 @@ public abstract class PaginatorBuilder<TPaginator, TBuilder>
     /// <inheritdoc/>
     public virtual IDictionary<IEmote, PaginatorAction> Options { get; set; } = new Dictionary<IEmote, PaginatorAction>();
 
+    /// <summary>
+    /// Gets or sets the customization options for emotes in <see cref="Options"/>.
+    /// </summary>
+    /// <remarks>This property is only used when <see cref="InputType"/> contains <see cref="Fergun.Interactive.InputType.Buttons"/>.</remarks>
+    public virtual IDictionary<IEmote, (ButtonStyle? Style, string? Text)> ButtonOptions { get; set; } = new Dictionary<IEmote, (ButtonStyle?, string?)>();
+
     /// <inheritdoc/>
     public virtual IPageBuilder? CanceledPage { get; set; }
 
@@ -158,6 +164,7 @@ public abstract class PaginatorBuilder<TPaginator, TBuilder>
     /// <summary>
     /// Adds an emote related to a paginator action.
     /// </summary>
+    /// <remarks>If you want to customize to your buttons, use <see cref="AddOption(IEmote, PaginatorAction, ButtonStyle?, string?)"/> instead.</remarks>
     /// <param name="option">The pair of emote and action.</param>
     /// <returns>This builder.</returns>
     public virtual TBuilder AddOption(KeyValuePair<IEmote, PaginatorAction> option)
@@ -166,12 +173,34 @@ public abstract class PaginatorBuilder<TPaginator, TBuilder>
     /// <summary>
     /// Adds an emote related to a paginator action.
     /// </summary>
+    /// <remarks>If you want to customize to your buttons, use <see cref="AddOption(IEmote, PaginatorAction, ButtonStyle?, string?)"/> instead.</remarks>
     /// <param name="emote">The emote.</param>
     /// <param name="action">The paginator action.</param>
     /// <returns>This builder.</returns>
     public virtual TBuilder AddOption(IEmote emote, PaginatorAction action)
     {
         Options.Add(emote, action);
+        return (TBuilder)this;
+    }
+
+    /// <summary>
+    /// Adds an emote related to a paginator action, and optionally sets the button style and button text.
+    /// </summary>
+    /// <remarks>The button style and text are only used when <see cref="InputType"/> contains <see cref="Fergun.Interactive.InputType.Buttons"/>.</remarks>
+    /// <param name="emote">The emote.</param>
+    /// <param name="action">The paginator action.</param>
+    /// <param name="buttonStyle">The button style.</param>
+    /// <param name="buttonText">The button text or label.</param>
+    /// <returns>This builder.</returns>
+    public virtual TBuilder AddOption(IEmote emote, PaginatorAction action, ButtonStyle? buttonStyle, string? buttonText)
+    {
+        Options.Add(emote, action);
+
+        if (buttonStyle is not null || buttonText is not null)
+        {
+            ButtonOptions[emote] = (buttonStyle, buttonText);
+        }
+
         return (TBuilder)this;
     }
 

@@ -31,6 +31,12 @@ public interface IBasePaginatorBuilderProperties : IInteractiveBuilderProperties
     new IDictionary<IEmote, PaginatorAction> Options { get; set; }
 
     /// <summary>
+    /// Gets or sets the customization options for emotes in <see cref="Options"/>.
+    /// </summary>
+    /// <remarks>This property is only used when <see cref="InputType"/> contains <see cref="Fergun.Interactive.InputType.Buttons"/>.</remarks>
+    IDictionary<IEmote, (ButtonStyle? Style, string? Text)> ButtonOptions { get; set; }
+
+    /// <summary>
     /// Gets or sets the maximum time to wait for a "jump to page" input.
     /// </summary>
     TimeSpan JumpInputTimeout { get; set; }

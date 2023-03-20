@@ -30,10 +30,12 @@ public abstract class Paginator : IInteractiveElement<KeyValuePair<IEmote, Pagin
         InteractiveGuards.NotNull(properties.Users);
         InteractiveGuards.NotNull(properties.Options);
         InteractiveGuards.NotEmpty(properties.Options);
+        InteractiveGuards.NotNull(properties.ButtonOptions);
         InteractiveGuards.SupportedInputType(properties.InputType, false);
 
         Users = properties.Users.ToArray();
         Emotes = properties.Options.AsReadOnly();
+        ButtonOptions = properties.ButtonOptions.AsReadOnly();
         CanceledPage = properties.CanceledPage?.Build();
         TimeoutPage = properties.TimeoutPage?.Build();
         Deletion = properties.Deletion;
@@ -76,6 +78,12 @@ public abstract class Paginator : IInteractiveElement<KeyValuePair<IEmote, Pagin
     /// Gets the emotes and their related actions of this paginator.
     /// </summary>
     public IReadOnlyDictionary<IEmote, PaginatorAction> Emotes { get; }
+
+    /// <summary>
+    /// Gets the customization options for emotes in <see cref="Emotes"/>.
+    /// </summary>
+    /// <remarks>This property is only used when <see cref="InputType"/> contains <see cref="Fergun.Interactive.InputType.Buttons"/>.</remarks>
+    public IReadOnlyDictionary<IEmote, (ButtonStyle? Style, string? Text)> ButtonOptions { get; }
 
     /// <inheritdoc/>
     public IPage? CanceledPage { get; }
@@ -376,11 +384,16 @@ public abstract class Paginator : IInteractiveElement<KeyValuePair<IEmote, Pagin
                 _ => false
             };
 
+            ButtonOptions.TryGetValue(pair.Key, out var buttonOption);
+
             var button = new ButtonBuilder()
                 .WithCustomId(pair.Key.ToString())
-                .WithStyle(pair.Value == PaginatorAction.Exit ? ButtonStyle.Danger : ButtonStyle.Primary)
+                .WithStyle(buttonOption.Style ?? (pair.Value == PaginatorAction.Exit ? ButtonStyle.Danger : ButtonStyle.Primary))
                 .WithEmote(pair.Key)
                 .WithDisabled(isDisabled);
+
+            if (!string.IsNullOrEmpty(buttonOption.Text))
+                button.WithLabel(buttonOption.Text);
 
             builder.WithButton(button);
         }
