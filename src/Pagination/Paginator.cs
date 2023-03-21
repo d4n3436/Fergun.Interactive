@@ -30,12 +30,12 @@ public abstract class Paginator : IInteractiveElement<KeyValuePair<IEmote, Pagin
         InteractiveGuards.NotNull(properties.Users);
         InteractiveGuards.NotNull(properties.Options);
         InteractiveGuards.NotEmpty(properties.Options);
-        InteractiveGuards.NotNull(properties.ButtonOptions);
+        InteractiveGuards.NotNull(properties.ButtonsProperties);
         InteractiveGuards.SupportedInputType(properties.InputType, false);
 
         Users = properties.Users.ToArray();
         Emotes = properties.Options.AsReadOnly();
-        ButtonOptions = properties.ButtonOptions.AsReadOnly();
+        ButtonProperties = properties.ButtonsProperties.AsReadOnly();
         CanceledPage = properties.CanceledPage?.Build();
         TimeoutPage = properties.TimeoutPage?.Build();
         Deletion = properties.Deletion;
@@ -83,7 +83,7 @@ public abstract class Paginator : IInteractiveElement<KeyValuePair<IEmote, Pagin
     /// Gets the customization options for emotes in <see cref="Emotes"/>.
     /// </summary>
     /// <remarks>This property is only used when <see cref="InputType"/> contains <see cref="Fergun.Interactive.InputType.Buttons"/>.</remarks>
-    public IReadOnlyDictionary<IEmote, (ButtonStyle? Style, string? Text)> ButtonOptions { get; }
+    public IReadOnlyDictionary<IEmote, Func<IButtonContext, IButtonProperties>> ButtonProperties { get; }
 
     /// <inheritdoc/>
     public IPage? CanceledPage { get; }
@@ -375,7 +375,7 @@ public abstract class Paginator : IInteractiveElement<KeyValuePair<IEmote, Pagin
         builder ??= new ComponentBuilder();
         foreach (var pair in Emotes)
         {
-            bool isDisabled = disableAll || pair.Value switch
+            bool shouldDisable = disableAll || pair.Value switch
             {
                 PaginatorAction.SkipToStart => CurrentPageIndex == 0,
                 PaginatorAction.Backward => CurrentPageIndex == 0,
@@ -384,16 +384,19 @@ public abstract class Paginator : IInteractiveElement<KeyValuePair<IEmote, Pagin
                 _ => false
             };
 
-            ButtonOptions.TryGetValue(pair.Key, out var buttonOption);
+            ButtonProperties.TryGetValue(pair.Key, out var propertiesFactory);
+            var properties = propertiesFactory?.Invoke(new ButtonContext(CurrentPageIndex, MaxPageIndex, pair.Key, pair.Value, shouldDisable));
+            if (properties?.IsHidden == true)
+                continue;
 
             var button = new ButtonBuilder()
                 .WithCustomId(pair.Key.ToString())
-                .WithStyle(buttonOption.Style ?? (pair.Value == PaginatorAction.Exit ? ButtonStyle.Danger : ButtonStyle.Primary))
+                .WithStyle(properties?.Style ?? (pair.Value == PaginatorAction.Exit ? ButtonStyle.Danger : ButtonStyle.Primary))
                 .WithEmote(pair.Key)
-                .WithDisabled(isDisabled);
+                .WithDisabled(disableAll || (properties?.IsDisabled ?? shouldDisable));
 
-            if (!string.IsNullOrEmpty(buttonOption.Text))
-                button.WithLabel(buttonOption.Text);
+            if (!string.IsNullOrEmpty(properties?.Text))
+                button.WithLabel(properties!.Text);
 
             builder.WithButton(button);
         }

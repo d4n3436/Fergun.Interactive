@@ -34,10 +34,11 @@ public abstract class PaginatorBuilder<TPaginator, TBuilder>
     public virtual IDictionary<IEmote, PaginatorAction> Options { get; set; } = new Dictionary<IEmote, PaginatorAction>();
 
     /// <summary>
-    /// Gets or sets the customization options for emotes in <see cref="Options"/>.
+    /// Gets or sets the buttons properties for emotes in <see cref="Options"/>.
     /// </summary>
     /// <remarks>This property is only used when <see cref="InputType"/> contains <see cref="Fergun.Interactive.InputType.Buttons"/>.</remarks>
-    public virtual IDictionary<IEmote, (ButtonStyle? Style, string? Text)> ButtonOptions { get; set; } = new Dictionary<IEmote, (ButtonStyle?, string?)>();
+    public virtual IDictionary<IEmote, Func<IButtonContext, IButtonProperties>> ButtonsProperties { get; set; }
+        = new Dictionary<IEmote, Func<IButtonContext, IButtonProperties>>();
 
     /// <inheritdoc/>
     public virtual IPageBuilder? CanceledPage { get; set; }
@@ -164,7 +165,7 @@ public abstract class PaginatorBuilder<TPaginator, TBuilder>
     /// <summary>
     /// Adds an emote related to a paginator action.
     /// </summary>
-    /// <remarks>If you want to customize to your buttons, use <see cref="AddOption(IEmote, PaginatorAction, ButtonStyle?, string?)"/> instead.</remarks>
+    /// <remarks>If you want to customize to your buttons, use <see cref="AddOption(IEmote, PaginatorAction, ButtonStyle?, string?, bool)"/> instead.</remarks>
     /// <param name="option">The pair of emote and action.</param>
     /// <returns>This builder.</returns>
     public virtual TBuilder AddOption(KeyValuePair<IEmote, PaginatorAction> option)
@@ -173,7 +174,7 @@ public abstract class PaginatorBuilder<TPaginator, TBuilder>
     /// <summary>
     /// Adds an emote related to a paginator action.
     /// </summary>
-    /// <remarks>If you want to customize to your buttons, use <see cref="AddOption(IEmote, PaginatorAction, ButtonStyle?, string?)"/> instead.</remarks>
+    /// <remarks>If you want to customize to your buttons, use <see cref="AddOption(IEmote, PaginatorAction, ButtonStyle?, string?, bool)"/> instead.</remarks>
     /// <param name="emote">The emote.</param>
     /// <param name="action">The paginator action.</param>
     /// <returns>This builder.</returns>
@@ -183,24 +184,62 @@ public abstract class PaginatorBuilder<TPaginator, TBuilder>
         return (TBuilder)this;
     }
 
+    /// <inheritdoc cref="AddOption(IEmote, PaginatorAction, ButtonStyle?, string?, bool)"/>
+    public virtual TBuilder AddOption(IEmote emote, PaginatorAction action, ButtonStyle? buttonStyle)
+        => AddOption(emote, action, buttonStyle, null);
+
+    /// <inheritdoc cref="AddOption(IEmote, PaginatorAction, ButtonStyle?, string?, bool)"/>
+    public virtual TBuilder AddOption(IEmote emote, PaginatorAction action, ButtonStyle? buttonStyle, string? buttonText)
+        => AddOption(emote, action, buttonStyle, buttonText, false);
+
     /// <summary>
-    /// Adds an emote related to a paginator action, and optionally sets the button style and button text.
+    /// Adds an emote related to a paginator action, and optionally sets the button properties.
+    /// </summary>
+    /// <remarks>The button properties are only used when <see cref="InputType"/> contains <see cref="Fergun.Interactive.InputType.Buttons"/>.</remarks>
+    /// <param name="emote">The emote.</param>
+    /// <param name="action">The paginator action.</param>
+    /// <param name="buttonStyle">The button style to use in the button.</param>
+    /// <param name="buttonText">The text (label) that will be displayed in the button.</param>
+    /// <param name="isDisabled">A value indicating whether to disable the button.</param>
+    /// <returns>This builder.</returns>
+    public virtual TBuilder AddOption(IEmote emote, PaginatorAction action, ButtonStyle? buttonStyle, string? buttonText, bool isDisabled)
+    {
+        if (buttonStyle is not null || buttonText is not null)
+        {
+            return AddOption(emote, action, new ButtonProperties(buttonStyle, buttonText, isDisabled));
+        }
+
+        Options.Add(emote, action);
+        return (TBuilder)this;
+    }
+
+    /// <summary>
+    /// Adds an emote related to a paginator action and sets the button properties.
     /// </summary>
     /// <remarks>The button style and text are only used when <see cref="InputType"/> contains <see cref="Fergun.Interactive.InputType.Buttons"/>.</remarks>
     /// <param name="emote">The emote.</param>
     /// <param name="action">The paginator action.</param>
-    /// <param name="buttonStyle">The button style.</param>
-    /// <param name="buttonText">The button text or label.</param>
+    /// <param name="properties">The button properties.</param>
     /// <returns>This builder.</returns>
-    public virtual TBuilder AddOption(IEmote emote, PaginatorAction action, ButtonStyle? buttonStyle, string? buttonText)
+    public virtual TBuilder AddOption(IEmote emote, PaginatorAction action, IButtonProperties properties)
     {
+        InteractiveGuards.NotNull(properties);
+        return AddOption(emote, action, _ => properties);
+    }
+
+    /// <summary>
+    /// Adds an emote related to a paginator action and sets a delegate that creates the button properties.
+    /// </summary>
+    /// <remarks>The button style and text are only used when <see cref="InputType"/> contains <see cref="Fergun.Interactive.InputType.Buttons"/>.</remarks>
+    /// <param name="emote">The emote.</param>
+    /// <param name="action">The paginator action.</param>
+    /// <param name="propertiesFactory">The factory of button properties.</param>
+    /// <returns>This builder.</returns>
+    public virtual TBuilder AddOption(IEmote emote, PaginatorAction action, Func<IButtonContext, IButtonProperties> propertiesFactory)
+    {
+        InteractiveGuards.NotNull(propertiesFactory);
         Options.Add(emote, action);
-
-        if (buttonStyle is not null || buttonText is not null)
-        {
-            ButtonOptions[emote] = (buttonStyle, buttonText);
-        }
-
+        ButtonsProperties.Add(emote, propertiesFactory);
         return (TBuilder)this;
     }
 
