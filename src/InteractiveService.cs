@@ -502,12 +502,8 @@ public class InteractiveService
     /// <param name="responseType">The response type. When using the "Deferred" response types, you must pass an interaction that has already been deferred.</param>
     /// <param name="ephemeral">
     /// Whether the response message should be ephemeral. Ignored if modifying a non-ephemeral message.<br/><br/>
-    /// Ephemeral paginators have several limitations:<br/>
-    /// - <see cref="ActionOnStop.DeleteMessage"/> won't work (they cannot be deleted through the API).<br/>
-    /// - <see cref="InputType.Reactions"/> won't work (they can't have reactions).<br/><br/>
-    /// Ephemeral paginators require an interaction to be modified, which causes the following problems:<br/>
-    /// - <see cref="BaseSelection{TOption}.ActionOnTimeout"/> will only work if a least one interaction for changing the page has been received in the last 15 minutes.<br/>
-    /// - <see cref="BaseSelection{TOption}.ActionOnCancellation"/> won't work if the selection is cancelled using a <paramref name="cancellationToken"/>, unless the requisites above are satisfied.<br/>
+    /// Ephemeral paginators have the following limitations:<br/>
+    /// - <see cref="InputType.Reactions"/> won't work (they can't have reactions).
     /// </param>
     /// <param name="messageAction">A method that gets executed once when a message containing the paginator is sent or modified.</param>
     /// <param name="resetTimeoutOnInput">Whether to reset the internal timeout timer when a valid input is received.</param>
@@ -560,8 +556,7 @@ public class InteractiveService
 
         async Task<InteractiveMessageResult> WaitForPaginatorResultUsingCallbackAsync()
         {
-            var initialInteraction = responseType is InteractionResponseType.DeferredUpdateMessage or InteractionResponseType.UpdateMessage ? interaction : null;
-            using var callback = new PaginatorCallback(paginator, message, timeoutTaskSource, DateTimeOffset.UtcNow, initialInteraction);
+            using var callback = new PaginatorCallback(paginator, message, timeoutTaskSource, DateTimeOffset.UtcNow, interaction);
             return await WaitForPaginatorResultAsync(callback).ConfigureAwait(false);
         }
     }
@@ -618,12 +613,8 @@ public class InteractiveService
     /// <param name="responseType">The response type. When using the "Deferred" response types, you must pass an interaction that has already been deferred.</param>
     /// <param name="ephemeral">
     /// Whether the response message should be ephemeral. Ignored if modifying a non-ephemeral message.<br/><br/>
-    /// Ephemeral selections have several limitations:<br/>
-    /// - <see cref="ActionOnStop.DeleteMessage"/> won't work (they cannot be deleted via through the API).<br/>
-    /// - <see cref="InputType.Reactions"/> won't work (they can't have reactions).<br/><br/>
-    /// Ephemeral selections require an interaction to be modified, which causes the following problems:<br/>
-    /// - <see cref="BaseSelection{TOption}.ActionOnTimeout"/> won't work.<br/>
-    /// - <see cref="BaseSelection{TOption}.ActionOnCancellation"/> won't work if the selection is cancelled using a <paramref name="cancellationToken"/>.<br/>
+    /// Ephemeral selections have the following limitations:<br/>
+    /// - <see cref="InputType.Reactions"/> won't work (they can't have reactions).
     /// </param>
     /// <param name="messageAction">A method that gets executed once when a message containing the selection is sent or modified.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to cancel the selection.</param>
@@ -654,8 +645,7 @@ public class InteractiveService
         var timeoutTaskSource = new TimeoutTaskCompletionSource<(TOption?, InteractiveStatus)>(timeout ?? _config.DefaultTimeout,
             false, (default, InteractiveStatus.Timeout), (default, InteractiveStatus.Canceled), cancellationToken);
 
-        var initialInteraction = responseType is InteractionResponseType.DeferredUpdateMessage or InteractionResponseType.UpdateMessage ? interaction : null;
-        using var callback = new SelectionCallback<TOption>(selection, message, timeoutTaskSource, DateTimeOffset.UtcNow, initialInteraction);
+        using var callback = new SelectionCallback<TOption>(selection, message, timeoutTaskSource, DateTimeOffset.UtcNow, interaction);
 
         return await WaitForSelectionResultAsync(callback).ConfigureAwait(false);
     }
@@ -946,24 +936,25 @@ public class InteractiveService
 
         if (action.HasFlag(ActionOnStop.DeleteMessage))
         {
-            // Ephemeral messages cannot be deleted through the API
-            // https://github.com/discord/discord-api-docs/discussions/3806
-            if (!ephemeral)
+            try
             {
-                try
+                if (lastInteraction is not null && (DateTimeOffset.UtcNow - lastInteraction.CreatedAt).TotalMinutes <= 15.0)
+                {
+                    await lastInteraction.DeleteOriginalResponseAsync().ConfigureAwait(false);
+                }
+                else if (!ephemeral)
                 {
                     await result.Message.DeleteAsync().ConfigureAwait(false);
                 }
-                catch (HttpException e) when (e.HttpCode == HttpStatusCode.NotFound)
+                else if (deferInteraction && stopInteraction is not null)
                 {
-                    // We want to delete the message so we don't care if the message has been already deleted.
+                    await stopInteraction.DeferAsync().ConfigureAwait(false);
                 }
             }
-            else if (deferInteraction && stopInteraction is not null)
+            catch (HttpException e) when (e.HttpCode == HttpStatusCode.NotFound)
             {
-                await stopInteraction.DeferAsync().ConfigureAwait(false);
+                // We want to delete the message so we don't care if the message has been already deleted.
             }
-
             return;
         }
 

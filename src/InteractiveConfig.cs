@@ -47,7 +47,6 @@ public class InteractiveConfig
     /// <remarks>
     /// These interactions get deferred depending of the <see cref="ActionOnStop"/> and some specific circumstances:<br/>
     /// - <see cref="ActionOnStop.None"/>: Always deferred.<br/>
-    /// - <see cref="ActionOnStop.DeleteMessage"/>: If the interaction message is ephemeral.<br/>
     /// - <see cref="ActionOnStop.ModifyMessage"/>: If there's no page to modify to.<br/>
     /// - <see cref="ActionOnStop.DeleteInput"/> and <see cref="ActionOnStop.DisableInput"/>: If the input type is neither <see cref="InputType.Buttons"/> nor <see cref="InputType.SelectMenus"/>.
     /// </remarks>
@@ -59,7 +58,6 @@ public class InteractiveConfig
     /// <remarks>
     /// These interactions get deferred depending of the <see cref="ActionOnStop"/> and some specific circumstances:<br/>
     /// - <see cref="ActionOnStop.None"/>: Always deferred.<br/>
-    /// - <see cref="ActionOnStop.DeleteMessage"/>: If the interaction message is ephemeral.<br/>
     /// - <see cref="ActionOnStop.ModifyMessage"/>: If there's no page to modify to.<br/>
     /// - <see cref="ActionOnStop.DeleteInput"/> and <see cref="ActionOnStop.DisableInput"/>: If the input type is neither <see cref="InputType.Buttons"/> nor <see cref="InputType.SelectMenus"/>.
     /// </remarks>

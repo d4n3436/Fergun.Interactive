@@ -40,7 +40,6 @@ public enum ActionOnStop
     /// </summary>
     /// <remarks>
     /// This action takes the highest precedence over any other flag.<br/>
-    /// Ephemeral messages can't be deleted.
     /// </remarks>
     DeleteMessage = 1 << 3
 }
