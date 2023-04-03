@@ -1,18 +1,20 @@
-using Discord;
-
 namespace Fergun.Interactive.Pagination;
 
 /// <inheritdoc cref="IButtonContext"/>
 internal class ButtonContext : IButtonContext
 {
-    public ButtonContext(int currentPageIndex, int maxPageIndex, IEmote emote, PaginatorAction action, bool shouldDisable)
+    private readonly bool _disableAll;
+
+    public ButtonContext(int buttonIndex, int currentPageIndex, int maxPageIndex, bool disableAll)
     {
+        ButtonIndex = buttonIndex;
         CurrentPageIndex = currentPageIndex;
         MaxPageIndex = maxPageIndex;
-        Emote = emote;
-        Action = action;
-        ShouldDisable = shouldDisable;
+        _disableAll = disableAll;
     }
+
+    /// <inheritdoc />
+    public int ButtonIndex { get; }
 
     /// <inheritdoc />
     public int CurrentPageIndex { get; }
@@ -21,11 +23,15 @@ internal class ButtonContext : IButtonContext
     public int MaxPageIndex { get; }
 
     /// <inheritdoc />
-    public PaginatorAction Action { get; }
-
-    /// <inheritdoc />
-    public IEmote Emote { get; }
-
-    /// <inheritdoc />
-    public bool ShouldDisable { get; }
+    public bool ShouldDisable(PaginatorAction action)
+    {
+        return _disableAll || action switch
+        {
+            PaginatorAction.SkipToStart => CurrentPageIndex == 0,
+            PaginatorAction.Backward => CurrentPageIndex == 0,
+            PaginatorAction.Forward => CurrentPageIndex == MaxPageIndex,
+            PaginatorAction.SkipToEnd => CurrentPageIndex == MaxPageIndex,
+            _ => false
+        };
+    }
 }

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -30,12 +31,12 @@ public abstract class Paginator : IInteractiveElement<KeyValuePair<IEmote, Pagin
         InteractiveGuards.NotNull(properties.Users);
         InteractiveGuards.NotNull(properties.Options);
         InteractiveGuards.NotEmpty(properties.Options);
-        InteractiveGuards.NotNull(properties.ButtonsProperties);
+        InteractiveGuards.NotNull(properties.ButtonFactories);
         InteractiveGuards.SupportedInputType(properties.InputType, false);
 
         Users = properties.Users.ToArray();
         Emotes = properties.Options.AsReadOnly();
-        ButtonProperties = properties.ButtonsProperties.AsReadOnly();
+        ButtonFactories = new ReadOnlyCollection<Func<IButtonContext, IPaginatorButton>>(properties.ButtonFactories);
         CanceledPage = properties.CanceledPage?.Build();
         TimeoutPage = properties.TimeoutPage?.Build();
         Deletion = properties.Deletion;
@@ -80,10 +81,10 @@ public abstract class Paginator : IInteractiveElement<KeyValuePair<IEmote, Pagin
     public IReadOnlyDictionary<IEmote, PaginatorAction> Emotes { get; }
 
     /// <summary>
-    /// Gets the customization options for emotes in <see cref="Emotes"/>.
+    /// Gets the button factories.
     /// </summary>
     /// <remarks>This property is only used when <see cref="InputType"/> contains <see cref="Fergun.Interactive.InputType.Buttons"/>.</remarks>
-    public IReadOnlyDictionary<IEmote, Func<IButtonContext, IButtonProperties>> ButtonProperties { get; }
+    public IReadOnlyList<Func<IButtonContext, IPaginatorButton>> ButtonFactories { get; }
 
     /// <inheritdoc/>
     public IPage? CanceledPage { get; }
@@ -373,30 +374,22 @@ public abstract class Paginator : IInteractiveElement<KeyValuePair<IEmote, Pagin
     public virtual ComponentBuilder GetOrAddComponents(bool disableAll, ComponentBuilder? builder = null)
     {
         builder ??= new ComponentBuilder();
-        foreach (var pair in Emotes)
+        for (int i = 0; i < ButtonFactories.Count; i++)
         {
-            bool shouldDisable = disableAll || pair.Value switch
-            {
-                PaginatorAction.SkipToStart => CurrentPageIndex == 0,
-                PaginatorAction.Backward => CurrentPageIndex == 0,
-                PaginatorAction.Forward => CurrentPageIndex == MaxPageIndex,
-                PaginatorAction.SkipToEnd => CurrentPageIndex == MaxPageIndex,
-                _ => false
-            };
+            var context = new ButtonContext(i, CurrentPageIndex, MaxPageIndex, disableAll);
+            var properties = ButtonFactories[i].Invoke(context);
 
-            ButtonProperties.TryGetValue(pair.Key, out var propertiesFactory);
-            var properties = propertiesFactory?.Invoke(new ButtonContext(CurrentPageIndex, MaxPageIndex, pair.Key, pair.Value, shouldDisable));
-            if (properties?.IsHidden == true)
+            if (properties is null || properties.IsHidden)
                 continue;
 
             var button = new ButtonBuilder()
-                .WithCustomId(pair.Key.ToString())
-                .WithStyle(properties?.Style ?? (pair.Value == PaginatorAction.Exit ? ButtonStyle.Danger : ButtonStyle.Primary))
-                .WithEmote(pair.Key)
-                .WithDisabled(disableAll || (properties?.IsDisabled ?? shouldDisable));
+                .WithCustomId($"{i}_{(int)properties.Action}")
+                .WithStyle(properties.Style ?? (properties.Action == PaginatorAction.Exit ? ButtonStyle.Danger : ButtonStyle.Primary))
+                .WithEmote(properties.Emote)
+                .WithDisabled(disableAll || (properties.IsDisabled ?? context.ShouldDisable(properties.Action)));
 
-            if (!string.IsNullOrEmpty(properties?.Text))
-                button.WithLabel(properties!.Text);
+            if (!string.IsNullOrEmpty(properties.Text))
+                button.WithLabel(properties.Text);
 
             builder.WithButton(button);
         }
@@ -510,14 +503,7 @@ public abstract class Paginator : IInteractiveElement<KeyValuePair<IEmote, Pagin
             return new(InteractiveInputStatus.Ignored);
         }
 
-        var emote = (input
-                .Message
-                .Components
-                .SelectMany(x => x.Components)
-                .FirstOrDefault(x => x is ButtonComponent button && button.CustomId == input.Data.CustomId) as ButtonComponent)?
-            .Emote;
-
-        if (emote is null || !Emotes.TryGetValue(emote, out var action))
+        if (!TryGetPaginatorAction(input.Data.CustomId, out var action))
         {
             return InteractiveInputStatus.Ignored;
         }
@@ -636,5 +622,30 @@ public abstract class Paginator : IInteractiveElement<KeyValuePair<IEmote, Pagin
 
             await message.AddReactionAsync(emote).ConfigureAwait(false);
         }
+    }
+
+    /// <summary>
+    /// Attempts to extract the paginator action from the custom ID of a button.
+    /// </summary>
+    /// <param name="customId">The custom ID.</param>
+    /// <param name="action">The extracted paginator action.</param>
+    /// <returns>Whether the extraction was successful.</returns>
+    public static bool TryGetPaginatorAction(string customId, out PaginatorAction action)
+    {
+        InteractiveGuards.NotNull(customId);
+
+        action = (PaginatorAction)(-1);
+
+        int index = customId.IndexOf('_');
+        if (index == -1)
+            return false;
+
+#if NETSTANDARD2_1_OR_GREATER
+        if (!int.TryParse(customId.AsSpan(index + 1), out int result)) return false;
+#else
+        if (!int.TryParse(customId.Substring(index + 1), out int result)) return false;
+#endif
+        action = (PaginatorAction)result;
+        return action is >= PaginatorAction.Forward and <= PaginatorAction.Jump;
     }
 }
