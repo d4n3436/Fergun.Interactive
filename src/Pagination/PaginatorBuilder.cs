@@ -16,6 +16,16 @@ public abstract class PaginatorBuilder<TPaginator, TBuilder>
     where TPaginator : Paginator
     where TBuilder : PaginatorBuilder<TPaginator, TBuilder>
 {
+    /// <summary>
+    /// Initializes a new instance of the <see cref="PaginatorBuilder{TPaginator, TBuilder}"/> class.
+    /// </summary>
+    protected PaginatorBuilder()
+    {
+#pragma warning disable CS0618 // Type or member is obsolete
+        Options = new OptionsWrapper(ButtonFactories);
+#pragma warning restore CS0618 // Type or member is obsolete
+    }
+
     /// <inheritdoc/>
     public virtual bool IsUserRestricted => Users.Count > 0;
 
@@ -31,10 +41,15 @@ public abstract class PaginatorBuilder<TPaginator, TBuilder>
     public virtual ICollection<IUser> Users { get; set; } = new Collection<IUser>();
 
     /// <inheritdoc/>
-    public virtual IDictionary<IEmote, PaginatorAction> Options { get; set; } = new Dictionary<IEmote, PaginatorAction>();
+    public virtual IDictionary<IEmote, PaginatorAction> Options
+    {
+        get;
+        [Obsolete($"The library no longer uses this property for button-based paginators and it will delegate the values added here into {nameof(ButtonFactories)}, unless this value is changed.")]
+        set;
+    }
 
     /// <inheritdoc/>
-    public virtual IList<Func<IButtonContext, IPaginatorButton>> ButtonFactories { get; set; }
+    public virtual IList<Func<IButtonContext, IPaginatorButton>> ButtonFactories { get; protected set; }
         = new List<Func<IButtonContext, IPaginatorButton>>();
 
     /// <inheritdoc/>
@@ -80,7 +95,7 @@ public abstract class PaginatorBuilder<TPaginator, TBuilder>
     ICollection<KeyValuePair<IEmote, PaginatorAction>> IInteractiveBuilderProperties<KeyValuePair<IEmote, PaginatorAction>>.Options
     {
         get => Options;
-        set => Options = value?.ToDictionary(x => x.Key, x => x.Value) ?? throw new ArgumentNullException(nameof(value));
+        set => WithOptions(value.ToDictionary(x => x.Key, x => x.Value));
     }
 
     /// <summary>
@@ -155,10 +170,15 @@ public abstract class PaginatorBuilder<TPaginator, TBuilder>
     /// <returns>This builder.</returns>
     public virtual TBuilder WithOptions(IDictionary<IEmote, PaginatorAction> emotes)
     {
-        Options = emotes;
-        ButtonFactories = emotes
-            .Select<KeyValuePair<IEmote, PaginatorAction>, Func<IButtonContext, IPaginatorButton>>(x => _ => new PaginatorButton(null, null, x.Key, x.Value, false))
-            .ToList();
+        InteractiveGuards.NotNull(emotes);
+
+        Options.Clear();
+        ButtonFactories.Clear();
+
+        foreach (var pair in emotes)
+        {
+            AddOption(pair);
+        }
 
         return (TBuilder)this;
     }
