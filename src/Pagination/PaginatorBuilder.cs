@@ -44,7 +44,7 @@ public abstract class PaginatorBuilder<TPaginator, TBuilder>
     public virtual IDictionary<IEmote, PaginatorAction> Options
     {
         get;
-        [Obsolete($"The library no longer uses this property for button-based paginators and it will delegate the values added here into {nameof(ButtonFactories)}, unless this value is changed.")]
+        [Obsolete($"The library no longer uses this property for button-based paginators and it will add any values added here into {nameof(ButtonFactories)}, unless this value is changed.")]
         set;
     }
 
