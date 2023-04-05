@@ -202,9 +202,15 @@ public abstract class PaginatorBuilder<TPaginator, TBuilder>
     public virtual TBuilder AddOption(IEmote emote, PaginatorAction action)
     {
         InteractiveGuards.NotNull(emote);
+
+        // This will add the option to both Options and ButtonFactories
         Options.Add(emote, action);
 
-        return AddOption(action, emote, null);
+        // If the value of Options is changed, add the option into ButtonFactories through the new overloads
+        if (Options is not OptionsWrapper)
+            return AddOption(action, emote, null);
+
+        return (TBuilder)this;
     }
 
     /// <summary>
@@ -247,11 +253,6 @@ public abstract class PaginatorBuilder<TPaginator, TBuilder>
             throw new ArgumentException($"Either {nameof(emote)} or {nameof(text)} must have a valid value.");
         }
 
-        if (emote is not null && !Options.ContainsKey(emote))
-        {
-            Options.Add(emote, action);
-        }
-
         return AddOption(new PaginatorButton(style, text, emote, action, isDisabled));
     }
 
@@ -264,10 +265,6 @@ public abstract class PaginatorBuilder<TPaginator, TBuilder>
     public virtual TBuilder AddOption(IPaginatorButton button)
     {
         InteractiveGuards.NotNull(button);
-        if (button.Emote is not null && !Options.ContainsKey(button.Emote))
-        {
-            Options.Add(button.Emote, button.Action);
-        }
 
         return AddOption(_ => button);
     }

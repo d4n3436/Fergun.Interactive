@@ -15,7 +15,7 @@ public sealed class LazyPaginatorBuilder : BaseLazyPaginatorBuilder<LazyPaginato
     /// <inheritdoc/>
     public override LazyPaginator Build()
     {
-        if (Options.Count == 0)
+        if (ButtonFactories.Count == 0)
         {
             WithDefaultEmotes();
         }

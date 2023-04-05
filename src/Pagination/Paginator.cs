@@ -30,9 +30,14 @@ public abstract class Paginator : IInteractiveElement<KeyValuePair<IEmote, Pagin
         InteractiveGuards.NotNull(properties);
         InteractiveGuards.NotNull(properties.Users);
         InteractiveGuards.NotNull(properties.Options);
-        InteractiveGuards.NotEmpty(properties.Options);
         InteractiveGuards.NotNull(properties.ButtonFactories);
+        InteractiveGuards.NotEmpty(properties.ButtonFactories);
         InteractiveGuards.SupportedInputType(properties.InputType, false);
+
+        if (properties.InputType.HasFlag(InputType.Reactions))
+        {
+            InteractiveGuards.NotEmpty(properties.Options);
+        }
 
         Users = properties.Users.ToArray();
         Emotes = properties.Options.AsReadOnly();

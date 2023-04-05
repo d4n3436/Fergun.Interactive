@@ -15,7 +15,7 @@ public sealed class StaticPaginatorBuilder : BaseStaticPaginatorBuilder<StaticPa
     /// <inheritdoc/>
     public override StaticPaginator Build()
     {
-        if (Options.Count == 0)
+        if (ButtonFactories.Count == 0)
         {
             WithDefaultEmotes();
         }
