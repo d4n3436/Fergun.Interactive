@@ -85,14 +85,13 @@ public class PaginatorModule : ModuleBase
             .AddOption(context =>
             {
                 // Factory method that creates a disabled blurple button with text "Page x / y"
-                return new PaginatorButton(ButtonStyle.Primary,
-                        $"Page {context.CurrentPageIndex + 1} / {context.MaxPageIndex + 1}", null,
-                        PaginatorAction.Backward, true);
+                return new PaginatorButton(PaginatorAction.Backward, null,
+                    $"Page {context.CurrentPageIndex + 1} / {context.MaxPageIndex + 1}", ButtonStyle.Primary, true);
             })
-            .AddOption(PaginatorAction.Backward, new Emoji("◀"), null, ButtonStyle.Secondary) // Gray buttons
-            .AddOption(PaginatorAction.Exit, new Emoji("❌"), null, ButtonStyle.Secondary)
-            .AddOption(PaginatorAction.Forward, new Emoji("▶"), null, ButtonStyle.Secondary)
-            .AddOption(PaginatorAction.Jump, new Emoji("🔢"), null, ButtonStyle.Secondary) // Use the jump feature
+            .AddOption(new Emoji("◀"), PaginatorAction.Backward, ButtonStyle.Secondary) // Gray buttons
+            .AddOption(new Emoji("❌"), PaginatorAction.Exit, ButtonStyle.Secondary)
+            .AddOption(new Emoji("▶"), PaginatorAction.Forward, ButtonStyle.Secondary)
+            .AddOption(new Emoji("🔢"), PaginatorAction.Jump, ButtonStyle.Secondary) // Use the jump feature
             .WithCacheLoadedPages(false) // The lazy paginator caches generated pages by default but it's possible to disable this.
             .WithActionOnCancellation(ActionOnStop.DeleteMessage) // Delete the message after pressing the stop emoji.
             .WithActionOnTimeout(ActionOnStop.DisableInput) // Disable the input (buttons) after a timeout.

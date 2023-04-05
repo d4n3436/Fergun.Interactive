@@ -214,26 +214,29 @@ public abstract class PaginatorBuilder<TPaginator, TBuilder>
     }
 
     /// <summary>
-    /// Adds a button with the specified text and action.
+    /// Adds a button with the specified text, action and style.
     /// </summary>
+    /// <remarks>The paginator buttons are only used when <see cref="InputType"/> contains <see cref="Fergun.Interactive.InputType.Buttons"/>.</remarks>
     /// <param name="text">The text (label) that will be displayed in the button.</param>
     /// <param name="action">The paginator action.</param>
-    /// <returns></returns>
-    public virtual TBuilder AddOption(string text, PaginatorAction action)
+    /// <param name="style">The button style. If the value is null, the library will decide the style of the button.</param>
+    /// <returns>This builder.</returns>
+    public virtual TBuilder AddOption(string text, PaginatorAction action, ButtonStyle? style)
     {
-        return AddOption(action, null, text);
+        return AddOption(action, null, text, style);
     }
 
-    /// <inheritdoc cref="AddOption(PaginatorAction, IEmote?, string?, ButtonStyle?, bool)"/>
-    public virtual TBuilder AddOption(PaginatorAction action, IEmote? emote, string? text)
+    /// <summary>
+    /// Adds a button with the specified emote, action and style.
+    /// </summary>
+    /// <remarks>The paginator buttons are only used when <see cref="InputType"/> contains <see cref="Fergun.Interactive.InputType.Buttons"/>.</remarks>
+    /// <param name="emote">The emote.</param>
+    /// <param name="action">The paginator action.</param>
+    /// <param name="style">The button style. If the value is null, the library will decide the style of the button.</param>
+    /// <returns>This builder.</returns>
+    public virtual TBuilder AddOption(IEmote emote, PaginatorAction action, ButtonStyle? style)
     {
-        return AddOption(action, emote, text, null);
-    }
-
-    /// <inheritdoc cref="AddOption(PaginatorAction, IEmote?, string?, ButtonStyle?, bool)"/>
-    public virtual TBuilder AddOption(PaginatorAction action, IEmote? emote, string? text, ButtonStyle? style)
-    {
-        return AddOption(action, emote, text, style, false);
+        return AddOption(action, emote, null, style);
     }
 
     /// <summary>
@@ -243,17 +246,17 @@ public abstract class PaginatorBuilder<TPaginator, TBuilder>
     /// <param name="action">The paginator action.</param>
     /// <param name="emote">The emote.</param>
     /// <param name="text">The text (label) that will be displayed in the button.</param>
-    /// <param name="style">The button style to use in the button.</param>
+    /// <param name="style">The button style to use in the button. If the value is null, the library will decide the style of the button.</param>
     /// <param name="isDisabled">A value indicating whether to disable the button.</param>
     /// <returns>This builder.</returns>
-    public virtual TBuilder AddOption(PaginatorAction action, IEmote? emote, string? text, ButtonStyle? style, bool isDisabled)
+    public virtual TBuilder AddOption(PaginatorAction action, IEmote? emote, string? text, ButtonStyle? style = null, bool? isDisabled = null)
     {
         if (emote is null && string.IsNullOrEmpty(text))
         {
             throw new ArgumentException($"Either {nameof(emote)} or {nameof(text)} must have a valid value.");
         }
 
-        return AddOption(new PaginatorButton(style, text, emote, action, isDisabled));
+        return AddOption(new PaginatorButton(action, emote, text, style, isDisabled));
     }
 
     /// <summary>

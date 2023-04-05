@@ -10,6 +10,7 @@ public interface IPaginatorButton
     /// <summary>
     /// Gets the style to use in the button.
     /// </summary>
+    /// <remarks>If the value is null, the library will decide the style of the button.</remarks>
     ButtonStyle? Style { get; }
 
     /// <summary>

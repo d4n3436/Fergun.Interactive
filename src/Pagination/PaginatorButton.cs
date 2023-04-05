@@ -9,12 +9,34 @@ public class PaginatorButton : IPaginatorButton
     /// <summary>
     /// Initializes a new instance of the <see cref="PaginatorButton"/> class.
     /// </summary>
-    /// <param name="style">The button style.</param>
-    /// <param name="text">The button text.</param>
-    /// <param name="emote">The emote.</param>
     /// <param name="action">The action.</param>
+    /// <param name="emote">The emote.</param>
+    /// <param name="style">The button style.</param>
+    public PaginatorButton(IEmote emote, PaginatorAction action, ButtonStyle? style = null)
+        : this(action, emote, null, style, null)
+    {
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="PaginatorButton"/> class.
+    /// </summary>
+    /// <param name="text">The button text.</param>
+    /// <param name="action">The action.</param>
+    /// <param name="style">The button style.</param>
+    public PaginatorButton(string text, PaginatorAction action, ButtonStyle? style = null)
+        : this(action, null, text, style, null)
+    {
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="PaginatorButton"/> class.
+    /// </summary>
+    /// <param name="action">The action.</param>
+    /// <param name="emote">The emote.</param>
+    /// <param name="text">The button text.</param>
+    /// <param name="style">The button style.</param>
     /// <param name="isDisabled">A value indicating whether to disable the button.</param>
-    public PaginatorButton(ButtonStyle? style, string? text, IEmote? emote, PaginatorAction action, bool isDisabled)
+    public PaginatorButton(PaginatorAction action, IEmote? emote, string? text, ButtonStyle? style, bool? isDisabled)
     {
         if (emote is null && string.IsNullOrEmpty(text))
         {
@@ -28,14 +50,15 @@ public class PaginatorButton : IPaginatorButton
         IsDisabled = isDisabled;
     }
 
-    /// <summary>
-    /// Initializes a new instance of the <see cref="PaginatorButton"/> class.
-    /// </summary>
-    /// <param name="isHidden">A value indicating whether to hide the button.</param>
-    public PaginatorButton(bool isHidden)
+    private PaginatorButton(bool isHidden)
     {
         IsHidden = isHidden;
     }
+
+    /// <summary>
+    /// Returns a hidden button.
+    /// </summary>
+    public static PaginatorButton Hidden { get; } = new(true); 
 
     /// <inheritdoc/>
     public ButtonStyle? Style { get; }
