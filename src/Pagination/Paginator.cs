@@ -508,7 +508,9 @@ public abstract class Paginator : IInteractiveElement<KeyValuePair<IEmote, Pagin
             return new(InteractiveInputStatus.Ignored);
         }
 
-        if (!TryGetPaginatorAction(input.Data.CustomId, out var action))
+        // Get last character of custom Id, convert it to a number and cast it to PaginatorAction
+        var action = (PaginatorAction)(input.Data.CustomId?[input.Data.CustomId.Length - 1] - '0' ?? -1);
+        if (!Enum.IsDefined(typeof(PaginatorAction), action))
         {
             return InteractiveInputStatus.Ignored;
         }
@@ -627,30 +629,5 @@ public abstract class Paginator : IInteractiveElement<KeyValuePair<IEmote, Pagin
 
             await message.AddReactionAsync(emote).ConfigureAwait(false);
         }
-    }
-
-    /// <summary>
-    /// Attempts to extract the paginator action from the custom ID of a button.
-    /// </summary>
-    /// <param name="customId">The custom ID.</param>
-    /// <param name="action">The extracted paginator action.</param>
-    /// <returns>Whether the extraction was successful.</returns>
-    public static bool TryGetPaginatorAction(string customId, out PaginatorAction action)
-    {
-        InteractiveGuards.NotNull(customId);
-
-        action = (PaginatorAction)(-1);
-
-        int index = customId.IndexOf('_');
-        if (index == -1)
-            return false;
-
-#if NETSTANDARD2_1_OR_GREATER
-        if (!int.TryParse(customId.AsSpan(index + 1), out int result)) return false;
-#else
-        if (!int.TryParse(customId.Substring(index + 1), out int result)) return false;
-#endif
-        action = (PaginatorAction)result;
-        return action is >= PaginatorAction.Forward and <= PaginatorAction.Jump;
     }
 }
