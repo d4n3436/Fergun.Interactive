@@ -71,7 +71,7 @@ public class PaginatorModule : ModuleBase
         }
     }
 
-    // Sends a lazy paginator that displays images and uses more options.
+    // Sends a lazy paginator that displays images and uses more complex buttons.
     [Command("img", RunMode = RunMode.Async)]
     public async Task ImgAsync(string query = "discord")
     {
