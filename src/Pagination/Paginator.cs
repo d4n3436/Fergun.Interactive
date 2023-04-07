@@ -522,7 +522,18 @@ public abstract class Paginator : IInteractiveElement<KeyValuePair<IEmote, Pagin
         var action = (PaginatorAction)(input.Data.CustomId?[^1] - '0' ?? -1);
         if (!Enum.IsDefined(typeof(PaginatorAction), action))
         {
-            return InteractiveInputStatus.Ignored;
+            // Old way to get the action for backward compatibility
+            var emote = (input
+                    .Message
+                    .Components
+                    .SelectMany(x => x.Components)
+                    .FirstOrDefault(x => x is ButtonComponent button && button.CustomId == input.Data.CustomId) as ButtonComponent)?
+                .Emote;
+
+            if (emote is null || !Emotes.TryGetValue(emote, out action))
+            {
+                return InteractiveInputStatus.Ignored;
+            }
         }
 
         if (action == PaginatorAction.Exit)
