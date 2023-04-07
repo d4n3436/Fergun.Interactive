@@ -10,7 +10,7 @@ namespace Fergun.Interactive;
 
 internal static class InteractiveGuards
 {
-    public static void NotNull<T>(T? obj, [CallerArgumentExpression("obj")] string? parameterName = null) where T : class
+    public static void NotNull<T>(T? obj, [CallerArgumentExpression(nameof(obj))] string? parameterName = null) where T : class
     {
         if (obj is null)
         {
@@ -18,7 +18,7 @@ internal static class InteractiveGuards
         }
     }
 
-    public static void NotEmpty<T>(ICollection<T> collection, [CallerArgumentExpression("collection")] string? parameterName = null)
+    public static void NotEmpty<T>(ICollection<T> collection, [CallerArgumentExpression(nameof(collection))] string? parameterName = null)
     {
         if (collection.Count == 0)
         {
@@ -26,7 +26,7 @@ internal static class InteractiveGuards
         }
     }
 
-    public static void NotCanceled(CancellationToken cancellationToken, [CallerArgumentExpression("cancellationToken")] string? parameterName = null)
+    public static void NotCanceled(CancellationToken cancellationToken, [CallerArgumentExpression(nameof(cancellationToken))] string? parameterName = null)
     {
         if (cancellationToken.IsCancellationRequested)
         {
@@ -35,7 +35,7 @@ internal static class InteractiveGuards
     }
 
     public static void NoDuplicates<TOption>(ICollection<TOption> collection, IEqualityComparer<TOption> equalityComparer,
-        [CallerArgumentExpression("collection")] string? parameterName = null)
+        [CallerArgumentExpression(nameof(collection))] string? parameterName = null)
     {
         if (collection.Distinct(equalityComparer).Count() != collection.Count)
         {
@@ -43,7 +43,7 @@ internal static class InteractiveGuards
         }
     }
 
-    public static void IndexInRange<T>(ICollection<T> collection, int index, [CallerArgumentExpression("index")] string? parameterName = null)
+    public static void IndexInRange<T>(ICollection<T> collection, int index, [CallerArgumentExpression(nameof(index))] string? parameterName = null)
     {
         if (index < 0 || index >= collection.Count)
         {
@@ -51,7 +51,7 @@ internal static class InteractiveGuards
         }
     }
 
-    public static void ExpectedType<TInput, TExpected>(TInput obj, out TExpected expected, [CallerArgumentExpression("obj")] string? parameterName = null)
+    public static void ExpectedType<TInput, TExpected>(TInput obj, out TExpected expected, [CallerArgumentExpression(nameof(obj))] string? parameterName = null)
     {
         if (obj is not TExpected temp)
         {
@@ -61,7 +61,7 @@ internal static class InteractiveGuards
         expected = temp;
     }
 
-    public static void EmbedCountInRange(ICollection<EmbedBuilder> builders, bool ensureMaxCapacity = false, [CallerArgumentExpression("builders")] string? parameterName = null)
+    public static void EmbedCountInRange(ICollection<EmbedBuilder> builders, bool ensureMaxCapacity = false, [CallerArgumentExpression(nameof(builders))] string? parameterName = null)
     {
         if (builders.Count > 10 || ensureMaxCapacity && builders.Count + 1 > 10)
         {
@@ -69,7 +69,7 @@ internal static class InteractiveGuards
         }
     }
 
-    public static void MessageFromCurrentUser(BaseSocketClient client, IUserMessage? message, [CallerArgumentExpression("message")] string? parameterName = null)
+    public static void MessageFromCurrentUser(BaseSocketClient client, IUserMessage? message, [CallerArgumentExpression(nameof(message))] string? parameterName = null)
     {
         if (message is not null && message.Author.Id != client.CurrentUser.Id)
         {
@@ -77,7 +77,7 @@ internal static class InteractiveGuards
         }
     }
 
-    public static void DeleteAndDisableInputNotSet(ActionOnStop action, [CallerArgumentExpression("action")] string? parameterName = null)
+    public static void DeleteAndDisableInputNotSet(ActionOnStop action, [CallerArgumentExpression(nameof(action))] string? parameterName = null)
     {
         if (action.HasFlag(ActionOnStop.DeleteMessage))
         {
@@ -93,7 +93,7 @@ internal static class InteractiveGuards
     public static void SupportedInputType<TOption>(IInteractiveElement<TOption> element, bool ephemeral)
         => SupportedInputType(element.InputType, ephemeral);
 
-    public static void SupportedInputType(InputType inputType, bool ephemeral, [CallerArgumentExpression("inputType")] string? parameterName = null)
+    public static void SupportedInputType(InputType inputType, bool ephemeral, [CallerArgumentExpression(nameof(inputType))] string? parameterName = null)
     {
         if (inputType == 0)
         {
@@ -120,7 +120,7 @@ internal static class InteractiveGuards
         }
     }
 
-    public static void RequiredEmoteConverter<TOption>(InputType inputType, Func<TOption, IEmote>? emoteConverter, [CallerArgumentExpression("emoteConverter")] string? parameterName = null)
+    public static void RequiredEmoteConverter<TOption>(InputType inputType, Func<TOption, IEmote>? emoteConverter, [CallerArgumentExpression(nameof(emoteConverter))] string? parameterName = null)
     {
         if (inputType.HasFlag(InputType.Reactions) && emoteConverter is null)
         {
@@ -128,7 +128,7 @@ internal static class InteractiveGuards
         }
     }
 
-    public static void ValidResponseType(InteractionResponseType responseType, [CallerArgumentExpression("responseType")] string? parameterName = null)
+    public static void ValidResponseType(InteractionResponseType responseType, [CallerArgumentExpression(nameof(responseType))] string? parameterName = null)
     {
         int value = (int)responseType;
         if (value is >= 1 and <= 3)
@@ -137,7 +137,7 @@ internal static class InteractiveGuards
         }
     }
 
-    public static void ValidResponseType(InteractionResponseType responseType, IDiscordInteraction interaction, [CallerArgumentExpression("responseType")] string? parameterName = null)
+    public static void ValidResponseType(InteractionResponseType responseType, IDiscordInteraction interaction, [CallerArgumentExpression(nameof(responseType))] string? parameterName = null)
     {
         if (interaction is not IComponentInteraction &&
             responseType is InteractionResponseType.DeferredUpdateMessage or InteractionResponseType.UpdateMessage)

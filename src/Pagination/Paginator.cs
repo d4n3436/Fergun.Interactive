@@ -519,7 +519,7 @@ public abstract class Paginator : IInteractiveElement<KeyValuePair<IEmote, Pagin
         }
 
         // Get last character of custom Id, convert it to a number and cast it to PaginatorAction
-        var action = (PaginatorAction)(input.Data.CustomId?[input.Data.CustomId.Length - 1] - '0' ?? -1);
+        var action = (PaginatorAction)(input.Data.CustomId?[^1] - '0' ?? -1);
         if (!Enum.IsDefined(typeof(PaginatorAction), action))
         {
             return InteractiveInputStatus.Ignored;
