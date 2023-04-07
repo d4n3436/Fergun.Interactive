@@ -1,7 +1,7 @@
 namespace Fergun.Interactive.Pagination;
 
 /// <inheritdoc cref="IButtonContext"/>
-internal class ButtonContext : IButtonContext
+internal sealed class ButtonContext : IButtonContext
 {
     private readonly bool _disableAll;
 

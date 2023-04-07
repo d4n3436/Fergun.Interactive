@@ -82,7 +82,7 @@ public sealed class EmoteSelectionBuilder : BaseSelectionBuilder<Selection<IEmot
     public override Selection<IEmote> Build() => new(this);
 }
 
-internal class EmoteComparer<TValue> : IEqualityComparer<KeyValuePair<IEmote, TValue>>
+internal sealed class EmoteComparer<TValue> : IEqualityComparer<KeyValuePair<IEmote, TValue>>
 {
     public bool Equals(KeyValuePair<IEmote, TValue> x, KeyValuePair<IEmote, TValue> y)
     {
@@ -95,7 +95,7 @@ internal class EmoteComparer<TValue> : IEqualityComparer<KeyValuePair<IEmote, TV
     }
 }
 
-internal class EmoteComparer : IEqualityComparer<IEmote>
+internal sealed class EmoteComparer : IEqualityComparer<IEmote>
 {
     public bool Equals(IEmote x, IEmote y) => x?.ToString() == y?.ToString();
 

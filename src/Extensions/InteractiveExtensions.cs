@@ -15,7 +15,7 @@ internal static class InteractiveExtensions
         if (channel is not ITextChannel textChannel)
             return false;
 
-        var currentUser = await textChannel.Guild.GetCurrentUserAsync(CacheMode.CacheOnly);
+        var currentUser = await textChannel.Guild.GetCurrentUserAsync(CacheMode.CacheOnly).ConfigureAwait(false);
         return currentUser?.GetPermissions(textChannel).ManageMessages == true;
     }
 

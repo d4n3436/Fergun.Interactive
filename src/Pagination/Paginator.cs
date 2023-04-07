@@ -319,7 +319,7 @@ public abstract class Paginator : IInteractiveElement<KeyValuePair<IEmote, Pagin
                 // We don't know if the user is viewing the modal or they just dismissed it, the former is assumed
                 if (!string.IsNullOrEmpty(JumpInputInUseMessage))
                 {
-                    await interaction.RespondAsync(JumpInputInUseMessage, ephemeral: true);
+                    await interaction.RespondAsync(JumpInputInUseMessage, ephemeral: true).ConfigureAwait(false);
                 }
                 else
                 {
@@ -587,7 +587,7 @@ public abstract class Paginator : IInteractiveElement<KeyValuePair<IEmote, Pagin
         {
             if (!string.IsNullOrEmpty(ExpiredJumpInputMessage))
             {
-                await input.RespondAsync(ExpiredJumpInputMessage, ephemeral: true);
+                await input.RespondAsync(ExpiredJumpInputMessage, ephemeral: true).ConfigureAwait(false);
             }
             else
             {

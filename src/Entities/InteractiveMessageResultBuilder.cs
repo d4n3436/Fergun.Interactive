@@ -4,7 +4,7 @@ using Fergun.Interactive.Selection;
 
 namespace Fergun.Interactive;
 
-internal class InteractiveMessageResultBuilder<T> : BaseInteractiveMessageResultBuilder<T, InteractiveMessageResultBuilder<T>, InteractiveMessageResult<T>>
+internal sealed class InteractiveMessageResultBuilder<T> : BaseInteractiveMessageResultBuilder<T, InteractiveMessageResultBuilder<T>, InteractiveMessageResult<T>>
 {
     public static InteractiveMessageResultBuilder<T> FromCallback<TOption>(SelectionCallback<TOption> callback, T? option, InteractiveStatus status)
     {
@@ -24,7 +24,7 @@ internal class InteractiveMessageResultBuilder<T> : BaseInteractiveMessageResult
     public override InteractiveMessageResult<T> Build() => new(this);
 }
 
-internal class InteractiveMessageResultBuilder : BaseInteractiveMessageResultBuilder<InteractiveMessageResultBuilder, InteractiveMessageResult>
+internal sealed class InteractiveMessageResultBuilder : BaseInteractiveMessageResultBuilder<InteractiveMessageResultBuilder, InteractiveMessageResult>
 {
     public static InteractiveMessageResultBuilder FromCallback(PaginatorCallback callback, InteractiveStatus status)
     {

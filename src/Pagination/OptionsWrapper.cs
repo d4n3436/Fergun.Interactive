@@ -6,7 +6,7 @@ using Discord;
 namespace Fergun.Interactive.Pagination;
 
 // Used to add values to both Options and ButtonFactories
-internal class OptionsWrapper : IDictionary<IEmote, PaginatorAction>
+internal sealed class OptionsWrapper : IDictionary<IEmote, PaginatorAction>
 {
     private readonly IDictionary<IEmote, PaginatorAction> _dictionary = new Dictionary<IEmote, PaginatorAction>();
     private readonly IDictionary<IEmote, Func<IButtonContext, IPaginatorButton>> _factoryDictionary = new Dictionary<IEmote, Func<IButtonContext, IPaginatorButton>>();

@@ -39,7 +39,7 @@ public class InteractiveConfig
     /// The default value is <see langword="false"/>. If set to <see langword="true"/>, the SendPaginatorAsync() methods will return an <see cref="InteractiveMessageResult"/> with status <see cref="InteractiveStatus.Success"/>.<br/>
     /// Note that any exceptions that would otherwise be thrown will be swallowed instead.
     /// </remarks>
-    public bool ReturnAfterSendingPaginator { get; set; } = false;
+    public bool ReturnAfterSendingPaginator { get; set; }
 
     /// <summary>
     /// Gets or sets a value indicating if the interactions that stop paginators should be deferred.
