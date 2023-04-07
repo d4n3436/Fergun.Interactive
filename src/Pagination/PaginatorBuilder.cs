@@ -214,7 +214,7 @@ public abstract class PaginatorBuilder<TPaginator, TBuilder>
     }
 
     /// <summary>
-    /// Adds a button with the specified text, action and style.
+    /// Adds a paginator button with the specified text, action and style.
     /// </summary>
     /// <remarks>The paginator buttons are only used when <see cref="InputType"/> contains <see cref="Fergun.Interactive.InputType.Buttons"/>.</remarks>
     /// <param name="text">The text (label) that will be displayed in the button.</param>
@@ -227,7 +227,7 @@ public abstract class PaginatorBuilder<TPaginator, TBuilder>
     }
 
     /// <summary>
-    /// Adds a button with the specified emote, action and style.
+    /// Adds a paginator button with the specified emote, action and style.
     /// </summary>
     /// <remarks>The paginator buttons are only used when <see cref="InputType"/> contains <see cref="Fergun.Interactive.InputType.Buttons"/>.</remarks>
     /// <param name="emote">The emote.</param>
@@ -240,8 +240,9 @@ public abstract class PaginatorBuilder<TPaginator, TBuilder>
     }
 
     /// <summary>
-    /// Adds a link-style button.
+    /// Adds a link-style paginator button.
     /// </summary>
+    /// <remarks>The paginator buttons are only used when <see cref="InputType"/> contains <see cref="Fergun.Interactive.InputType.Buttons"/>.</remarks>
     /// <param name="url">The url of the button.</param>
     /// <param name="emote">The emote.</param>
     /// <param name="text">The text (label) that will be displayed in the button.</param>
