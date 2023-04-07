@@ -28,7 +28,18 @@ public interface IBasePaginatorBuilderProperties : IInteractiveBuilderProperties
     /// <summary>
     /// Gets or sets the emotes and their related actions of the paginator.
     /// </summary>
-    new IDictionary<IEmote, PaginatorAction> Options { get; set; }
+    new IDictionary<IEmote, PaginatorAction> Options
+    {
+        get;
+        [Obsolete($"The library no longer uses this property for button-based paginators and it will add any values added here into {nameof(ButtonFactories)}, unless this value is changed.")]
+        set;
+    }
+
+    /// <summary>
+    /// Gets or sets the button factories.
+    /// </summary>
+    /// <remarks>This property is only used when <see cref="InputType"/> contains <see cref="Fergun.Interactive.InputType.Buttons"/>.</remarks>
+    IList<Func<IButtonContext, IPaginatorButton>> ButtonFactories { get; }
 
     /// <summary>
     /// Gets or sets the maximum time to wait for a "jump to page" input.

@@ -11,7 +11,7 @@ This is a fork of [Discord.InteractivityAddon](https://github.com/Playwo/Discord
 - Methods for receiving incoming messages/reactions/interactions
 - Fully customizable paginator
   - Uses pages that can be changed through reactions or buttons
-  - Uses a dictionary of emotes and paginator actions that can be modified
+  - Support for customization of buttons (emote, label, style, etc.)
   - 2 included types of paginators: static and lazy loaded
   - Support for restricting use to certain users
   - Supports a canceled and timeout page
@@ -65,8 +65,8 @@ Example modules:
 
 - Pagination
   - [Static paginator](ExampleBot/Modules/PaginatorModule.cs#L22) (`!paginator static`)
-  - [Lazy paginator](ExampleBot/Modules/PaginatorModule.cs#L46) (`!paginator lazy`)
-  - [Image paginator](ExampleBot/Modules/PaginatorModule.cs#L66) (`!paginator img [query]`)
+  - [Lazy paginator](ExampleBot/Modules/PaginatorModule.cs#L56) (`!paginator lazy`)
+  - [Image paginator](ExampleBot/Modules/PaginatorModule.cs#L76) (`!paginator img [query]`)
 
 - Customization
   - [Selection with custom button colors](ExampleBot/Modules/CustomButtonModule.cs#L18) (`!custom button`)
