@@ -240,6 +240,25 @@ public abstract class PaginatorBuilder<TPaginator, TBuilder>
     }
 
     /// <summary>
+    /// Adds a link-style button.
+    /// </summary>
+    /// <param name="url">The url of the button.</param>
+    /// <param name="emote">The emote.</param>
+    /// <param name="text">The text (label) that will be displayed in the button.</param>
+    /// <param name="isDisabled">A value indicating whether to disable the button.</param>
+    /// <returns>This builder.</returns>
+    public virtual TBuilder AddOption(string url, IEmote? emote, string? text, bool? isDisabled = null)
+    {
+        if (string.IsNullOrEmpty(url))
+            throw new ArgumentException("Url cannot be null or empty.", nameof(url));
+
+        if (emote is null && string.IsNullOrEmpty(text))
+            throw new ArgumentException($"Either {nameof(emote)} or {nameof(text)} must have a valid value.");
+
+        return AddOption(new PaginatorButton(url, emote, text, isDisabled));
+    }
+
+    /// <summary>
     /// Adds a paginator button with the specified properties.
     /// </summary>
     /// <remarks>The paginator buttons are only used when <see cref="InputType"/> contains <see cref="Fergun.Interactive.InputType.Buttons"/>.</remarks>
@@ -252,9 +271,7 @@ public abstract class PaginatorBuilder<TPaginator, TBuilder>
     public virtual TBuilder AddOption(PaginatorAction action, IEmote? emote, string? text, ButtonStyle? style = null, bool? isDisabled = null)
     {
         if (emote is null && string.IsNullOrEmpty(text))
-        {
             throw new ArgumentException($"Either {nameof(emote)} or {nameof(text)} must have a valid value.");
-        }
 
         return AddOption(new PaginatorButton(action, emote, text, style, isDisabled));
     }

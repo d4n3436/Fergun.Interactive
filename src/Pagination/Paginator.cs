@@ -387,11 +387,21 @@ public abstract class Paginator : IInteractiveElement<KeyValuePair<IEmote, Pagin
             if (properties is null || properties.IsHidden)
                 continue;
 
-            var button = new ButtonBuilder()
-                .WithCustomId($"{i}_{(int)properties.Action}")
-                .WithStyle(properties.Style ?? (properties.Action == PaginatorAction.Exit ? ButtonStyle.Danger : ButtonStyle.Primary))
+            var style = properties.Style ?? (properties.Action == PaginatorAction.Exit ? ButtonStyle.Danger : ButtonStyle.Primary);
+            var button = new ButtonBuilder();
+
+            if (style == ButtonStyle.Link)
+            {
+                button.WithUrl(properties.Url);
+            }
+            else
+            {
+                button.WithCustomId($"{i}_{(int)properties.Action}");
+            }
+
+            button.WithStyle(style)
                 .WithEmote(properties.Emote)
-                .WithDisabled(disableAll || (properties.IsDisabled ?? context.ShouldDisable(properties.Action)));
+                .WithDisabled(properties.IsDisabled ?? context.ShouldDisable(properties.Action));
 
             if (!string.IsNullOrEmpty(properties.Text))
                 button.WithLabel(properties.Text);
