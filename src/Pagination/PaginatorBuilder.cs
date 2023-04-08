@@ -184,6 +184,39 @@ public abstract class PaginatorBuilder<TPaginator, TBuilder>
     }
 
     /// <summary>
+    /// Sets the paginator buttons.
+    /// </summary>
+    /// <param name="buttons">The paginator buttons.</param>
+    /// <returns>This builder.</returns>
+    public virtual TBuilder WithOptions(IEnumerable<IPaginatorButton> buttons)
+    {
+        InteractiveGuards.NotNull(buttons);
+
+        return WithOptions(buttons.Select(x => new Func<IButtonContext, IPaginatorButton>(_ => x)));
+    }
+
+    /// <summary>
+    /// Sets the paginator buttons.
+    /// </summary>
+    /// <param name="buttonFactories">The factories that create the paginator buttons.</param>
+    /// <returns>This builder.</returns>
+    public virtual TBuilder WithOptions(IEnumerable<Func<IButtonContext, IPaginatorButton>> buttonFactories)
+    {
+        InteractiveGuards.NotNull(buttonFactories);
+
+        // Clear ButtonFactories instead of setting a new value, otherwise OptionsWrapper would break
+        Options.Clear();
+        ButtonFactories.Clear();
+
+        foreach (var factory in buttonFactories)
+        {
+            AddOption(factory);
+        }
+
+        return (TBuilder)this;
+    }
+
+    /// <summary>
     /// Adds an emote related to a paginator action.
     /// </summary>
     /// <remarks>If you want to customize to your buttons,use the other overloads instead.</remarks>
