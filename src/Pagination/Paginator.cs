@@ -396,7 +396,7 @@ public abstract class Paginator : IInteractiveElement<KeyValuePair<IEmote, Pagin
             }
             else
             {
-                button.WithCustomId($"{i}_{(int)properties.Action}");
+                button.WithCustomId(string.IsNullOrEmpty(properties.CustomId) ? $"{i}_{(int)properties.Action}" : properties.CustomId);
             }
 
             button.WithStyle(style)

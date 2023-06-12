@@ -273,9 +273,8 @@ public abstract class PaginatorBuilder<TPaginator, TBuilder>
     }
 
     /// <summary>
-    /// Adds a link-style paginator button.
+    /// Adds a link-style paginator button with the specified properties.
     /// </summary>
-    /// <remarks>The paginator buttons are only used when <see cref="InputType"/> contains <see cref="Fergun.Interactive.InputType.Buttons"/>.</remarks>
     /// <param name="url">The url of the button.</param>
     /// <param name="emote">The emote.</param>
     /// <param name="text">The text (label) that will be displayed in the button.</param>
@@ -290,6 +289,27 @@ public abstract class PaginatorBuilder<TPaginator, TBuilder>
             throw new ArgumentException($"Either {nameof(emote)} or {nameof(text)} must have a valid value.");
 
         return AddOption(new PaginatorButton(url, emote, text, isDisabled));
+    }
+
+    /// <summary>
+    /// Adds a detached paginator button with the specified properties.
+    /// </summary>
+    /// <remarks>Detached paginator buttons are not managed by a paginator and must be manually handled.</remarks>
+    /// <param name="customId">The custom ID.</param>
+    /// <param name="emote">The emote.</param>
+    /// <param name="text">The text (label) that will be displayed in the button.</param>
+    /// <param name="style">The button style to use in the button. If the value is null, the library will decide the style of the button.</param>
+    /// <param name="isDisabled">A value indicating whether to disable the button.</param>
+    /// <returns>This builder.</returns>
+    public virtual TBuilder AddOption(string customId, IEmote? emote, string? text, ButtonStyle? style, bool? isDisabled = null)
+    {
+        if (string.IsNullOrEmpty(customId))
+            throw new ArgumentException("CustomId cannot be null or empty.", nameof(customId));
+
+        if (emote is null && string.IsNullOrEmpty(text))
+            throw new ArgumentException($"Either {nameof(emote)} or {nameof(text)} must have a valid value.");
+
+        return AddOption(new PaginatorButton(customId, emote, text, style, isDisabled));
     }
 
     /// <summary>

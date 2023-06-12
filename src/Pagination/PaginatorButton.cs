@@ -47,6 +47,24 @@ public class PaginatorButton : IPaginatorButton
     /// <summary>
     /// Initializes a new instance of the <see cref="PaginatorButton"/> class.
     /// </summary>
+    /// <remarks>Detached paginator buttons are not managed by a paginator and must be manually handled.</remarks>
+    /// <param name="customId">The custom ID.</param>
+    /// <param name="emote">The emote.</param>
+    /// <param name="text">The button text.</param>
+    /// <param name="style">The button style.</param>
+    /// <param name="isDisabled">A value indicating whether to disable the button.</param>
+    public PaginatorButton(string customId, IEmote? emote, string? text, ButtonStyle? style, bool? isDisabled = null)
+     : this((PaginatorAction)(-1), emote, text, style, isDisabled)
+    {
+        if (string.IsNullOrEmpty(customId))
+            throw new ArgumentException("CustomId cannot be null or empty.", nameof(customId));
+
+        CustomId = customId;
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="PaginatorButton"/> class.
+    /// </summary>
     /// <param name="action">The action.</param>
     /// <param name="emote">The emote.</param>
     /// <param name="text">The button text.</param>
@@ -93,6 +111,9 @@ public class PaginatorButton : IPaginatorButton
 
     /// <inheritdoc/>
     public bool? IsDisabled { get; }
+
+    /// <inheritdoc/>
+    public string? CustomId { get; }
 
     /// <inheritdoc/>
     public bool IsHidden { get; }

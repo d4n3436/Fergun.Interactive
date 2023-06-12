@@ -40,6 +40,11 @@ public interface IPaginatorButton
     bool? IsDisabled { get; }
 
     /// <summary>
+    /// Gets the custom ID.
+    /// </summary>
+    public string? CustomId { get; }
+
+    /// <summary>
     /// Gets a value indicating whether to hide the button.
     /// </summary>
     bool IsHidden { get; }
