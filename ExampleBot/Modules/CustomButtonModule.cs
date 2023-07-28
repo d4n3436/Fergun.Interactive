@@ -11,8 +11,6 @@ namespace ExampleBot.Modules;
 [Group("custom")]
 public partial class CustomModule : ModuleBase
 {
-    public InteractiveService Interactive { get; set; }
-
     // Sends a selection of buttons, where each option has its own button style/color.
     [Command("button", RunMode = RunMode.Async)]
     public async Task CustomButtonSelectionAsync()
@@ -40,7 +38,7 @@ public partial class CustomModule : ModuleBase
             .AddUser(Context.User)
             .Build();
 
-        await Interactive.SendSelectionAsync(buttonSelection, Context.Channel);
+        await _interactive.SendSelectionAsync(buttonSelection, Context.Channel);
     }
 
     // Custom selection builder for ButtonSelections

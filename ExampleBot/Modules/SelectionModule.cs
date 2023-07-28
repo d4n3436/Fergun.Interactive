@@ -14,7 +14,12 @@ namespace ExampleBot.Modules;
 [Group("select")]
 public class SelectionModule : ModuleBase
 {
-    public InteractiveService Interactive { get; set; }
+    private readonly InteractiveService _interactive;
+
+    public SelectionModule(InteractiveService interactive)
+    {
+        _interactive = interactive;
+    }
 
     // Sends a message that contains selection of options which the user can select one.
     // Here the selection is received via messages.
@@ -38,7 +43,7 @@ public class SelectionModule : ModuleBase
             .Build(); // Build the SelectionBuilder.
 
         // Send the selection to the source channel and wait until it times out
-        var result = await Interactive.SendSelectionAsync(selection, Context.Channel, TimeSpan.FromMinutes(1));
+        var result = await _interactive.SendSelectionAsync(selection, Context.Channel, TimeSpan.FromMinutes(1));
 
         // Get the selected option. This may be null/default if the selection times out or gets cancelled.
         string selected = result.Value;
@@ -83,7 +88,7 @@ public class SelectionModule : ModuleBase
             //.WithInputType(InputType.Reactions)
             .Build();
 
-        var result = await Interactive.SendSelectionAsync(selection, Context.Channel, TimeSpan.FromMinutes(1));
+        var result = await _interactive.SendSelectionAsync(selection, Context.Channel, TimeSpan.FromMinutes(1));
 
         var builder = new EmbedBuilder()
             .WithDescription(result.IsSuccess ? $"You selected: {result.Value}" : "Timeout!")
@@ -115,7 +120,7 @@ public class SelectionModule : ModuleBase
             .WithSelectionPage(pageBuilder)
             .Build();
 
-        var result = await Interactive.SendSelectionAsync(selection, Context.Channel, TimeSpan.FromMinutes(1));
+        var result = await _interactive.SendSelectionAsync(selection, Context.Channel, TimeSpan.FromMinutes(1));
 
         // In this case the result's value will be a KeyValuePair<IEmote, int>
         var emote = result.Value.Key; // Selected emote
@@ -180,7 +185,7 @@ public class SelectionModule : ModuleBase
             .WithInputType(InputType.Reactions | InputType.Messages | InputType.Buttons | InputType.SelectMenus)
             .Build();
 
-        await Interactive.SendSelectionAsync(selection, Context.Channel, TimeSpan.FromMinutes(1));
+        await _interactive.SendSelectionAsync(selection, Context.Channel, TimeSpan.FromMinutes(1));
     }
 
     // A menu of options that uses (and reuses) a selection message.
@@ -242,8 +247,8 @@ public class SelectionModule : ModuleBase
             // if message is null, SendSelectionAsync() will send a message, otherwise it will modify the message.
             // The cancellation token persists here, so it will be canceled after 10 minutes no matter how many times the selection is used.
             result = message is null
-                ? await Interactive.SendSelectionAsync(selection, Context.Channel, TimeSpan.FromMinutes(10), cancellationToken: cts.Token)
-                : await Interactive.SendSelectionAsync(selection, message, TimeSpan.FromMinutes(10), cancellationToken: cts.Token);
+                ? await _interactive.SendSelectionAsync(selection, Context.Channel, TimeSpan.FromMinutes(10), cancellationToken: cts.Token)
+                : await _interactive.SendSelectionAsync(selection, message, TimeSpan.FromMinutes(10), cancellationToken: cts.Token);
 
             // Store the used message.
             message = result.Message;

@@ -14,8 +14,12 @@ namespace ExampleBot.Modules;
 public class PaginatorModule : ModuleBase
 {
     private static readonly GoogleScraper _scraper = new();
+    private readonly InteractiveService _interactive;
 
-    public InteractiveService Interactive { get; set; }
+    public PaginatorModule(InteractiveService interactive)
+    {
+        _interactive = interactive;
+    }
 
     // Sends a message that contains a static paginator with pages that can be changed with reactions or buttons.
     [Command("static", RunMode = RunMode.Async)]
@@ -35,7 +39,7 @@ public class PaginatorModule : ModuleBase
             .Build();
 
         // Send the paginator to the source channel and wait until it times out after 10 minutes.
-        await Interactive.SendPaginatorAsync(paginator, Context.Channel, TimeSpan.FromMinutes(10));
+        await _interactive.SendPaginatorAsync(paginator, Context.Channel, TimeSpan.FromMinutes(10));
 
         // By default, SendPaginatorAsync sends the paginator and waits for a timeout or a cancellation.
         // If you want the method to return after sending the paginator, you can set the
@@ -61,7 +65,7 @@ public class PaginatorModule : ModuleBase
             .WithMaxPageIndex(9) // You must specify the max. index the page factory can go. max. index 9 = 10 pages
             .Build();
 
-        await Interactive.SendPaginatorAsync(paginator, Context.Channel, TimeSpan.FromMinutes(10));
+        await _interactive.SendPaginatorAsync(paginator, Context.Channel, TimeSpan.FromMinutes(10));
 
         static PageBuilder GeneratePage(int index)
         {
@@ -98,7 +102,7 @@ public class PaginatorModule : ModuleBase
             .WithFooter(PaginatorFooter.None) // Do not override the page footer. This allows us to write our own page footer in the page factory.
             .Build();
 
-        await Interactive.SendPaginatorAsync(paginator, Context.Channel, TimeSpan.FromMinutes(10));
+        await _interactive.SendPaginatorAsync(paginator, Context.Channel, TimeSpan.FromMinutes(10));
 
         PageBuilder GeneratePage(int index)
         {

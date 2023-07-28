@@ -9,7 +9,12 @@ namespace ExampleBot.Modules;
 [Group("next")]
 public class WaitModule : ModuleBase
 {
-    public InteractiveService Interactive { get; set; }
+    private readonly InteractiveService _interactive;
+
+    public WaitModule(InteractiveService interactive)
+    {
+        _interactive = interactive;
+    }
 
     [Command("message", RunMode = RunMode.Async)]
     public async Task NextMessageAsync()
@@ -17,7 +22,7 @@ public class WaitModule : ModuleBase
         var msg = await ReplyAsync("Waiting for a message...");
 
         // Wait for a message in the same channel the command was executed.
-        var result = await Interactive.NextMessageAsync(x => x.Channel.Id == Context.Channel.Id, timeout: TimeSpan.FromSeconds(30));
+        var result = await _interactive.NextMessageAsync(x => x.Channel.Id == Context.Channel.Id, timeout: TimeSpan.FromSeconds(30));
 
         await msg.ModifyAsync(x => x.Content = result.IsSuccess ? $"{result.Value!.Author} said: {result.Value.Content}" : $"Failed to get message. Status: {result.Status}");
     }
@@ -28,7 +33,7 @@ public class WaitModule : ModuleBase
         var msg = await ReplyAsync("Add a reaction to this message.");
 
         // Wait for a reaction in the message.
-        var result = await Interactive.NextReactionAsync(x => x.MessageId == msg.Id, timeout: TimeSpan.FromSeconds(30));
+        var result = await _interactive.NextReactionAsync(x => x.MessageId == msg.Id, timeout: TimeSpan.FromSeconds(30));
 
         await msg.ModifyAsync(x =>
         {
@@ -47,7 +52,7 @@ public class WaitModule : ModuleBase
         var msg = await ReplyAsync("Press this button!", components: builder.Build());
 
         // Wait for a user to press the button
-        var result = await Interactive.NextMessageComponentAsync(x => x.Message.Id == msg.Id, timeout: TimeSpan.FromSeconds(30));
+        var result = await _interactive.NextMessageComponentAsync(x => x.Message.Id == msg.Id, timeout: TimeSpan.FromSeconds(30));
 
         if (result.IsSuccess)
         {

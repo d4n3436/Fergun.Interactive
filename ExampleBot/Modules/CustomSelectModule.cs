@@ -12,7 +12,14 @@ namespace ExampleBot.Modules;
 
 public partial class CustomModule
 {
-    public CommandService CommandService { get; set; }
+    private readonly CommandService _commandService;
+    private readonly InteractiveService _interactive;
+
+    public CustomModule(CommandService commandService, InteractiveService interactive)
+    {
+        _commandService = commandService;
+        _interactive = interactive;
+    }
 
     // Sends a multi selection (a message with multiple select menus with options)
     [Command("select", RunMode = RunMode.Async)]
@@ -21,7 +28,7 @@ public partial class CustomModule
         // Create CancellationTokenSource that will be canceled after 10 minutes.
         using var cts = new CancellationTokenSource(TimeSpan.FromMinutes(10));
 
-        var modules = CommandService.Modules.ToArray();
+        var modules = _commandService.Modules.ToArray();
         var color = Utils.GetRandomColor();
 
         // Used to track the selected module
@@ -76,8 +83,8 @@ public partial class CustomModule
                 .Build();
 
             result = message is null
-                ? await Interactive.SendSelectionAsync(multiSelection, Context.Channel, TimeSpan.FromMinutes(2), null, cts.Token)
-                : await Interactive.SendSelectionAsync(multiSelection, message, TimeSpan.FromMinutes(2), null, cts.Token);
+                ? await _interactive.SendSelectionAsync(multiSelection, Context.Channel, TimeSpan.FromMinutes(2), null, cts.Token)
+                : await _interactive.SendSelectionAsync(multiSelection, message, TimeSpan.FromMinutes(2), null, cts.Token);
 
             message = result.Message;
 

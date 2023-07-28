@@ -70,7 +70,7 @@ Latter remark hunted enough say man."
             .WithCustomEmotes()
             .Build();
 
-        await Interactive.SendPaginatorAsync(paginator, Context.Channel, TimeSpan.FromMinutes(10));
+        await _interactive.SendPaginatorAsync(paginator, Context.Channel, TimeSpan.FromMinutes(10));
     }
 }
 

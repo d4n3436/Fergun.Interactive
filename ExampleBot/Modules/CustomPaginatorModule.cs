@@ -83,7 +83,7 @@ public partial class CustomModule
             .WithActionOnCancellation(ActionOnStop.DisableInput)
             .Build();
 
-        await Interactive.SendSelectionAsync(pagedSelection, Context.Channel, TimeSpan.FromMinutes(10));
+        await _interactive.SendSelectionAsync(pagedSelection, Context.Channel, TimeSpan.FromMinutes(10));
 
         PageBuilder GeneratePage(IReadOnlyList<IImageResult> images, string scraper, int index)
         {
