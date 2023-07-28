@@ -533,7 +533,7 @@ public class InteractiveService
         var message = await SendOrModifyMessageAsync(paginator, interaction, responseType, ephemeral).ConfigureAwait(false);
         messageAction?.Invoke(message);
 
-        if (paginator.MaxPageIndex == 0)
+        if (!_config.ProcessSinglePagePaginators && paginator.MaxPageIndex == 0)
         {
             return new InteractiveMessageResultBuilder()
                 .WithMessage(message)
@@ -663,7 +663,7 @@ public class InteractiveService
         message = await SendOrModifyMessageAsync(paginator, message, channel).ConfigureAwait(false);
         messageAction?.Invoke(message);
 
-        if (paginator.MaxPageIndex == 0)
+        if (!_config.ProcessSinglePagePaginators && paginator.MaxPageIndex == 0)
         {
             return new InteractiveMessageResultBuilder()
                 .WithMessage(message)
@@ -826,14 +826,13 @@ public class InteractiveService
         return result;
     }
 
-    private static async Task<IUserMessage> SendOrModifyMessageAsync<TOption>(IInteractiveElement<TOption> element,
-        IUserMessage? message, IMessageChannel? channel)
+    private async Task<IUserMessage> SendOrModifyMessageAsync<TOption>(IInteractiveElement<TOption> element, IUserMessage? message, IMessageChannel? channel)
     {
         var page = await element.GetCurrentPageAsync().ConfigureAwait(false);
 
         MessageComponent? component = null;
-        bool moreThanOnePage = element is not Paginator pag || pag.MaxPageIndex > 0;
-        if ((element.InputType.HasFlag(InputType.Buttons) || element.InputType.HasFlag(InputType.SelectMenus)) && moreThanOnePage)
+        bool addComponents = element is not Paginator pag || _config.ProcessSinglePagePaginators || pag.MaxPageIndex > 0;
+        if ((element.InputType.HasFlag(InputType.Buttons) || element.InputType.HasFlag(InputType.SelectMenus)) && addComponents)
         {
             component = element.GetOrAddComponents(false).Build();
         }
@@ -861,14 +860,14 @@ public class InteractiveService
         return message;
     }
 
-    private static async Task<IUserMessage> SendOrModifyMessageAsync<TOption>(IInteractiveElement<TOption> element, IDiscordInteraction interaction,
+    private async Task<IUserMessage> SendOrModifyMessageAsync<TOption>(IInteractiveElement<TOption> element, IDiscordInteraction interaction,
         InteractionResponseType responseType, bool ephemeral)
     {
         var page = await element.GetCurrentPageAsync().ConfigureAwait(false);
 
         MessageComponent? component = null;
-        bool moreThanOnePage = element is not Paginator pag || pag.MaxPageIndex > 0;
-        if ((element.InputType.HasFlag(InputType.Buttons) || element.InputType.HasFlag(InputType.SelectMenus)) && moreThanOnePage)
+        bool addComponents = element is not Paginator pag || _config.ProcessSinglePagePaginators || pag.MaxPageIndex > 0;
+        if ((element.InputType.HasFlag(InputType.Buttons) || element.InputType.HasFlag(InputType.SelectMenus)) && addComponents)
         {
             component = element.GetOrAddComponents(false).Build();
         }
