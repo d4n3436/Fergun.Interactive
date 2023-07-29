@@ -12,7 +12,6 @@ using Fergun.Interactive.Extensions;
 using Fergun.Interactive.Pagination;
 using Fergun.Interactive.Selection;
 using GScraper;
-using GScraper.Brave;
 using GScraper.DuckDuckGo;
 using GScraper.Google;
 
@@ -22,7 +21,6 @@ public partial class CustomModule
 {
     private static readonly GoogleScraper _googleScraper = new();
     private static readonly DuckDuckGoScraper _ddgScraper = new();
-    private static readonly BraveScraper _braveScraper = new();
 
     // Sends a paginated (paged) selection
     // A paged selection is a selection where each options contains a paginator
@@ -34,11 +32,10 @@ public partial class CustomModule
 
         var googleTask = _googleScraper.GetImagesAsync(query);
         var ddgTask = _ddgScraper.GetImagesAsync(query);
-        var braveTask = _braveScraper.GetImagesAsync(query);
 
         try
         {
-            await Task.WhenAll(googleTask, ddgTask, braveTask);
+            await Task.WhenAll(googleTask, ddgTask);
         }
         catch (Exception ex)
         {
@@ -49,8 +46,7 @@ public partial class CustomModule
         var results = new Dictionary<string, IReadOnlyList<IImageResult>>
         {
             { "Google", googleTask.Result.ToArray() },
-            { "DuckDuckGo", ddgTask.Result.ToArray() },
-            { "Brave", braveTask.Result.ToArray() }
+            { "DuckDuckGo", ddgTask.Result.ToArray() }
         };
 
         var options = results
@@ -229,9 +225,10 @@ public class PagedSelection<TOption> : BaseSelection<KeyValuePair<TOption, Pagin
         }
 
         var paginator = Options[CurrentOption];
-        var (emote, action) = paginator.Emotes.FirstOrDefault(x => x.Key.ToString() == input.Data.CustomId);
 
-        if (emote is not null)
+        var action = (PaginatorAction)(input.Data.CustomId?[^1] - '0' ?? -1);
+
+        if (Enum.IsDefined(typeof(PaginatorAction), action))
         {
             if (action == PaginatorAction.Exit)
             {

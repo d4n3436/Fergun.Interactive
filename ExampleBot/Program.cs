@@ -55,7 +55,7 @@ internal static class Program
 
     private static ServiceProvider ConfigureServices()
         => new ServiceCollection()
-            .AddSingleton(new DiscordSocketConfig { LogLevel = LogSeverity.Verbose })
+            .AddSingleton(new DiscordSocketConfig { LogLevel = LogSeverity.Verbose, GatewayIntents = GatewayIntents.AllUnprivileged | GatewayIntents.MessageContent })
             .AddSingleton(new CommandServiceConfig { LogLevel = LogSeverity.Verbose })
             .AddSingleton<DiscordSocketClient>()
             .AddSingleton<CommandService>()
