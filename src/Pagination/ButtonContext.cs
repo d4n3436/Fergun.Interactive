@@ -38,6 +38,7 @@ public readonly struct ButtonContext : IButtonContext
             PaginatorAction.Backward => CurrentPageIndex == 0,
             PaginatorAction.Forward => CurrentPageIndex == MaxPageIndex,
             PaginatorAction.SkipToEnd => CurrentPageIndex == MaxPageIndex,
+            PaginatorAction.Jump => MaxPageIndex == 0,
             _ => false
         };
     }
