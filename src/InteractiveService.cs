@@ -147,7 +147,7 @@ public class InteractiveService
     /// <summary>
     /// Attempts to remove and return a callback.
     /// </summary>
-    /// <param name="id">The Id of the callback.</param>
+    /// <param name="id">The ID of the callback.</param>
     /// <param name="callback">The callback, if found.</param>
     /// <returns>Whether the callback was removed.</returns>
     public bool TryRemoveCallback(ulong id, out IInteractiveCallback callback)
@@ -461,7 +461,7 @@ public class InteractiveService
     /// The task result contains an <see cref="InteractiveMessageResult"/> with the message used for pagination
     /// (which may not be valid if the message has been deleted), the elapsed time and the status.<br/>
     /// If the paginator only contains one page, the task will return when the message has been sent and the result
-    /// will contain the sent message and a <see cref="InteractiveStatus.Success"/> status.
+    /// will contain the message sent and a <see cref="InteractiveStatus.Success"/> status.
     /// </returns>
     /// <exception cref="ArgumentException"/>
     /// <exception cref="ArgumentNullException"/>
@@ -484,7 +484,7 @@ public class InteractiveService
     /// The task result contains an <see cref="InteractiveMessageResult"/> with the message used for pagination
     /// (which may not be valid if the message has been deleted), the elapsed time and the status.<br/>
     /// If the paginator only contains one page, the task will return when the message has been sent and the result
-    /// will contain the sent message and a <see cref="InteractiveStatus.Success"/> status.
+    /// will contain the message sent and a <see cref="InteractiveStatus.Success"/> status.
     /// </returns>
     /// <exception cref="ArgumentException"/>
     /// <exception cref="ArgumentNullException"/>
@@ -513,7 +513,7 @@ public class InteractiveService
     /// The task result contains an <see cref="InteractiveMessageResult"/> with the message used for pagination
     /// (which may not be valid if the message has been deleted), the elapsed time and the status.<br/>
     /// If the paginator only contains one page, the task will return when the message has been sent and the result
-    /// will contain the sent message and a <see cref="InteractiveStatus.Success"/> status.
+    /// will contain the message sent and a <see cref="InteractiveStatus.Success"/> status.
     /// </returns>
     /// <exception cref="ArgumentException"/>
     /// <exception cref="ArgumentNullException"/>

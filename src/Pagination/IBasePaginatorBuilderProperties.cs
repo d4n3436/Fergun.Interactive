@@ -38,7 +38,7 @@ public interface IBasePaginatorBuilderProperties : IInteractiveBuilderProperties
     /// <summary>
     /// Gets or sets the button factories.
     /// </summary>
-    /// <remarks>This property is only used when <see cref="InputType"/> contains <see cref="Fergun.Interactive.InputType.Buttons"/>.</remarks>
+    /// <remarks>This property is only used when <see cref="InputType"/> contains <see cref="InputType.Buttons"/>.</remarks>
     IList<Func<IButtonContext, IPaginatorButton>> ButtonFactories { get; }
 
     /// <summary>

@@ -219,7 +219,7 @@ public abstract class PaginatorBuilder<TPaginator, TBuilder>
     /// <summary>
     /// Adds an emote related to a paginator action.
     /// </summary>
-    /// <remarks>If you want to customize to your buttons,use the other overloads instead.</remarks>
+    /// <remarks>If you want to customize to your buttons, use the other overloads instead.</remarks>
     /// <param name="option">The pair of emote and action.</param>
     /// <returns>This builder.</returns>
     public virtual TBuilder AddOption(KeyValuePair<IEmote, PaginatorAction> option)
@@ -249,7 +249,7 @@ public abstract class PaginatorBuilder<TPaginator, TBuilder>
     /// <summary>
     /// Adds a paginator button with the specified text, action and style.
     /// </summary>
-    /// <remarks>The paginator buttons are only used when <see cref="InputType"/> contains <see cref="Fergun.Interactive.InputType.Buttons"/>.</remarks>
+    /// <remarks>The paginator buttons are only used when <see cref="InputType"/> contains <see cref="InputType.Buttons"/>.</remarks>
     /// <param name="text">The text (label) that will be displayed in the button.</param>
     /// <param name="action">The paginator action.</param>
     /// <param name="style">The button style. If the value is null, the library will decide the style of the button.</param>
@@ -262,7 +262,7 @@ public abstract class PaginatorBuilder<TPaginator, TBuilder>
     /// <summary>
     /// Adds a paginator button with the specified emote, action and style.
     /// </summary>
-    /// <remarks>The paginator buttons are only used when <see cref="InputType"/> contains <see cref="Fergun.Interactive.InputType.Buttons"/>.</remarks>
+    /// <remarks>The paginator buttons are only used when <see cref="InputType"/> contains <see cref="InputType.Buttons"/>.</remarks>
     /// <param name="emote">The emote.</param>
     /// <param name="action">The paginator action.</param>
     /// <param name="style">The button style. If the value is null, the library will decide the style of the button.</param>
@@ -315,7 +315,7 @@ public abstract class PaginatorBuilder<TPaginator, TBuilder>
     /// <summary>
     /// Adds a paginator button with the specified properties.
     /// </summary>
-    /// <remarks>The paginator buttons are only used when <see cref="InputType"/> contains <see cref="Fergun.Interactive.InputType.Buttons"/>.</remarks>
+    /// <remarks>The paginator buttons are only used when <see cref="InputType"/> contains <see cref="InputType.Buttons"/>.</remarks>
     /// <param name="action">The paginator action.</param>
     /// <param name="emote">The emote.</param>
     /// <param name="text">The text (label) that will be displayed in the button.</param>
@@ -333,7 +333,7 @@ public abstract class PaginatorBuilder<TPaginator, TBuilder>
     /// <summary>
     /// Adds a paginator button.
     /// </summary>
-    /// <remarks>The button style and text are only used when <see cref="InputType"/> contains <see cref="Fergun.Interactive.InputType.Buttons"/>.</remarks>
+    /// <remarks>The button style and text are only used when <see cref="InputType"/> contains <see cref="InputType.Buttons"/>.</remarks>
     /// <param name="button">The paginator button.</param>
     /// <returns>This builder.</returns>
     public virtual TBuilder AddOption(IPaginatorButton button)
@@ -346,7 +346,7 @@ public abstract class PaginatorBuilder<TPaginator, TBuilder>
     /// <summary>
     /// Adds a factory method that creates a paginator button.
     /// </summary>
-    /// <remarks>The button style and text are only used when <see cref="InputType"/> contains <see cref="Fergun.Interactive.InputType.Buttons"/>.</remarks>
+    /// <remarks>The button style and text are only used when <see cref="InputType"/> contains <see cref="InputType.Buttons"/>.</remarks>
     /// <param name="buttonFactory">The factory of a paginator button.</param>
     /// <returns>This builder.</returns>
     public virtual TBuilder AddOption(Func<IButtonContext, IPaginatorButton> buttonFactory)

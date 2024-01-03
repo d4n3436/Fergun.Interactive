@@ -45,7 +45,7 @@ public class InteractiveConfig
     /// Gets or sets a value indicating if the interactions that stop paginators should be deferred.
     /// </summary>
     /// <remarks>
-    /// These interactions get deferred depending of the <see cref="ActionOnStop"/> and some specific circumstances:<br/>
+    /// These interactions get deferred depending on the <see cref="ActionOnStop"/> and some specific circumstances:<br/>
     /// - <see cref="ActionOnStop.None"/>: Always deferred.<br/>
     /// - <see cref="ActionOnStop.ModifyMessage"/>: If there's no page to modify to.<br/>
     /// - <see cref="ActionOnStop.DeleteInput"/> and <see cref="ActionOnStop.DisableInput"/>: If the input type is neither <see cref="InputType.Buttons"/> nor <see cref="InputType.SelectMenus"/>.
@@ -56,7 +56,7 @@ public class InteractiveConfig
     /// Gets or sets a value indicating if the interactions that stop selections should be deferred.
     /// </summary>
     /// <remarks>
-    /// These interactions get deferred depending of the <see cref="ActionOnStop"/> and some specific circumstances:<br/>
+    /// These interactions get deferred depending on the <see cref="ActionOnStop"/> and some specific circumstances:<br/>
     /// - <see cref="ActionOnStop.None"/>: Always deferred.<br/>
     /// - <see cref="ActionOnStop.ModifyMessage"/>: If there's no page to modify to.<br/>
     /// - <see cref="ActionOnStop.DeleteInput"/> and <see cref="ActionOnStop.DisableInput"/>: If the input type is neither <see cref="InputType.Buttons"/> nor <see cref="InputType.SelectMenus"/>.

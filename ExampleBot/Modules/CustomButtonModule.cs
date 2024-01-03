@@ -88,5 +88,5 @@ public partial class CustomModule : ModuleBase
         }
     }
 
-    public record ButtonOption<T>(T Option, ButtonStyle Style); // An option with an style
+    public record ButtonOption<T>(T Option, ButtonStyle Style); // An option with a style
 }

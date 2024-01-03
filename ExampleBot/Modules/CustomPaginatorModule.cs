@@ -23,7 +23,7 @@ public partial class CustomModule
     private static readonly DuckDuckGoScraper _ddgScraper = new();
 
     // Sends a paginated (paged) selection
-    // A paged selection is a selection where each options contains a paginator
+    // A paged selection is a selection where each option contains a paginator
     // Here, 3 different image scrapers are used to get images, then their results are grouped in a selection.
     [Command("paginator", RunMode = RunMode.Async)]
     public async Task PagedSelection2Async(string query = "Discord")

@@ -368,7 +368,7 @@ public abstract class BaseSelection<TOption> : IInteractiveElement<TOption>
     /// <summary>
     /// Initializes a message based on this selection.
     /// </summary>
-    /// <remarks>By default this method adds the reactions to a message when <see cref="InputType"/> has <see cref="InputType.Reactions"/>.</remarks>
+    /// <remarks>By default, this method adds the reactions to a message when <see cref="InputType"/> has <see cref="InputType.Reactions"/>.</remarks>
     /// <param name="message">The message to initialize.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to cancel this request.</param>
     /// <returns>A task representing the asynchronous operation.</returns>

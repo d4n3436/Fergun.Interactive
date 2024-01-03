@@ -61,7 +61,7 @@ public class SelectionModule : ModuleBase
         await ReplyAsync(embed: builder.Build());
     }
 
-    // Sends a emote selection. An emote selection is built using an EmoteSelectionBuilder.
+    // Sends an emote selection. An emote selection is built using an EmoteSelectionBuilder.
     // This variant of SelectionBuilder just exists for convenience,
     // but makes creating selections using reactions or buttons much easier.
     [Command("emote", RunMode = RunMode.Async)]

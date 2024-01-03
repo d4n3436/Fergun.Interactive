@@ -88,7 +88,7 @@ public abstract class Paginator : IInteractiveElement<KeyValuePair<IEmote, Pagin
     /// <summary>
     /// Gets the button factories.
     /// </summary>
-    /// <remarks>This property is only used when <see cref="InputType"/> contains <see cref="Fergun.Interactive.InputType.Buttons"/>.</remarks>
+    /// <remarks>This property is only used when <see cref="InputType"/> contains <see cref="InputType.Buttons"/>.</remarks>
     public IReadOnlyList<Func<IButtonContext, IPaginatorButton>> ButtonFactories { get; }
 
     /// <inheritdoc/>
@@ -518,7 +518,7 @@ public abstract class Paginator : IInteractiveElement<KeyValuePair<IEmote, Pagin
             return new(InteractiveInputStatus.Ignored);
         }
 
-        // Get last character of custom Id, convert it to a number and cast it to PaginatorAction
+        // Get last character of custom ID, convert it to a number and cast it to PaginatorAction
         var action = (PaginatorAction)(input.Data.CustomId?[^1] - '0' ?? -1);
         if (!Enum.IsDefined(typeof(PaginatorAction), action))
         {
@@ -633,7 +633,7 @@ public abstract class Paginator : IInteractiveElement<KeyValuePair<IEmote, Pagin
     /// <summary>
     /// Initializes a message based on this paginator.
     /// </summary>
-    /// <remarks>By default this method adds the reactions to a message when <see cref="InputType"/> has <see cref="InputType.Reactions"/>.</remarks>
+    /// <remarks>By default, this method adds the reactions to a message when <see cref="InputType"/> has <see cref="InputType.Reactions"/>.</remarks>
     /// <param name="message">The message to initialize.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to cancel this request.</param>
     /// <returns>A task representing the asynchronous operation.</returns>
