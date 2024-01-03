@@ -230,7 +230,7 @@ public abstract class BaseSelection<TOption> : IInteractiveElement<TOption>
 
         if (isCanceled)
         {
-            return new(InteractiveInputStatus.Canceled, selected!);
+            return new InteractiveInputResult<TOption>(InteractiveInputStatus.Canceled, selected!);
         }
 
         if (manageMessages && Deletion.HasFlag(DeletionOptions.Valid))
@@ -238,7 +238,7 @@ public abstract class BaseSelection<TOption> : IInteractiveElement<TOption>
             await input.DeleteAsync().ConfigureAwait(false);
         }
 
-        return new(InteractiveInputStatus.Success, selected!);
+        return new InteractiveInputResult<TOption>(InteractiveInputStatus.Success, selected!);
     }
 
     /// <inheritdoc cref="IInteractiveInputHandler.HandleReactionAsync"/>
@@ -279,7 +279,7 @@ public abstract class BaseSelection<TOption> : IInteractiveElement<TOption>
 
         if (isCanceled)
         {
-            return new(InteractiveInputStatus.Canceled, selected);
+            return new InteractiveInputResult<TOption>(InteractiveInputStatus.Canceled, selected);
         }
 
         if (manageMessages && Deletion.HasFlag(DeletionOptions.Valid))
@@ -287,7 +287,7 @@ public abstract class BaseSelection<TOption> : IInteractiveElement<TOption>
             await message.RemoveReactionAsync(input.Emote, input.UserId).ConfigureAwait(false);
         }
 
-        return new(InteractiveInputStatus.Success, selected);
+        return new InteractiveInputResult<TOption>(InteractiveInputStatus.Success, selected);
     }
 
     /// <inheritdoc cref="IInteractiveInputHandler.HandleInteractionAsync"/>
@@ -344,7 +344,7 @@ public abstract class BaseSelection<TOption> : IInteractiveElement<TOption>
 
         bool isCanceled = AllowCancel && (EmoteConverter?.Invoke(CancelOption)?.ToString() ?? StringConverter?.Invoke(CancelOption)) == selectedString;
 
-        return Task.FromResult<InteractiveInputResult<TOption>>(new(isCanceled ? InteractiveInputStatus.Canceled : InteractiveInputStatus.Success, selected));
+        return Task.FromResult(new InteractiveInputResult<TOption>(isCanceled ? InteractiveInputStatus.Canceled : InteractiveInputStatus.Success, selected));
     }
 
     /// <inheritdoc/>

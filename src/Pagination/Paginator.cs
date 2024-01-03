@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Discord;
+using Discord.Net;
 using Discord.WebSocket;
 using Fergun.Interactive.Extensions;
 
@@ -270,7 +271,7 @@ public abstract class Paginator : IInteractiveElement<KeyValuePair<IEmote, Pagin
         {
             await promptMessage.DeleteAsync().ConfigureAwait(false);
         }
-        catch
+        catch (HttpException ex) when (ex.DiscordCode == DiscordErrorCode.UnknownMessage)
         {
             // We want to delete the message so we don't care if the message has been already deleted.
         }
@@ -510,12 +511,12 @@ public abstract class Paginator : IInteractiveElement<KeyValuePair<IEmote, Pagin
 
         if (!InputType.HasFlag(InputType.Buttons))
         {
-            return new(InteractiveInputStatus.Ignored);
+            return new InteractiveInputResult(InteractiveInputStatus.Ignored);
         }
 
         if (input.Message.Id != message.Id || !this.CanInteract(input.User))
         {
-            return new(InteractiveInputStatus.Ignored);
+            return new InteractiveInputResult(InteractiveInputStatus.Ignored);
         }
 
         // Get last character of custom ID, convert it to a number and cast it to PaginatorAction
@@ -588,9 +589,9 @@ public abstract class Paginator : IInteractiveElement<KeyValuePair<IEmote, Pagin
         InteractiveGuards.NotNull(input);
         InteractiveGuards.NotNull(message);
 
-        if (!ulong.TryParse(input.Data.CustomId, out var messageId) || messageId != message.Id || !this.CanInteract(input.User))
+        if (!ulong.TryParse(input.Data.CustomId, out ulong messageId) || messageId != message.Id || !this.CanInteract(input.User))
         {
-            return new(InteractiveInputStatus.Ignored);
+            return new InteractiveInputResult(InteractiveInputStatus.Ignored);
         }
 
         // Expired modal
@@ -605,11 +606,11 @@ public abstract class Paginator : IInteractiveElement<KeyValuePair<IEmote, Pagin
                 await input.DeferAsync().ConfigureAwait(false);
             }
 
-            return new(InteractiveInputStatus.Ignored);
+            return new InteractiveInputResult(InteractiveInputStatus.Ignored);
         }
 
         ModalTaskCompletionSource.TrySetResult(input);
-        return new(InteractiveInputStatus.Success);
+        return new InteractiveInputResult(InteractiveInputStatus.Success);
     }
 
     /// <inheritdoc />

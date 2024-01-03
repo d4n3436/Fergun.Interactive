@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using Discord;
@@ -282,7 +281,7 @@ public class InteractiveService
         {
             await message.DeleteAsync().ConfigureAwait(false);
         }
-        catch (HttpException e) when (e.HttpCode == HttpStatusCode.NotFound)
+        catch (HttpException ex) when (ex.DiscordCode == DiscordErrorCode.UnknownMessage)
         {
             // We want to delete the message so we don't care if the message has been already deleted.
         }
@@ -950,7 +949,7 @@ public class InteractiveService
                     await stopInteraction.DeferAsync().ConfigureAwait(false);
                 }
             }
-            catch (HttpException e) when (e.HttpCode == HttpStatusCode.NotFound)
+            catch (HttpException ex) when (ex.DiscordCode == DiscordErrorCode.UnknownMessage)
             {
                 // We want to delete the message so we don't care if the message has been already deleted.
             }
@@ -1154,7 +1153,7 @@ public class InteractiveService
     }
 
     private void LogError(string source, string message, Exception? exception = null)
-        => Log(new LogMessage(LogSeverity.Error, source, message, exception));
+        => Log?.Invoke(new LogMessage(LogSeverity.Error, source, message, exception));
 
     private Task LogMessage(LogMessage message) =>
         _config.LogLevel >= message.Severity

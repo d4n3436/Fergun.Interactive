@@ -25,13 +25,13 @@ public class PaginatorModule : ModuleBase
     [Command("static", RunMode = RunMode.Async)]
     public async Task PaginatorAsync()
     {
-        var pages = new[]
-        {
+        IPageBuilder[] pages =
+        [
             new PageBuilder().WithDescription("Lorem ipsum dolor sit amet, consectetur adipiscing elit."),
             new PageBuilder().WithDescription("Praesent eu est vitae dui sollicitudin volutpat."),
             new PageBuilder().WithDescription("Etiam in ex sed turpis imperdiet viverra id eget nunc."),
             new PageBuilder().WithDescription("Donec eget feugiat nisi. Praesent faucibus malesuada nulla, a vulputate velit eleifend ut.")
-        };
+        ];
 
         var paginator = new StaticPaginatorBuilder()
             .AddUser(Context.User) // Only allow the user that executed the command to interact with the selection.

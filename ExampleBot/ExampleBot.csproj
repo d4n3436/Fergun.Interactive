@@ -2,16 +2,16 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFramework>net8.0</TargetFramework>
     <LangVersion>latest</LangVersion>
   </PropertyGroup>
 
 	<ItemGroup>
-    <PackageReference Include="Discord.Net.Commands" Version="3.11.0" />
-    <PackageReference Include="Discord.Net.WebSocket" Version="3.11.0" />
+    <PackageReference Include="Discord.Net.Commands" Version="3.13.0" />
+    <PackageReference Include="Discord.Net.WebSocket" Version="3.13.0" />
     <PackageReference Include="GScraper" Version="1.1.3" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="7.0.0" />
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="7.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="8.0.0" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="8.0.0" />
     <ProjectReference Include="..\src\Fergun.Interactive.csproj" />
   </ItemGroup>
 

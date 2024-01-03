@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <Version>1.7.3</Version>
-    <LangVersion>11</LangVersion>
+    <LangVersion>12</LangVersion>
     <Nullable>enable</Nullable>
     <Authors>d4n3436</Authors>
     <NeutralLanguage>en</NeutralLanguage>
@@ -23,7 +23,7 @@ This is a fork of Discord.InteractivityAddon that adds several features like mor
 
   <ItemGroup>
     <PackageReference Include="Discord.Net.WebSocket" Version="3.7.2" />
-    <PackageReference Include="PolySharp" Version="1.13.2">
+    <PackageReference Include="PolySharp" Version="1.14.1">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>

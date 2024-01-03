@@ -16,46 +16,56 @@ public partial class CustomModule
     [Command("extension", RunMode = RunMode.Async)]
     public async Task CustomExtensionAsync()
     {
-        var texts = new[]
-        {
-            @"Contented get distrusts certainty nay are frankness concealed ham.
-On unaffected resolution on considered of.
-No thought me husband or colonel forming effects.
-End sitting shewing who saw besides son musical adapted.
-Contrasted interested eat alteration pianoforte sympathize was.
-He families believed if no elegance interest surprise an.",
+        string[] texts =
+        [
+            """
+            Contented get distrusts certainty nay are frankness concealed ham.
+            On unaffected resolution on considered of.
+            No thought me husband or colonel forming effects.
+            End sitting shewing who saw besides son musical adapted.
+            Contrasted interested eat alteration pianoforte sympathize was.
+            He families believed if no elegance interest surprise an.
+            """,
 
-            @"Sentiments two occasional affronting solicitude traveling and one contrasted.
-Fortune day out married parties.
-Happiness remainder joy but earnestly for off.
-Took sold add play may none him few.
-If as increasing contrasted entreaties be.
-Now summer who day looked our behind moment coming.
-Pain son rose more park way that.",
+            """
+            Sentiments two occasional affronting solicitude traveling and one contrasted.
+            Fortune day out married parties.
+            Happiness remainder joy but earnestly for off.
+            Took sold add play may none him few.
+            If as increasing contrasted entreaties be.
+            Now summer who day looked our behind moment coming.
+            Pain son rose more park way that.
+            """,
 
-            @"As it so contrasted oh estimating instrument.
-Size like body some one had.
-Are conduct viewing boy minutes warrant expense.
-Tolerably behaviour may admitting daughters offending her ask own.
-Praise effect wishes change way and any wanted.
-Lively use looked latter regard had.
-Do he it part more last in.
-Merits ye if mr narrow points.",
+            """
+            As it so contrasted oh estimating instrument.
+            Size like body some one had.
+            Are conduct viewing boy minutes warrant expense.
+            Tolerably behaviour may admitting daughters offending her ask own.
+            Praise effect wishes change way and any wanted.
+            Lively use looked latter regard had.
+            Do he it part more last in.
+            Merits ye if mr narrow points.
+            """,
 
-            @"Saw yet kindness too replying whatever marianne.
-Old sentiments resolution admiration unaffected its mrs literature.
-Behaviour new set existence dashwoods.
-It satisfied to mr commanded consisted disposing engrossed.
-Tall snug do of till on easy.
-Form not calm new fail.",
+            """
+            Saw yet kindness too replying whatever marianne.
+            Old sentiments resolution admiration unaffected its mrs literature.
+            Behaviour new set existence dashwoods.
+            It satisfied to mr commanded consisted disposing engrossed.
+            Tall snug do of till on easy.
+            Form not calm new fail.
+            """,
 
-            @"Detract yet delight written farther his general.
-If in so bred at dare rose lose good.
-Feel and make two real miss use easy.
-Celebrated delightful an especially increasing instrument am.
-Indulgence contrasted sufficient to unpleasant in in insensible favorable.
-Latter remark hunted enough say man."
-            };
+            """
+            Detract yet delight written farther his general.
+            If in so bred at dare rose lose good.
+            Feel and make two real miss use easy.
+            Celebrated delightful an especially increasing instrument am.
+            Indulgence contrasted sufficient to unpleasant in in insensible favorable.
+            Latter remark hunted enough say man.
+            """
+        ];
 
         var pages = texts
             .Select(x => new PageBuilder()

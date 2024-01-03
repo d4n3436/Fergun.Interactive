@@ -28,7 +28,7 @@ public abstract class BaseLazyPaginator : Paginator
 
         if (CacheLoadedPages)
         {
-            _cachedPages = new Dictionary<int, IPage>();
+            _cachedPages = [];
         }
 
         async Task<IPage> AddPaginatorFooterAsync(int page)
@@ -63,7 +63,7 @@ public abstract class BaseLazyPaginator : Paginator
 
         page = await PageFactory(pageIndex).ConfigureAwait(false);
 
-        if (_cachedPages?.ContainsKey(pageIndex) == false)
+        if (CacheLoadedPages && !_cachedPages.ContainsKey(pageIndex))
         {
             _cachedPages.Add(pageIndex, page);
         }

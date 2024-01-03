@@ -52,13 +52,8 @@ public partial class CustomModule : ModuleBase
     }
 
     // Custom selection where you can override the default button style/color
-    public class ButtonSelection<T> : BaseSelection<ButtonOption<T>>
+    public class ButtonSelection<T>(ButtonSelectionBuilder<T> builder) : BaseSelection<ButtonOption<T>>(builder)
     {
-        public ButtonSelection(ButtonSelectionBuilder<T> builder)
-            : base(builder)
-        {
-        }
-
         // This method needs to be overriden to build our own component the way we want.
         public override ComponentBuilder GetOrAddComponents(bool disableAll, ComponentBuilder builder = null)
         {

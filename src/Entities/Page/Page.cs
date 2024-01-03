@@ -47,7 +47,7 @@ public class Page : IPage
         }
 
         Embed = isEmpty ? null : builder!.Build();
-        _lazyEmbeds = new Lazy<Embed[]>(() => Embed is null ? Array.Empty<Embed>() : new[] { Embed });
+        _lazyEmbeds = new Lazy<Embed[]>(() => Embed is null ? [] : [Embed]);
     }
 
     /// <inheritdoc/>

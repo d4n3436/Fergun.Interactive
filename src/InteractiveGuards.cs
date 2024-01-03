@@ -63,7 +63,7 @@ internal static class InteractiveGuards
 
     public static void EmbedCountInRange(ICollection<EmbedBuilder> builders, bool ensureMaxCapacity = false, [CallerArgumentExpression(nameof(builders))] string? parameterName = null)
     {
-        if (builders.Count > 10 || ensureMaxCapacity && builders.Count + 1 > 10)
+        if (builders.Count > 10 || (ensureMaxCapacity && builders.Count + 1 > 10))
         {
             throw new ArgumentException("A page cannot have more than 10 embeds.", parameterName);
         }

@@ -45,7 +45,7 @@ public partial class CustomModule
         // Here we will use a "menu" message, that is, it can be reused multiple times until a timeout is received.
         // In this case, we will reuse the message with the multi selection until we get a result (multi selection option) with a row value of 1.
         // This can only happen if the result is successful and an option in the second select menu (the one that contains the commands) in selected.
-        while (result is null || result.IsSuccess && result.Value?.Row != 1)
+        while (result is null || (result.IsSuccess && result.Value?.Row != 1))
         {
             // A multi selection uses the Row property of MultiSelectionOption to determine the position (the select menu) the options will appear.
             // The modules will appear in the first select menu.
@@ -118,13 +118,8 @@ public class MultiSelectionBuilder<T> : BaseSelectionBuilder<MultiSelection<T>, 
     public override MultiSelection<T> Build() => new(this);
 }
 
-public class MultiSelection<T> : BaseSelection<MultiSelectionOption<T>>
+public class MultiSelection<T>(MultiSelectionBuilder<T> builder) : BaseSelection<MultiSelectionOption<T>>(builder)
 {
-    public MultiSelection(MultiSelectionBuilder<T> builder)
-        : base(builder)
-    {
-    }
-
     public override ComponentBuilder GetOrAddComponents(bool disableAll, ComponentBuilder builder = null)
     {
         builder ??= new ComponentBuilder();
@@ -132,11 +127,12 @@ public class MultiSelection<T> : BaseSelection<MultiSelectionOption<T>>
 
         foreach (var option in Options)
         {
-            if (!selectMenus.ContainsKey(option.Row))
+            if (!selectMenus.TryGetValue(option.Row, out var value))
             {
-                selectMenus[option.Row] = new SelectMenuBuilder()
+                value = new SelectMenuBuilder()
                     .WithCustomId($"selectmenu{option.Row}")
                     .WithDisabled(disableAll);
+                selectMenus[option.Row] = value;
             }
 
             var emote = EmoteConverter?.Invoke(option);
@@ -154,7 +150,7 @@ public class MultiSelection<T> : BaseSelection<MultiSelectionOption<T>>
                 .WithValue(optionValue)
                 .WithDefault(option.IsDefault);
 
-            selectMenus[option.Row].AddOption(optionBuilder);
+            value.AddOption(optionBuilder);
         }
 
         foreach ((int row, var selectMenu) in selectMenus)
@@ -166,20 +162,13 @@ public class MultiSelection<T> : BaseSelection<MultiSelectionOption<T>>
     }
 }
 
-public class MultiSelectionOption<T>
+public class MultiSelectionOption<T>(T option, int row, bool isDefault = false)
 {
-    public MultiSelectionOption(T option, int row, bool isDefault = false)
-    {
-        Option = option;
-        Row = row;
-        IsDefault = isDefault;
-    }
+    public T Option { get; } = option;
 
-    public T Option { get; }
+    public int Row { get; } = row;
 
-    public int Row { get; }
-
-    public bool IsDefault { get; set; }
+    public bool IsDefault { get; set; } = isDefault;
 
     public override string ToString() => Option.ToString();
 

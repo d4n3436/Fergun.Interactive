@@ -27,7 +27,7 @@ public class SelectionModule : ModuleBase
     [Command("simple", RunMode = RunMode.Async)]
     public async Task SelectAsync()
     {
-        var options = new[] { "C", "C++", "C#", "Java", "Python", "JavaScript", "PHP" };
+        string[] options = ["C", "C++", "C#", "Java", "Python", "JavaScript", "PHP"];
 
         var pageBuilder = new PageBuilder() // A PageBuilder is just an EmbedBuilder with a Text property (content).
             .WithTitle("Selection Example")
@@ -195,21 +195,21 @@ public class SelectionModule : ModuleBase
         // Create CancellationTokenSource that will be canceled after 10 minutes.
         var cts = new CancellationTokenSource(TimeSpan.FromMinutes(10));
 
-        var options = new[]
-        {
+        string[] options =
+        [
             "Cache messages",
             "Cache users",
             "Allow using mentions as prefix",
             "Ignore command errors"
-        };
+        ];
 
-        var values = new[]
-        {
+        bool[] values =
+        [
             true,
             false,
             true,
             false
-        };
+        ];
 
         // Dynamically create the number emotes
         var emotes = Enumerable.Range(1, options.Length)
