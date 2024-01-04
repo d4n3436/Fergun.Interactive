@@ -53,6 +53,10 @@ public abstract class PaginatorBuilder<TPaginator, TBuilder>
         = new List<Func<IButtonContext, IPaginatorButton>>();
 
     /// <inheritdoc/>
+    public virtual IList<Func<ISelectMenuContext, IPaginatorSelectMenu>> SelectMenuFactories { get; protected set; }
+        = new List<Func<ISelectMenuContext, IPaginatorSelectMenu>>();
+
+    /// <inheritdoc/>
     public virtual IPageBuilder? CanceledPage { get; set; }
 
     /// <inheritdoc/>
@@ -278,7 +282,7 @@ public abstract class PaginatorBuilder<TPaginator, TBuilder>
     /// <param name="url">The url of the button.</param>
     /// <param name="emote">The emote.</param>
     /// <param name="text">The text (label) that will be displayed in the button.</param>
-    /// <param name="isDisabled">A value indicating whether to disable the button.</param>
+    /// <param name="isDisabled">A value indicating whether to disable the button. If the value is null, the library will decide its status.</param>
     /// <returns>This builder.</returns>
     public virtual TBuilder AddOption(string url, IEmote? emote, string? text, bool? isDisabled = null)
     {
@@ -299,7 +303,7 @@ public abstract class PaginatorBuilder<TPaginator, TBuilder>
     /// <param name="emote">The emote.</param>
     /// <param name="text">The text (label) that will be displayed in the button.</param>
     /// <param name="style">The button style to use in the button. If the value is null, the library will decide the style of the button.</param>
-    /// <param name="isDisabled">A value indicating whether to disable the button.</param>
+    /// <param name="isDisabled">A value indicating whether to disable the button. If the value is null, the library will decide its status.</param>
     /// <returns>This builder.</returns>
     public virtual TBuilder AddOption(string customId, IEmote? emote, string? text, ButtonStyle? style, bool? isDisabled = null)
     {
@@ -320,7 +324,7 @@ public abstract class PaginatorBuilder<TPaginator, TBuilder>
     /// <param name="emote">The emote.</param>
     /// <param name="text">The text (label) that will be displayed in the button.</param>
     /// <param name="style">The button style to use in the button. If the value is null, the library will decide the style of the button.</param>
-    /// <param name="isDisabled">A value indicating whether to disable the button.</param>
+    /// <param name="isDisabled">A value indicating whether to disable the button. If the value is null, the library will decide its status.</param>
     /// <returns>This builder.</returns>
     public virtual TBuilder AddOption(PaginatorAction action, IEmote? emote, string? text, ButtonStyle? style = null, bool? isDisabled = null)
     {
@@ -353,6 +357,104 @@ public abstract class PaginatorBuilder<TPaginator, TBuilder>
     {
         InteractiveGuards.NotNull(buttonFactory);
         ButtonFactories.Add(buttonFactory);
+        return (TBuilder)this;
+    }
+
+    /// <summary>
+    /// Sets the paginator select menus.
+    /// </summary>
+    /// <remarks>
+    /// When using this overload, the select menus will have their enabled status managed by the library.<br/>
+    /// Paginator select menus are detached from the paginator and their interactions must be manually handled.
+    /// </remarks>
+    /// <param name="builders">The select menu builders.</param>
+    /// <returns>This builder.</returns>
+    public virtual TBuilder WithSelectMenus(IEnumerable<SelectMenuBuilder> builders)
+    {
+        InteractiveGuards.NotNull(builders);
+        return WithSelectMenus(builders.Select(x => new PaginatorSelectMenu(x)));
+    }
+
+    /// <summary>
+    /// Sets the paginator select menus.
+    /// </summary>
+    /// <remarks>Paginator select menus are detached from the paginator and their interactions must be manually handled.</remarks>
+    /// <param name="selectMenus">The paginator select menus.</param>
+    /// <returns>This builder.</returns>
+    public virtual TBuilder WithSelectMenus(IEnumerable<IPaginatorSelectMenu> selectMenus)
+    {
+        InteractiveGuards.NotNull(selectMenus);
+        return WithSelectMenus(selectMenus.Select(x => new Func<ISelectMenuContext, IPaginatorSelectMenu>(_ => x)));
+    }
+
+    /// <summary>
+    /// Sets the paginator select menus.
+    /// </summary>
+    /// <remarks>Paginator select menus are detached from the paginator and their interactions must be manually handled.</remarks>
+    /// <param name="selectMenuFactories">The paginator select menu factories.</param>
+    /// <returns>This builder.</returns>
+    public virtual TBuilder WithSelectMenus(IEnumerable<Func<ISelectMenuContext, IPaginatorSelectMenu>> selectMenuFactories)
+    {
+        InteractiveGuards.NotNull(selectMenuFactories);
+        SelectMenuFactories = selectMenuFactories.ToList();
+        return (TBuilder)this;
+    }
+
+    /// <summary>
+    /// Adds a paginator select menu with the specified properties.
+    /// </summary>
+    /// <remarks>Paginator select menus are detached from the paginator and their interactions must be manually handled.</remarks>
+    /// <param name="customId">The custom ID.</param>
+    /// <param name="options">The options.</param>
+    /// <param name="placeholder">The placeholder of this select menu.</param>
+    /// <param name="maxValues">The max values of this select menu.</param>
+    /// <param name="minValues">The min values of this select menu.</param>
+    /// <param name="isDisabled">A value indicating whether to disable the select menu. If the value is null, the library will decide its status.</param>
+    /// <param name="type">The <see cref="ComponentType"/> of this select menu.</param>
+    /// <param name="channelTypes">The types of channels this menu can select (only valid on select menus of type <see cref="ComponentType.ChannelSelect"/>).</param>
+    /// <param name="defaultValues">The default values of the select menu.</param>
+    /// <returns>This builder.</returns>
+    public virtual TBuilder AddSelectMenu(string customId, List<SelectMenuOptionBuilder>? options = null, string? placeholder = null, int maxValues = 1, int minValues = 1,
+        bool? isDisabled = null, ComponentType type = ComponentType.SelectMenu, List<ChannelType>? channelTypes = null, List<SelectMenuDefaultValue>? defaultValues = null)
+    {
+        return AddSelectMenu(new SelectMenuBuilder(customId, options, placeholder, maxValues, minValues, isDisabled ?? false, type, channelTypes, defaultValues), isDisabled);
+    }
+
+    /// <summary>
+    /// Adds a paginator select menu from a select menu builder.
+    /// </summary>
+    /// <remarks>Paginator select menus are detached from the paginator and their interactions must be manually handled.</remarks>
+    /// <param name="builder">The select menu builder.</param>
+    /// <param name="isDisabled">A value indicating whether to disable the select menu. If the value is null, the library will decide its status. This value overrides the one in <paramref name="builder"/>.</param>
+    /// <returns>This builder.</returns>
+    public virtual TBuilder AddSelectMenu(SelectMenuBuilder builder, bool? isDisabled = null)
+    {
+        InteractiveGuards.NotNull(builder);
+        return AddSelectMenu(new PaginatorSelectMenu(builder, isDisabled));
+    }
+
+    /// <summary>
+    /// Adds a paginator select menu.
+    /// </summary>
+    /// <remarks>Paginator select menus are detached from the paginator and their interactions must be manually handled.</remarks>
+    /// <param name="selectMenu">The select menu.</param>
+    /// <returns>This builder.</returns>
+    public virtual TBuilder AddSelectMenu(IPaginatorSelectMenu selectMenu)
+    {
+        InteractiveGuards.NotNull(selectMenu);
+        return AddSelectMenu(_ => selectMenu);
+    }
+
+    /// <summary>
+    /// Adds a factory method that creates a paginator select menu.
+    /// </summary>
+    /// <remarks>Paginator select menus are detached from the paginator and their interactions must be manually handled.</remarks>
+    /// <param name="selectMenuFactory">The select menu factory.</param>
+    /// <returns>This builder.</returns>
+    public virtual TBuilder AddSelectMenu(Func<ISelectMenuContext, IPaginatorSelectMenu> selectMenuFactory)
+    {
+        InteractiveGuards.NotNull(selectMenuFactory);
+        SelectMenuFactories.Add(selectMenuFactory);
         return (TBuilder)this;
     }
 

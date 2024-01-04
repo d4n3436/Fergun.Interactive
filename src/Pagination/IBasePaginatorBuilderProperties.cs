@@ -36,10 +36,16 @@ public interface IBasePaginatorBuilderProperties : IInteractiveBuilderProperties
     }
 
     /// <summary>
-    /// Gets or sets the button factories.
+    /// Gets the button factories.
     /// </summary>
     /// <remarks>This property is only used when <see cref="InputType"/> contains <see cref="InputType.Buttons"/>.</remarks>
     IList<Func<IButtonContext, IPaginatorButton>> ButtonFactories { get; }
+
+    /// <summary>
+    /// Gets the select menu factories.
+    /// </summary>
+    /// <remarks>Paginator select menus are detached from the paginator and their interactions must be manually handled.</remarks>
+    IList<Func<ISelectMenuContext, IPaginatorSelectMenu>> SelectMenuFactories { get; }
 
     /// <summary>
     /// Gets or sets the maximum time to wait for a "jump to page" input.

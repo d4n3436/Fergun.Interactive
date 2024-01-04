@@ -32,6 +32,7 @@ public abstract class Paginator : IInteractiveElement<KeyValuePair<IEmote, Pagin
         InteractiveGuards.NotNull(properties.Users);
         InteractiveGuards.NotNull(properties.Options);
         InteractiveGuards.NotNull(properties.ButtonFactories);
+        InteractiveGuards.NotNull(properties.SelectMenuFactories);
         InteractiveGuards.NotEmpty(properties.ButtonFactories);
         InteractiveGuards.SupportedInputType(properties.InputType, false);
 
@@ -43,6 +44,7 @@ public abstract class Paginator : IInteractiveElement<KeyValuePair<IEmote, Pagin
         Users = properties.Users.ToArray();
         Emotes = properties.Options.AsReadOnly();
         ButtonFactories = new ReadOnlyCollection<Func<IButtonContext, IPaginatorButton>>(properties.ButtonFactories);
+        SelectMenuFactories = new ReadOnlyCollection<Func<ISelectMenuContext, IPaginatorSelectMenu>>(properties.SelectMenuFactories);
         CanceledPage = properties.CanceledPage?.Build();
         TimeoutPage = properties.TimeoutPage?.Build();
         Deletion = properties.Deletion;
@@ -91,6 +93,12 @@ public abstract class Paginator : IInteractiveElement<KeyValuePair<IEmote, Pagin
     /// </summary>
     /// <remarks>This property is only used when <see cref="InputType"/> contains <see cref="InputType.Buttons"/>.</remarks>
     public IReadOnlyList<Func<IButtonContext, IPaginatorButton>> ButtonFactories { get; }
+
+    /// <summary>
+    /// Gets the select menu factories.
+    /// </summary>
+    /// <remarks>Paginator select menus are detached from the paginator and their interactions must be manually handled.</remarks>
+    public IReadOnlyList<Func<ISelectMenuContext, IPaginatorSelectMenu>> SelectMenuFactories { get; }
 
     /// <inheritdoc/>
     public IPage? CanceledPage { get; }
@@ -409,6 +417,21 @@ public abstract class Paginator : IInteractiveElement<KeyValuePair<IEmote, Pagin
 
             builder.WithButton(button);
         }
+
+        for (int i = 0; i < SelectMenuFactories.Count; i++)
+        {
+            var context = new SelectMenuContext(i, CurrentPageIndex, MaxPageIndex, disableAll);
+            var properties = SelectMenuFactories[i]?.Invoke(context);
+
+            if (properties is null || properties.IsHidden)
+                continue;
+
+            var selectMenu = new SelectMenuBuilder(properties.CustomId, properties.Options, properties.Placeholder, properties.MinValues,
+                properties.MaxValues, properties.IsDisabled ?? context.ShouldDisable(), properties.Type, properties.ChannelTypes, properties.DefaultValues);
+
+            builder.WithSelectMenu(selectMenu);
+        }
+
 
         return builder;
     }

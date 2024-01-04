@@ -8,7 +8,7 @@ public readonly struct ButtonContext : IButtonContext
     /// <summary>
     /// Initializes a new instance of the <see cref="ButtonContext"/> structure.
     /// </summary>
-    /// <param name="buttonIndex">The index of the button within the components.</param>
+    /// <param name="buttonIndex">The index of the button in relation to other buttons.</param>
     /// <param name="currentPageIndex">The index of the page that will be displayed.</param>
     /// <param name="maxPageIndex">The maximum page index.</param>
     /// <param name="disableAll">Whether to disable all the buttons.</param>
