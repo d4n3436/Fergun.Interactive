@@ -494,33 +494,11 @@ public abstract class Paginator : IInteractiveElement<KeyValuePair<IEmote, Pagin
             return InteractiveInputStatus.Canceled;
         }
 
-        if (action == PaginatorAction.Jump && await JumpToPageAsync(input).ConfigureAwait(false))
+        int previousPageIndex = CurrentPageIndex;
+
+        if ((action == PaginatorAction.Jump && await JumpToPageAsync(input).ConfigureAwait(false)) || await ApplyActionAsync(action).ConfigureAwait(false))
         {
-            var currentPage = await GetOrLoadCurrentPageAsync().ConfigureAwait(false);
-            var attachments = currentPage.AttachmentsFactory is null ? null : await currentPage.AttachmentsFactory().ConfigureAwait(false);
-
-            await message.ModifyAsync(x =>
-            {
-                x.Embeds = currentPage.GetEmbedArray();
-                x.Content = currentPage.Text;
-                x.AllowedMentions = currentPage.AllowedMentions;
-                x.Attachments = attachments is null ? new Optional<IEnumerable<FileAttachment>>() : new Optional<IEnumerable<FileAttachment>>(attachments);
-            }).ConfigureAwait(false);
-        }
-
-        bool refreshPage = await ApplyActionAsync(action).ConfigureAwait(false);
-        if (refreshPage)
-        {
-            var currentPage = await GetOrLoadCurrentPageAsync().ConfigureAwait(false);
-            var attachments = currentPage.AttachmentsFactory is null ? null : await currentPage.AttachmentsFactory().ConfigureAwait(false);
-
-            await message.ModifyAsync(x =>
-            {
-                x.Embeds = currentPage.GetEmbedArray();
-                x.Content = currentPage.Text;
-                x.AllowedMentions = currentPage.AllowedMentions;
-                x.Attachments = attachments is null ? new Optional<IEnumerable<FileAttachment>>() : new Optional<IEnumerable<FileAttachment>>(attachments);
-            }).ConfigureAwait(false);
+            await TryUpdateMessageAsync(message.ModifyAsync, previousPageIndex, false).ConfigureAwait(false);
         }
 
         return InteractiveInputStatus.Success;
@@ -565,38 +543,16 @@ public abstract class Paginator : IInteractiveElement<KeyValuePair<IEmote, Pagin
             return InteractiveInputStatus.Canceled;
         }
 
+        int previousPageIndex = CurrentPageIndex;
+
+        Func<Action<MessageProperties>, RequestOptions?, Task> updateMethod;
         if (action == PaginatorAction.Jump && await JumpToPageAsync(input).ConfigureAwait(false))
-        {
-            var currentPage = await GetOrLoadCurrentPageAsync().ConfigureAwait(false);
-            var attachments = currentPage.AttachmentsFactory is null ? null : await currentPage.AttachmentsFactory().ConfigureAwait(false);
-            var buttons = GetOrAddComponents(false).Build();
+            updateMethod = input.ModifyOriginalResponseAsync;
+        else if (await ApplyActionAsync(action).ConfigureAwait(false))
+            updateMethod = input.UpdateAsync;
+        else return InteractiveInputStatus.Success;
 
-            await input.ModifyOriginalResponseAsync(x =>
-            {
-                x.Content = currentPage.Text ?? ""; // workaround for d.net bug
-                x.Embeds = currentPage.GetEmbedArray();
-                x.Components = buttons;
-                x.AllowedMentions = currentPage.AllowedMentions;
-                x.Attachments = attachments is null ? new Optional<IEnumerable<FileAttachment>>() : new Optional<IEnumerable<FileAttachment>>(attachments);
-            }).ConfigureAwait(false);
-        }
-
-        bool refreshPage = await ApplyActionAsync(action).ConfigureAwait(false);
-        if (refreshPage)
-        {
-            var currentPage = await GetOrLoadCurrentPageAsync().ConfigureAwait(false);
-            var attachments = currentPage.AttachmentsFactory is null ? null : await currentPage.AttachmentsFactory().ConfigureAwait(false);
-            var buttons = GetOrAddComponents(false).Build();
-
-            await input.UpdateAsync(x =>
-            {
-                x.Content = currentPage.Text ?? ""; // workaround for d.net bug
-                x.Embeds = currentPage.GetEmbedArray();
-                x.Components = buttons;
-                x.AllowedMentions = currentPage.AllowedMentions;
-                x.Attachments = attachments is null ? new Optional<IEnumerable<FileAttachment>>() : new Optional<IEnumerable<FileAttachment>>(attachments);
-            }).ConfigureAwait(false);
-        }
+        await TryUpdateMessageAsync(updateMethod, previousPageIndex).ConfigureAwait(false);
 
         return InteractiveInputStatus.Success;
     }
@@ -673,6 +629,31 @@ public abstract class Paginator : IInteractiveElement<KeyValuePair<IEmote, Pagin
             }
 
             await message.AddReactionAsync(emote).ConfigureAwait(false);
+        }
+    }
+
+    // Attempts to update the message and reverts the page index to the previous one if an exception occurs
+    private async Task TryUpdateMessageAsync(Func<Action<MessageProperties>, RequestOptions?, Task> updateMethod, int previousPageIndex, bool includeComponents = true)
+    {
+        var currentPage = await GetOrLoadCurrentPageAsync().ConfigureAwait(false);
+        var attachments = currentPage.AttachmentsFactory is null ? null : await currentPage.AttachmentsFactory().ConfigureAwait(false);
+        var components = GetOrAddComponents(false).Build();
+
+        try
+        {
+            await updateMethod(x =>
+            {
+                x.Content = currentPage.Text ?? ""; // workaround for d.net bug
+                x.Embeds = currentPage.GetEmbedArray();
+                x.Components = includeComponents ? components : new Optional<MessageComponent>();
+                x.AllowedMentions = currentPage.AllowedMentions;
+                x.Attachments = attachments is null ? new Optional<IEnumerable<FileAttachment>>() : new Optional<IEnumerable<FileAttachment>>(attachments);
+            }, null).ConfigureAwait(false);
+        }
+        catch
+        {
+            CurrentPageIndex = previousPageIndex;
+            throw; // InteractiveService will handle and log the exception
         }
     }
 }
