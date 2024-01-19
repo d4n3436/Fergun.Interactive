@@ -223,7 +223,7 @@ public abstract class PaginatorBuilder<TPaginator, TBuilder>
     /// <summary>
     /// Adds an emote related to a paginator action.
     /// </summary>
-    /// <remarks>If you want to customize to your buttons, use the other overloads instead.</remarks>
+    /// <remarks>If you want to customize your buttons, use the other overloads instead.</remarks>
     /// <param name="option">The pair of emote and action.</param>
     /// <returns>This builder.</returns>
     public virtual TBuilder AddOption(KeyValuePair<IEmote, PaginatorAction> option)
@@ -232,7 +232,7 @@ public abstract class PaginatorBuilder<TPaginator, TBuilder>
     /// <summary>
     /// Adds an emote related to a paginator action.
     /// </summary>
-    /// <remarks>If you want to customize to your buttons, use the other overloads instead.</remarks>
+    /// <remarks>If you want to customize your buttons, use the other overloads instead.</remarks>
     /// <param name="emote">The emote.</param>
     /// <param name="action">The paginator action.</param>
     /// <returns>This builder.</returns>

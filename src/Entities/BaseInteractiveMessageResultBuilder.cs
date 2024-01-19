@@ -4,8 +4,8 @@ using Discord.WebSocket;
 
 namespace Fergun.Interactive;
 
-internal abstract class BaseInteractiveMessageResultBuilder<TBuilder, TResult>
-    where TBuilder : BaseInteractiveMessageResultBuilder<TBuilder, TResult>
+internal abstract class BaseInteractiveMessageResultBuilder<TSelf, TResult>
+    where TSelf : BaseInteractiveMessageResultBuilder<TSelf, TResult>
     where TResult : IInteractiveMessageResult
 {
     public TimeSpan Elapsed { get; set; }
@@ -24,58 +24,58 @@ internal abstract class BaseInteractiveMessageResultBuilder<TBuilder, TResult>
 
     public abstract TResult Build();
 
-    public TBuilder WithElapsed(TimeSpan elapsed)
+    public TSelf WithElapsed(TimeSpan elapsed)
     {
         Elapsed = elapsed;
-        return (TBuilder)this;
+        return (TSelf)this;
     }
 
-    public TBuilder WithStatus(InteractiveStatus status)
+    public TSelf WithStatus(InteractiveStatus status)
     {
         Status = status;
-        return (TBuilder)this;
+        return (TSelf)this;
     }
 
-    public TBuilder WithMessage(IUserMessage message)
+    public TSelf WithMessage(IUserMessage message)
     {
         Message = message;
-        return (TBuilder)this;
+        return (TSelf)this;
     }
 
-    public TBuilder WithUser(IUser? user)
+    public TSelf WithUser(IUser? user)
     {
         User = user;
-        return (TBuilder)this;
+        return (TSelf)this;
     }
 
-    public TBuilder WithStopMessage(IMessage? stopMessage)
+    public TSelf WithStopMessage(IMessage? stopMessage)
     {
         StopMessage = stopMessage;
-        return (TBuilder)this;
+        return (TSelf)this;
     }
 
-    public TBuilder WithStopReaction(SocketReaction? stopReaction)
+    public TSelf WithStopReaction(SocketReaction? stopReaction)
     {
         StopReaction = stopReaction;
-        return (TBuilder)this;
+        return (TSelf)this;
     }
 
-    public TBuilder WithStopInteraction(IComponentInteraction? stopInteraction)
+    public TSelf WithStopInteraction(IComponentInteraction? stopInteraction)
     {
         StopInteraction = stopInteraction;
-        return (TBuilder)this;
+        return (TSelf)this;
     }
 }
 
-internal abstract class BaseInteractiveMessageResultBuilder<TValue, TBuilder, TResult> : BaseInteractiveMessageResultBuilder<TBuilder, TResult>
-    where TBuilder : BaseInteractiveMessageResultBuilder<TValue, TBuilder, TResult>
+internal abstract class BaseInteractiveMessageResultBuilder<TValue, TSelf, TResult> : BaseInteractiveMessageResultBuilder<TSelf, TResult>
+    where TSelf : BaseInteractiveMessageResultBuilder<TValue, TSelf, TResult>
     where TResult : IInteractiveMessageResult
 {
     public TValue? Value { get; set; }
 
-    public TBuilder WithValue(TValue? value)
+    public TSelf WithValue(TValue? value)
     {
         Value = value;
-        return (TBuilder)this;
+        return (TSelf)this;
     }
 }

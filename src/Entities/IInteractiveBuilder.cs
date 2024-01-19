@@ -12,9 +12,7 @@ namespace Fergun.Interactive;
 public interface IInteractiveBuilder<out TElement, TOption, out TBuilder>
     : IInteractiveBuilderProperties<TOption>, IInteractiveBuilderMethods<TElement, TOption, TBuilder>
     where TElement : IInteractiveElement<TOption>
-    where TBuilder : IInteractiveBuilder<TElement, TOption, TBuilder>
-{
-}
+    where TBuilder : IInteractiveBuilder<TElement, TOption, TBuilder>;
 
 /// <summary>
 /// Contains the properties of an <see cref="IInteractiveBuilder{TElement, TOption, TBuilder}"/>.

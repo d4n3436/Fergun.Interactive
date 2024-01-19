@@ -14,6 +14,4 @@ public interface IPageBuilder<out TPage> where TPage : IPage
 }
 
 /// <inheritdoc/>
-public interface IPageBuilder : IPageBuilder<IPage>
-{
-}
+public interface IPageBuilder : IPageBuilder<IPage>;
