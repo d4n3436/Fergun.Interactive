@@ -569,7 +569,7 @@ public class PageBuilder : IPageBuilder<Page>, IPageBuilder
                 Footer.Text += $"Interactors: {string.Join(", ", users)}";
             }
 
-            Footer.Text += Environment.NewLine;
+            Footer.Text += '\n';
         }
 
         if (footer.HasFlag(PaginatorFooter.PageNumber))
