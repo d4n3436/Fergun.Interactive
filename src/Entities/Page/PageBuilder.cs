@@ -544,7 +544,7 @@ public class PageBuilder : IPageBuilder<Page>, IPageBuilder
     /// <inheritdoc/>
     IPage IPageBuilder<IPage>.Build() => Build();
 
-    internal PageBuilder WithPaginatorFooter(PaginatorFooter footer, int page, int totalPages, ICollection<IUser>? users)
+    internal PageBuilder WithPaginatorFooter(PaginatorFooter footer, int currentPageIndex, int maxPageIndex, ICollection<IUser>? users)
     {
         if (footer == PaginatorFooter.None)
         {
@@ -573,7 +573,7 @@ public class PageBuilder : IPageBuilder<Page>, IPageBuilder
 
         if (footer.HasFlag(PaginatorFooter.PageNumber))
         {
-            Footer.Text += $"Page {page + 1}/{totalPages + 1}";
+            Footer.Text += $"Page {currentPageIndex + 1}/{maxPageIndex + 1}";
         }
 
         return this;
