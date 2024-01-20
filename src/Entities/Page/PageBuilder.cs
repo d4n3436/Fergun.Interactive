@@ -547,9 +547,7 @@ public class PageBuilder : IPageBuilder<Page>, IPageBuilder
     internal PageBuilder WithPaginatorFooter(PaginatorFooter footer, int currentPageIndex, int maxPageIndex, ICollection<IUser>? users)
     {
         if (footer == PaginatorFooter.None)
-        {
             return this;
-        }
 
         Footer = new EmbedFooterBuilder();
         if (footer.HasFlag(PaginatorFooter.Users))
