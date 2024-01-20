@@ -1133,7 +1133,8 @@ public class InteractiveService
             // Ugly but works
             if (pair.Value is FilteredCallback<SocketInteraction> or FilteredCallback<SocketMessageComponent>
                 or FilteredCallback<SocketSlashCommand> or FilteredCallback<SocketUserCommand>
-                or FilteredCallback<SocketMessageCommand> or FilteredCallback<SocketAutocompleteInteraction>)
+                or FilteredCallback<SocketMessageCommand> or FilteredCallback<SocketAutocompleteInteraction>
+                or FilteredCallback<SocketModal>)
             {
                 _ = Task.Run(async () =>
                 {
