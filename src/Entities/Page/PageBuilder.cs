@@ -556,19 +556,21 @@ public class PageBuilder : IPageBuilder<Page>, IPageBuilder
         {
             if (users?.Any() != true)
             {
-                Footer.Text += "Interactors: Everyone\n";
+                Footer.Text += "Interactors: Everyone";
             }
             else if (users.Count == 1)
             {
                 var user = users.Single();
 
                 Footer.IconUrl = user.GetDisplayAvatarUrl();
-                Footer.Text += $"Interactor: {user}\n";
+                Footer.Text += $"Interactor: {user}";
             }
             else
             {
                 Footer.Text += $"Interactors: {string.Join(", ", users)}";
             }
+
+            Footer.Text += Environment.NewLine;
         }
 
         if (footer.HasFlag(PaginatorFooter.PageNumber))
