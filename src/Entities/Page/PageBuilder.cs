@@ -550,6 +550,7 @@ public class PageBuilder : IPageBuilder<Page>, IPageBuilder
             return this;
 
         Footer = new EmbedFooterBuilder();
+
         if (footer.HasFlag(PaginatorFooter.Users))
         {
             if (users?.Any() != true)
