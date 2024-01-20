@@ -562,7 +562,7 @@ public class PageBuilder : IPageBuilder<Page>, IPageBuilder
             {
                 var user = users.First();
 
-                Footer.IconUrl = user.GetAvatarUrl() ?? user.GetDefaultAvatarUrl();
+                Footer.IconUrl = user.GetDisplayAvatarUrl();
                 Footer.Text += $"Interactor: {user}\n";
             }
             else
