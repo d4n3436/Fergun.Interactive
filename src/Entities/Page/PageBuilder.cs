@@ -554,7 +554,7 @@ public class PageBuilder : IPageBuilder<Page>, IPageBuilder
         Footer = new EmbedFooterBuilder();
         if (footer.HasFlag(PaginatorFooter.Users))
         {
-            if (users is null || users.Count == 0)
+            if (users?.Any() != true)
             {
                 Footer.Text += "Interactors: Everyone\n";
             }
