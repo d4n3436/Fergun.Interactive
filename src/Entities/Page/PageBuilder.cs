@@ -544,36 +544,37 @@ public class PageBuilder : IPageBuilder<Page>, IPageBuilder
     /// <inheritdoc/>
     IPage IPageBuilder<IPage>.Build() => Build();
 
-    internal PageBuilder WithPaginatorFooter(PaginatorFooter footer, int page, int totalPages, ICollection<IUser>? users)
+    internal PageBuilder WithPaginatorFooter(PaginatorFooter footer, int currentPageIndex, int maxPageIndex, ICollection<IUser>? users)
     {
         if (footer == PaginatorFooter.None)
-        {
             return this;
-        }
 
         Footer = new EmbedFooterBuilder();
+
         if (footer.HasFlag(PaginatorFooter.Users))
         {
             if (users is null || users.Count == 0)
             {
-                Footer.Text += "Interactors: Everyone\n";
+                Footer.Text += "Interactors: Everyone";
             }
             else if (users.Count == 1)
             {
-                var user = users.First();
+                var user = users.Single();
 
-                Footer.IconUrl = user.GetAvatarUrl() ?? user.GetDefaultAvatarUrl();
-                Footer.Text += $"Interactor: {user}\n";
+                Footer.Text += $"Interactor: {user}";
+                Footer.IconUrl = user.GetDisplayAvatarUrl();
             }
             else
             {
                 Footer.Text += $"Interactors: {string.Join(", ", users)}";
             }
+
+            Footer.Text += '\n';
         }
 
         if (footer.HasFlag(PaginatorFooter.PageNumber))
         {
-            Footer.Text += $"Page {page + 1}/{totalPages + 1}";
+            Footer.Text += $"Page {currentPageIndex + 1}/{maxPageIndex + 1}";
         }
 
         return this;
