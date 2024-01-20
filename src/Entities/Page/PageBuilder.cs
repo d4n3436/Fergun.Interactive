@@ -553,7 +553,7 @@ public class PageBuilder : IPageBuilder<Page>, IPageBuilder
 
         if (footer.HasFlag(PaginatorFooter.Users))
         {
-            if (users?.Any() != true)
+            if (users is null || users.Count == 0)
             {
                 Footer.Text += "Interactors: Everyone";
             }
