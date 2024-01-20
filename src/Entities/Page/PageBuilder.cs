@@ -560,7 +560,7 @@ public class PageBuilder : IPageBuilder<Page>, IPageBuilder
             }
             else if (users.Count == 1)
             {
-                var user = users.First();
+                var user = users.Single();
 
                 Footer.IconUrl = user.GetDisplayAvatarUrl();
                 Footer.Text += $"Interactor: {user}\n";
