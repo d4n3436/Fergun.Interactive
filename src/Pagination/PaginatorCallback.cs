@@ -48,7 +48,7 @@ internal sealed class PaginatorCallback : IInteractiveCallback
     public IDiscordInteraction? LastInteraction { get; private set; }
 
     /// <summary>
-    /// Gets the messages that was received to stop the paginator.
+    /// Gets the message that was received to stop the paginator.
     /// </summary>
     public IMessage? StopMessage { get; private set; }
 

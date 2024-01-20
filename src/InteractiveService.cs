@@ -739,20 +739,21 @@ public class InteractiveService
     private async Task<InteractiveMessageResult> WaitForPaginatorResultAsync(PaginatorCallback callback)
     {
         _callbacks[callback.Message.Id] = callback;
-        bool hasJumpAction = callback.Paginator.Emotes.Values.Any(x => x == PaginatorAction.Jump);
+        bool hasReactions = callback.Paginator.InputType.HasFlag(InputType.Reactions);
 
         // A CancellationTokenSource is used here for 2 things:
         // 1. To stop WaitForMessagesAsync() to avoid memory leaks
         // 2. To cancel InitializeMessageAsync() to avoid adding reactions after TimeoutTaskSource.Task has returned.
-        using var cts = callback.Paginator.InputType.HasFlag(InputType.Reactions) || hasJumpAction
-            ? new CancellationTokenSource()
-            : null;
+        using var cts = hasReactions ? new CancellationTokenSource() : null;
 
-        _ = callback.Paginator.InitializeMessageAsync(callback.Message, cts?.Token ?? default).ConfigureAwait(false);
-
-        if (callback.Paginator.InputType.HasFlag(InputType.Reactions) && hasJumpAction)
+        if (hasReactions)
         {
-            _ = WaitForMessagesAsync().ConfigureAwait(false);
+            _ = callback.Paginator.InitializeMessageAsync(callback.Message, cts!.Token).ConfigureAwait(false);
+
+            if (callback.Paginator.Emotes.Values.Any(x => x == PaginatorAction.Jump))
+            {
+                _ = WaitForMessagesAsync(cts).ConfigureAwait(false);
+            }
         }
 
         var status = await callback.TimeoutTaskSource.Task.ConfigureAwait(false);
@@ -768,17 +769,12 @@ public class InteractiveService
 
         return result;
 
-        async Task WaitForMessagesAsync()
+        async Task WaitForMessagesAsync(CancellationTokenSource cancellationTokenSource)
         {
-            if (cts is null)
-            {
-                return;
-            }
-
-            while (!cts.IsCancellationRequested)
+            while (!cancellationTokenSource.IsCancellationRequested)
             {
                 var messageResult = await NextMessageAsync(msg => msg.Channel.Id == callback.Message.Channel.Id && msg.Source == MessageSource.User,
-                    null, callback.TimeoutTaskSource.Delay, cts.Token).ConfigureAwait(false);
+                    null, callback.TimeoutTaskSource.Delay, cancellationTokenSource.Token).ConfigureAwait(false);
                 if (messageResult.IsSuccess)
                 {
                     await callback.ExecuteAsync(messageResult.Value).ConfigureAwait(false);
