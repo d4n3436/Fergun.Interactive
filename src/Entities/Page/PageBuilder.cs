@@ -561,8 +561,8 @@ public class PageBuilder : IPageBuilder<Page>, IPageBuilder
             {
                 var user = users.Single();
 
-                Footer.IconUrl = user.GetDisplayAvatarUrl();
                 Footer.Text += $"Interactor: {user}";
+                Footer.IconUrl = user.GetDisplayAvatarUrl();
             }
             else
             {
