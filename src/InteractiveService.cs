@@ -758,7 +758,6 @@ public class InteractiveService
 
         var status = await callback.TimeoutTaskSource.Task.ConfigureAwait(false);
         cts?.Cancel();
-        cts?.Dispose();
 
         var result = InteractiveMessageResultBuilder.FromCallback(callback, status).Build();
 
@@ -809,7 +808,6 @@ public class InteractiveService
 
         var (selected, status) = await callback.TimeoutTaskSource.Task.ConfigureAwait(false);
         cts?.Cancel();
-        cts?.Dispose();
 
         var result = InteractiveMessageResultBuilder<TOption?>.FromCallback(callback, selected, status).Build();
 

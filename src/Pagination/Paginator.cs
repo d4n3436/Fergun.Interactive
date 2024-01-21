@@ -241,6 +241,8 @@ public abstract class Paginator : IInteractiveElement<KeyValuePair<IEmote, Pagin
     /// <returns>A task representing the asynchronous operation. The task result contains whether the action succeeded.</returns>
     public virtual async ValueTask<bool> JumpToPageAsync(SocketReaction reaction)
     {
+        InteractiveGuards.NotNull(reaction);
+
         if (JumpInputUserId != 0)
         {
             // The user pressed the "jump to page" reaction again
@@ -316,6 +318,8 @@ public abstract class Paginator : IInteractiveElement<KeyValuePair<IEmote, Pagin
     /// <returns>A task representing the asynchronous operation. The task result contains whether the action succeeded.</returns>
     public virtual async ValueTask<bool> JumpToPageAsync(SocketMessageComponent interaction)
     {
+        InteractiveGuards.NotNull(interaction);
+
         if (JumpInputUserId != 0)
         {
             // The user canceled the modal and then pressed the "jump to page" button again

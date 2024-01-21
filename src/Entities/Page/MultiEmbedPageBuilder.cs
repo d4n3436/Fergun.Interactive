@@ -48,7 +48,7 @@ public class MultiEmbedPageBuilder : IPageBuilder<MultiEmbedPage>, IPageBuilder
     /// Gets or sets the builders that will be in the page.
     /// </summary>
     /// <returns>The list of builders.</returns>
-    public IList<EmbedBuilder> Builders { get; set; } = new List<EmbedBuilder>();
+    public IList<EmbedBuilder> Builders { get; set; } = [];
 
     /// <summary>
     /// Gets or sets the factory of attachments.

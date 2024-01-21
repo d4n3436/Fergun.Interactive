@@ -14,7 +14,7 @@ public abstract class BaseStaticPaginatorBuilder<TPaginator, TBuilder>
     where TBuilder : BaseStaticPaginatorBuilder<TPaginator, TBuilder>
 {
     /// <inheritdoc/>
-    public virtual IList<IPageBuilder> Pages { get; set; } = new List<IPageBuilder>();
+    public virtual IList<IPageBuilder> Pages { get; set; } = [];
 
     /// <summary>
     /// Sets the pages of the paginator.

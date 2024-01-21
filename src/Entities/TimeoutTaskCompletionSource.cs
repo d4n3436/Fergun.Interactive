@@ -90,8 +90,8 @@ public class TimeoutTaskCompletionSource<TResult> : IDisposable
     /// </summary>
     public void Dispose()
     {
-        GC.SuppressFinalize(this);
         Dispose(true);
+        GC.SuppressFinalize(this);
     }
 
     /// <inheritdoc cref="Dispose()"/>

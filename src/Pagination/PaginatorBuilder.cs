@@ -49,12 +49,10 @@ public abstract class PaginatorBuilder<TPaginator, TBuilder>
     }
 
     /// <inheritdoc/>
-    public virtual IList<Func<IButtonContext, IPaginatorButton>> ButtonFactories { get; protected set; }
-        = new List<Func<IButtonContext, IPaginatorButton>>();
+    public virtual IList<Func<IButtonContext, IPaginatorButton>> ButtonFactories { get; protected set; } = [];
 
     /// <inheritdoc/>
-    public virtual IList<Func<ISelectMenuContext, IPaginatorSelectMenu>> SelectMenuFactories { get; protected set; }
-        = new List<Func<ISelectMenuContext, IPaginatorSelectMenu>>();
+    public virtual IList<Func<ISelectMenuContext, IPaginatorSelectMenu>> SelectMenuFactories { get; protected set; } = [];
 
     /// <inheritdoc/>
     public virtual IPageBuilder? CanceledPage { get; set; }
@@ -66,6 +64,7 @@ public abstract class PaginatorBuilder<TPaginator, TBuilder>
     public virtual DeletionOptions Deletion { get; set; } = DeletionOptions.Valid | DeletionOptions.Invalid;
 
     /// <inheritdoc/>
+    /// <remarks>The default value is <see cref="InputType.Buttons"/>.</remarks>
     public virtual InputType InputType { get; set; } = InputType.Buttons;
 
     /// <inheritdoc/>
@@ -253,7 +252,6 @@ public abstract class PaginatorBuilder<TPaginator, TBuilder>
     /// <summary>
     /// Adds a paginator button with the specified text, action and style.
     /// </summary>
-    /// <remarks>The paginator buttons are only used when <see cref="InputType"/> contains <see cref="InputType.Buttons"/>.</remarks>
     /// <param name="text">The text (label) that will be displayed in the button.</param>
     /// <param name="action">The paginator action.</param>
     /// <param name="style">The button style. If the value is null, the library will decide the style of the button.</param>
@@ -266,7 +264,6 @@ public abstract class PaginatorBuilder<TPaginator, TBuilder>
     /// <summary>
     /// Adds a paginator button with the specified emote, action and style.
     /// </summary>
-    /// <remarks>The paginator buttons are only used when <see cref="InputType"/> contains <see cref="InputType.Buttons"/>.</remarks>
     /// <param name="emote">The emote.</param>
     /// <param name="action">The paginator action.</param>
     /// <param name="style">The button style. If the value is null, the library will decide the style of the button.</param>
@@ -319,7 +316,6 @@ public abstract class PaginatorBuilder<TPaginator, TBuilder>
     /// <summary>
     /// Adds a paginator button with the specified properties.
     /// </summary>
-    /// <remarks>The paginator buttons are only used when <see cref="InputType"/> contains <see cref="InputType.Buttons"/>.</remarks>
     /// <param name="action">The paginator action.</param>
     /// <param name="emote">The emote.</param>
     /// <param name="text">The text (label) that will be displayed in the button.</param>
@@ -337,7 +333,6 @@ public abstract class PaginatorBuilder<TPaginator, TBuilder>
     /// <summary>
     /// Adds a paginator button.
     /// </summary>
-    /// <remarks>The button style and text are only used when <see cref="InputType"/> contains <see cref="InputType.Buttons"/>.</remarks>
     /// <param name="button">The paginator button.</param>
     /// <returns>This builder.</returns>
     public virtual TBuilder AddOption(IPaginatorButton button)
@@ -350,7 +345,6 @@ public abstract class PaginatorBuilder<TPaginator, TBuilder>
     /// <summary>
     /// Adds a factory method that creates a paginator button.
     /// </summary>
-    /// <remarks>The button style and text are only used when <see cref="InputType"/> contains <see cref="InputType.Buttons"/>.</remarks>
     /// <param name="buttonFactory">The factory of a paginator button.</param>
     /// <returns>This builder.</returns>
     public virtual TBuilder AddOption(Func<IButtonContext, IPaginatorButton> buttonFactory)
@@ -494,6 +488,7 @@ public abstract class PaginatorBuilder<TPaginator, TBuilder>
     /// <summary>
     /// Sets the input type, that is, what is used to interact with the <typeparamref name="TPaginator"/>.
     /// </summary>
+    /// <remarks>The default value is <see cref="InputType.Buttons"/>.</remarks>
     /// <param name="type">The input type.</param>
     /// <returns>This builder.</returns>
     public virtual TBuilder WithInputType(InputType type)
@@ -503,6 +498,7 @@ public abstract class PaginatorBuilder<TPaginator, TBuilder>
     }
 
     /// <inheritdoc/>
+    /// <remarks>The default value is <see cref="ActionOnStop.ModifyMessage"/>.</remarks>
     public virtual TBuilder WithActionOnCancellation(ActionOnStop action)
     {
         ActionOnCancellation = action;
@@ -510,6 +506,7 @@ public abstract class PaginatorBuilder<TPaginator, TBuilder>
     }
 
     /// <inheritdoc/>
+    /// <remarks>The default value is <see cref="ActionOnStop.ModifyMessage"/>.</remarks>
     public virtual TBuilder WithActionOnTimeout(ActionOnStop action)
     {
         ActionOnTimeout = action;
@@ -520,6 +517,8 @@ public abstract class PaginatorBuilder<TPaginator, TBuilder>
     /// Sets the maximum time to wait for a "jump to page" input.
     /// </summary>
     /// <remarks>The default value is 30 seconds.</remarks>
+    /// <param name="jumpInputTimeout">The time.</param>
+    /// <returns>This builder.</returns>
     public virtual TBuilder WithJumpInputTimeout(TimeSpan jumpInputTimeout)
     {
         JumpInputTimeout = jumpInputTimeout;
@@ -533,6 +532,8 @@ public abstract class PaginatorBuilder<TPaginator, TBuilder>
     /// In button inputs, this is the title of the modal that is displayed.<br/>
     /// In reaction inputs, this is the content of the temporary message that is sent.
     /// </remarks>
+    /// <param name="jumpInputPrompt">The prompt.</param>
+    /// <returns>This builder.</returns>
     public virtual TBuilder WithJumpInputPrompt(string jumpInputPrompt)
     {
         JumpInputPrompt = jumpInputPrompt;
@@ -542,6 +543,8 @@ public abstract class PaginatorBuilder<TPaginator, TBuilder>
     /// <summary>
     /// Gets or sets the "jump to page" text label that is displayed in the modal.
     /// </summary>
+    /// <param name="jumpInputTextLabel">The text label.</param>
+    /// <returns>This builder.</returns>
     public virtual TBuilder WithJumpInputTextLabel(string jumpInputTextLabel)
     {
         JumpInputTextLabel = jumpInputTextLabel;
@@ -555,6 +558,8 @@ public abstract class PaginatorBuilder<TPaginator, TBuilder>
     /// An invalid input may be one that isn't a number, or a number that is outside the valid range.<br/>
     /// To avoid sending a warning message about this, set the value to an empty string.
     /// </remarks>
+    /// <param name="invalidJumpInputMessage">The message.</param>
+    /// <returns>This builder.</returns>
     public virtual TBuilder WithInvalidJumpInputMessage(string invalidJumpInputMessage)
     {
         InvalidJumpInputMessage = invalidJumpInputMessage;
@@ -565,6 +570,8 @@ public abstract class PaginatorBuilder<TPaginator, TBuilder>
     /// Sets the message to display when a user attempts to use the "jump to page" action while other user is using it.
     /// </summary>
     /// <remarks>To avoid sending a warning message about this, set the value to an empty string.</remarks>
+    /// <param name="jumpInputInUseMessage">The message.</param>
+    /// <returns>This builder.</returns>
     public virtual TBuilder WithJumpInputInUseMessage(string jumpInputInUseMessage)
     {
         JumpInputInUseMessage = jumpInputInUseMessage;
@@ -575,6 +582,8 @@ public abstract class PaginatorBuilder<TPaginator, TBuilder>
     /// Sets the message to display when receiving an expired "jump to page" input.
     /// </summary>
     /// <remarks>To avoid sending a warning message about this, set the value to an empty string.</remarks>
+    /// <param name="expiredJumpInputMessage">The message.</param>
+    /// <returns>This builder.</returns>
     public virtual TBuilder WithExpiredJumpInputMessage(string expiredJumpInputMessage)
     {
         ExpiredJumpInputMessage = expiredJumpInputMessage;

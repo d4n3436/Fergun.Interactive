@@ -193,7 +193,7 @@ public class SelectionModule : ModuleBase
     public async Task MenuAsync()
     {
         // Create CancellationTokenSource that will be canceled after 10 minutes.
-        var cts = new CancellationTokenSource(TimeSpan.FromMinutes(10));
+        using var cts = new CancellationTokenSource(TimeSpan.FromMinutes(10));
 
         string[] options =
         [
