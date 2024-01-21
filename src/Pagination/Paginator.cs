@@ -189,21 +189,31 @@ public abstract class Paginator : IInteractiveElement<KeyValuePair<IEmote, Pagin
     public virtual async ValueTask<bool> SetPageAsync(int pageIndex)
     {
         if (pageIndex < 0 || CurrentPageIndex == pageIndex || pageIndex > MaxPageIndex)
-        {
             return false;
-        }
 
         var page = await GetOrLoadPageAsync(pageIndex).ConfigureAwait(false);
 
         if (page is null)
-        {
             return false;
-        }
 
         CurrentPageIndex = pageIndex;
 
         return true;
     }
+
+    /// <summary>
+    /// Applies a <see cref="PaginatorAction"/> to this paginator.
+    /// </summary>
+    /// <param name="action">The paginator action.</param>
+    /// <returns>A task representing the asynchronous operation. The task result contains whether the action succeeded.</returns>
+    public virtual ValueTask<bool> ApplyActionAsync(PaginatorAction action) => action switch
+    {
+        PaginatorAction.Backward => SetPageAsync(CurrentPageIndex - 1),
+        PaginatorAction.Forward => SetPageAsync(CurrentPageIndex + 1),
+        PaginatorAction.SkipToStart => SetPageAsync(0),
+        PaginatorAction.SkipToEnd => SetPageAsync(MaxPageIndex),
+        _ => new ValueTask<bool>(false)
+    };
 
     /// <summary>
     /// Gets or loads a specific page of this paginator.
@@ -216,23 +226,7 @@ public abstract class Paginator : IInteractiveElement<KeyValuePair<IEmote, Pagin
     /// Gets or loads the current page of this paginator.
     /// </summary>
     /// <returns>A task representing the asynchronous operation. The task result contains the current page.</returns>
-    public virtual Task<IPage> GetOrLoadCurrentPageAsync()
-        => GetOrLoadPageAsync(CurrentPageIndex);
-
-    /// <summary>
-    /// Applies a <see cref="PaginatorAction"/> to this paginator.
-    /// </summary>
-    /// <param name="action">The paginator action.</param>
-    /// <returns>A task representing the asynchronous operation. The task result contains whether the action succeeded.</returns>
-    public virtual ValueTask<bool> ApplyActionAsync(PaginatorAction action) =>
-        action switch
-        {
-            PaginatorAction.Backward => SetPageAsync(CurrentPageIndex - 1),
-            PaginatorAction.Forward => SetPageAsync(CurrentPageIndex + 1),
-            PaginatorAction.SkipToStart => SetPageAsync(0),
-            PaginatorAction.SkipToEnd => SetPageAsync(MaxPageIndex),
-            _ => new ValueTask<bool>(false)
-        };
+    public virtual Task<IPage> GetOrLoadCurrentPageAsync() => GetOrLoadPageAsync(CurrentPageIndex);
 
     /// <summary>
     /// Responds <paramref name="reaction"/> with a message, waits for a message with a valid page number and jumps (skips) to that page.
@@ -463,16 +457,14 @@ public abstract class Paginator : IInteractiveElement<KeyValuePair<IEmote, Pagin
         InteractiveGuards.NotNull(message);
 
         if (!InputType.HasFlag(InputType.Reactions) || input.MessageId != message.Id)
-        {
             return InteractiveInputStatus.Ignored;
-        }
 
         bool valid = Emotes.TryGetValue(input.Emote, out var action)
                      && this.CanInteract(input.UserId);
 
-        bool manageMessages = await message.Channel.CurrentUserHasManageMessagesAsync().ConfigureAwait(false);
+        bool canManageMessages = await message.Channel.CurrentUserHasManageMessagesAsync().ConfigureAwait(false);
 
-        if (manageMessages)
+        if (canManageMessages)
         {
             switch (valid)
             {
@@ -484,21 +476,15 @@ public abstract class Paginator : IInteractiveElement<KeyValuePair<IEmote, Pagin
         }
 
         if (!valid)
-        {
             return InteractiveInputStatus.Ignored;
-        }
 
         if (action == PaginatorAction.Exit)
-        {
             return InteractiveInputStatus.Canceled;
-        }
 
         int previousPageIndex = CurrentPageIndex;
 
         if ((action == PaginatorAction.Jump && await JumpToPageAsync(input).ConfigureAwait(false)) || await ApplyActionAsync(action).ConfigureAwait(false))
-        {
             await TryUpdateMessageAsync(message.ModifyAsync, previousPageIndex, false).ConfigureAwait(false);
-        }
 
         return InteractiveInputStatus.Success;
     }
@@ -556,9 +542,7 @@ public abstract class Paginator : IInteractiveElement<KeyValuePair<IEmote, Pagin
         InteractiveGuards.NotNull(message);
 
         if (!ulong.TryParse(input.Data.CustomId, out ulong messageId) || messageId != message.Id || !this.CanInteract(input.User))
-        {
-            return new InteractiveInputResult(InteractiveInputStatus.Ignored);
-        }
+            return InteractiveInputStatus.Ignored;
 
         // Expired modal
         if (JumpInputUserId == 0)
@@ -572,11 +556,11 @@ public abstract class Paginator : IInteractiveElement<KeyValuePair<IEmote, Pagin
                 await input.DeferAsync().ConfigureAwait(false);
             }
 
-            return new InteractiveInputResult(InteractiveInputStatus.Ignored);
+            return InteractiveInputStatus.Ignored;
         }
 
         ModalTaskCompletionSource.TrySetResult(input);
-        return new InteractiveInputResult(InteractiveInputStatus.Success);
+        return InteractiveInputStatus.Success;
     }
 
     /// <inheritdoc />
@@ -606,14 +590,13 @@ public abstract class Paginator : IInteractiveElement<KeyValuePair<IEmote, Pagin
     /// <returns>A task representing the asynchronous operation.</returns>
     internal virtual async Task InitializeMessageAsync(IUserMessage message, CancellationToken cancellationToken = default)
     {
-        if (!InputType.HasFlag(InputType.Reactions)) return;
+        if (!InputType.HasFlag(InputType.Reactions))
+            return;
 
         foreach (var emote in Emotes.Keys)
         {
             if (cancellationToken.IsCancellationRequested)
-            {
                 break;
-            }
 
             await message.AddReactionAsync(emote).ConfigureAwait(false);
         }
