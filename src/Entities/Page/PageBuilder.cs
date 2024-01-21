@@ -348,7 +348,7 @@ public class PageBuilder : IPageBuilder<Page>, IPageBuilder
     public PageBuilder WithAuthor(IUser user)
     {
         InteractiveGuards.NotNull(user);
-        return WithAuthor(user.ToString(), user.GetAvatarUrl() ?? user.GetDefaultAvatarUrl());
+        return WithAuthor(user.ToString(), user.GetDisplayAvatarUrl());
     }
 
     /// <summary>
