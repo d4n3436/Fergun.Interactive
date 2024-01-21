@@ -392,6 +392,7 @@ public abstract class Paginator : IInteractiveElement<KeyValuePair<IEmote, Pagin
     public virtual ComponentBuilder GetOrAddComponents(bool disableAll, ComponentBuilder? builder = null)
     {
         builder ??= new ComponentBuilder();
+
         for (int i = 0; i < ButtonFactories.Count; i++)
         {
             var context = new ButtonContext(i, CurrentPageIndex, MaxPageIndex, disableAll);
@@ -436,7 +437,6 @@ public abstract class Paginator : IInteractiveElement<KeyValuePair<IEmote, Pagin
             builder.WithSelectMenu(selectMenu);
         }
 
-
         return builder;
     }
 
@@ -447,18 +447,13 @@ public abstract class Paginator : IInteractiveElement<KeyValuePair<IEmote, Pagin
         InteractiveGuards.NotNull(input);
         InteractiveGuards.NotNull(message);
 
-        if (!this.CanInteract(input.Author))
+        if (this.CanInteract(input.Author) && JumpInputUserId != 0)
         {
-            return Task.FromResult(new InteractiveInputResult(InteractiveInputStatus.Ignored));
+            MessageTaskCompletionSource.TrySetResult(input);
         }
 
-        if (JumpInputUserId == 0)
-        {
-            return Task.FromResult(new InteractiveInputResult(InteractiveInputStatus.Ignored));
-        }
-
-        MessageTaskCompletionSource.TrySetResult(input);
-        return Task.FromResult(new InteractiveInputResult(InteractiveInputStatus.Ignored)); // ignore this because we only handle messages for the "jump to page" action.
+        // Ignore this because we only handle messages for the "jump to page" action.
+        return Task.FromResult(new InteractiveInputResult(InteractiveInputStatus.Ignored));
     }
 
     /// <inheritdoc cref="IInteractiveInputHandler.HandleReactionAsync"/>
@@ -514,21 +509,15 @@ public abstract class Paginator : IInteractiveElement<KeyValuePair<IEmote, Pagin
         InteractiveGuards.NotNull(input);
         InteractiveGuards.NotNull(message);
 
-        if (!InputType.HasFlag(InputType.Buttons))
-        {
-            return new InteractiveInputResult(InteractiveInputStatus.Ignored);
-        }
+        if (!InputType.HasFlag(InputType.Buttons) || input.Message.Id != message.Id || !this.CanInteract(input.User))
+            return InteractiveInputStatus.Ignored;
 
-        if (input.Message.Id != message.Id || !this.CanInteract(input.User))
-        {
-            return new InteractiveInputResult(InteractiveInputStatus.Ignored);
-        }
-
-        // Get last character of custom ID, convert it to a number and cast it to PaginatorAction
+        // Get last character of custom ID, convert it to a number and cast it to PaginatorAction.
         var action = (PaginatorAction)(input.Data.CustomId?[^1] - '0' ?? -1);
+
         if (!Enum.IsDefined(typeof(PaginatorAction), action))
         {
-            // Old way to get the action for backward compatibility
+            // Obsolete way to get the PaginatorAction for backward compatibility.
             var emote = (input
                     .Message
                     .Components
@@ -537,26 +526,22 @@ public abstract class Paginator : IInteractiveElement<KeyValuePair<IEmote, Pagin
                 .Emote;
 
             if (emote is null || !Emotes.TryGetValue(emote, out action))
-            {
                 return InteractiveInputStatus.Ignored;
-            }
         }
 
         if (action == PaginatorAction.Exit)
-        {
             return InteractiveInputStatus.Canceled;
-        }
 
         int previousPageIndex = CurrentPageIndex;
+        Func<Action<MessageProperties>, RequestOptions?, Task>? updateMethod = null;
 
-        Func<Action<MessageProperties>, RequestOptions?, Task> updateMethod;
         if (action == PaginatorAction.Jump && await JumpToPageAsync(input).ConfigureAwait(false))
             updateMethod = input.ModifyOriginalResponseAsync;
         else if (await ApplyActionAsync(action).ConfigureAwait(false))
             updateMethod = input.UpdateAsync;
-        else return InteractiveInputStatus.Success;
 
-        await TryUpdateMessageAsync(updateMethod, previousPageIndex).ConfigureAwait(false);
+        if (updateMethod != null)
+            await TryUpdateMessageAsync(updateMethod, previousPageIndex).ConfigureAwait(false);
 
         return InteractiveInputStatus.Success;
     }
