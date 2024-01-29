@@ -38,7 +38,7 @@ public abstract class PaginatorBuilder<TPaginator, TBuilder>
     /// <summary>
     /// Gets or sets the users who can interact with the paginator.
     /// </summary>
-    public virtual ICollection<IUser> Users { get; set; } = new Collection<IUser>();
+    public virtual ICollection<IUser> Users { get; set; } = [];
 
     /// <inheritdoc/>
     public virtual IDictionary<IEmote, PaginatorAction> Options

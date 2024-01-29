@@ -36,12 +36,12 @@ public abstract class BaseSelectionBuilder<TSelection, TOption, TBuilder>
     public virtual IPageBuilder SelectionPage { get; set; } = null!;
 
     /// <inheritdoc/>
-    public virtual ICollection<IUser> Users { get; set; } = new Collection<IUser>();
+    public virtual ICollection<IUser> Users { get; set; } = [];
 
     /// <summary>
     /// Gets or sets the options to select from.
     /// </summary>
-    public virtual ICollection<TOption> Options { get; set; } = new Collection<TOption>();
+    public virtual ICollection<TOption> Options { get; set; } = [];
 
     /// <inheritdoc />
     public virtual IPageBuilder? CanceledPage { get; set; }
