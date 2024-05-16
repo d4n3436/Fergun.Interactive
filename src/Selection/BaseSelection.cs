@@ -36,7 +36,7 @@ public abstract class BaseSelection<TOption> : IInteractiveElement<TOption>
         EmoteConverter = properties.EmoteConverter;
         EqualityComparer = properties.EqualityComparer;
         SelectionPage = properties.SelectionPage.Build();
-        AllowCancel = properties.AllowCancel && properties.Options.Count > 1;
+        AllowCancel = properties is { AllowCancel: true, Options.Count: > 1 };
         CancelOption = AllowCancel ? properties.Options.Last() : default;
         Users = properties.Users.ToArray();
         Options = properties.Options.ToArray();

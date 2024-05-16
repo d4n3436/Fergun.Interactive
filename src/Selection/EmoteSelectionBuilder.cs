@@ -97,7 +97,7 @@ internal sealed class EmoteComparer<TValue> : IEqualityComparer<KeyValuePair<IEm
 
 internal sealed class EmoteComparer : IEqualityComparer<IEmote>
 {
-    public bool Equals(IEmote x, IEmote y) => x?.ToString() == y?.ToString();
+    public bool Equals(IEmote? x, IEmote? y) => x?.ToString() == y?.ToString();
 
     public int GetHashCode(IEmote obj) => obj.ToString()?.GetHashCode() ?? 0;
 }

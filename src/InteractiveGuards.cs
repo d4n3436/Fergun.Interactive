@@ -1,8 +1,8 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Threading;
 using Discord;
 using Discord.WebSocket;
 
@@ -10,7 +10,7 @@ namespace Fergun.Interactive;
 
 internal static class InteractiveGuards
 {
-    public static void NotNull<T>(T? obj, [CallerArgumentExpression(nameof(obj))] string? parameterName = null) where T : class
+    public static void NotNull<T>([NotNull] T? obj, [CallerArgumentExpression(nameof(obj))] string? parameterName = null) where T : class
     {
         if (obj is null)
         {
@@ -23,14 +23,6 @@ internal static class InteractiveGuards
         if (collection.Count == 0)
         {
             throw new ArgumentException("Collection must not be empty.", parameterName);
-        }
-    }
-
-    public static void NotCanceled(CancellationToken cancellationToken, [CallerArgumentExpression(nameof(cancellationToken))] string? parameterName = null)
-    {
-        if (cancellationToken.IsCancellationRequested)
-        {
-            throw new ArgumentException("Cancellation token must not be canceled.", parameterName);
         }
     }
 

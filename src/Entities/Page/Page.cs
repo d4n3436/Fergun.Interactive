@@ -27,16 +27,16 @@ public class Page : IPage
         bool isEmpty = false;
         var builder = page.GetEmbedBuilder();
 
-        if (builder?.Author is null &&
-            builder?.Color is null &&
-            builder?.Description is null &&
-            (builder?.Fields is null || builder.Fields.Count == 0) &&
-            builder?.Footer is null &&
-            builder?.ImageUrl is null &&
-            builder?.ThumbnailUrl is null &&
-            builder?.Timestamp is null &&
-            builder?.Title is null &&
-            builder?.Url is null)
+        if (builder.Author is null &&
+            builder.Color is null &&
+            builder.Description is null &&
+            (builder.Fields is null || builder.Fields.Count == 0) &&
+            builder.Footer is null &&
+            builder.ImageUrl is null &&
+            builder.ThumbnailUrl is null &&
+            builder.Timestamp is null &&
+            builder.Title is null &&
+            builder.Url is null)
         {
             if (string.IsNullOrEmpty(page.Text) && AttachmentsFactory is null)
             {
@@ -46,7 +46,7 @@ public class Page : IPage
             isEmpty = true;
         }
 
-        Embed = isEmpty ? null : builder!.Build();
+        Embed = isEmpty ? null : builder.Build();
         _lazyEmbeds = new Lazy<Embed[]>(() => Embed is null ? [] : [Embed]);
     }
 

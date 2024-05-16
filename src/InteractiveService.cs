@@ -527,7 +527,7 @@ public class InteractiveService
         InteractiveGuards.DeleteAndDisableInputNotSet(paginator.ActionOnCancellation);
         InteractiveGuards.SupportedInputType(paginator, ephemeral);
         InteractiveGuards.ValidResponseType(responseType);
-        InteractiveGuards.NotCanceled(cancellationToken);
+        cancellationToken.ThrowIfCancellationRequested();
 
         var message = await SendOrModifyMessageAsync(paginator, interaction, responseType, ephemeral).ConfigureAwait(false);
         messageAction?.Invoke(message);
@@ -636,7 +636,7 @@ public class InteractiveService
         InteractiveGuards.DeleteAndDisableInputNotSet(selection.ActionOnSuccess);
         InteractiveGuards.SupportedInputType(selection, ephemeral);
         InteractiveGuards.ValidResponseType(responseType);
-        InteractiveGuards.NotCanceled(cancellationToken);
+        cancellationToken.ThrowIfCancellationRequested();
 
         var message = await SendOrModifyMessageAsync(selection, interaction, responseType, ephemeral).ConfigureAwait(false);
         messageAction?.Invoke(message);
@@ -657,7 +657,7 @@ public class InteractiveService
         InteractiveGuards.DeleteAndDisableInputNotSet(paginator.ActionOnTimeout);
         InteractiveGuards.DeleteAndDisableInputNotSet(paginator.ActionOnCancellation);
         InteractiveGuards.SupportedInputType(paginator, false);
-        InteractiveGuards.NotCanceled(cancellationToken);
+        cancellationToken.ThrowIfCancellationRequested();
 
         message = await SendOrModifyMessageAsync(paginator, message, channel).ConfigureAwait(false);
         messageAction?.Invoke(message);
@@ -699,7 +699,7 @@ public class InteractiveService
         InteractiveGuards.DeleteAndDisableInputNotSet(selection.ActionOnCancellation);
         InteractiveGuards.DeleteAndDisableInputNotSet(selection.ActionOnSuccess);
         InteractiveGuards.SupportedInputType(selection, false);
-        InteractiveGuards.NotCanceled(cancellationToken);
+        cancellationToken.ThrowIfCancellationRequested();
 
         message = await SendOrModifyMessageAsync(selection, message, channel).ConfigureAwait(false);
         messageAction?.Invoke(message);
@@ -715,7 +715,7 @@ public class InteractiveService
     private async Task<InteractiveResult<T?>> NextEntityAsync<T>(Func<T, bool>? filter = null, Func<T, bool, Task>? action = null,
         TimeSpan? timeout = null, CancellationToken cancellationToken = default)
     {
-        InteractiveGuards.NotCanceled(cancellationToken);
+        cancellationToken.ThrowIfCancellationRequested();
 
         filter ??= _ => true;
         action ??= (_, _) => Task.CompletedTask;
@@ -846,7 +846,7 @@ public class InteractiveService
         else
         {
             InteractiveGuards.NotNull(channel);
-            message = await channel!.SendFilesAsync(attachments ?? Enumerable.Empty<FileAttachment>(), page.Text, page.IsTTS, null, null,
+            message = await channel.SendFilesAsync(attachments ?? Enumerable.Empty<FileAttachment>(), page.Text, page.IsTTS, null, null,
                 page.AllowedMentions, page.MessageReference, component, page.Stickers.ToArray(), page.GetEmbedArray()).ConfigureAwait(false);
         }
 
@@ -1148,7 +1148,7 @@ public class InteractiveService
     }
 
     private void LogError(string source, string message, Exception? exception = null)
-        => Log?.Invoke(new LogMessage(LogSeverity.Error, source, message, exception));
+        => Log(new LogMessage(LogSeverity.Error, source, message, exception));
 
     private Task LogMessage(LogMessage message) =>
         _config.LogLevel >= message.Severity
