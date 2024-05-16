@@ -430,12 +430,11 @@ public abstract class Paginator : IInteractiveElement<KeyValuePair<IEmote, Pagin
             if (properties is null || properties.IsHidden)
                 continue;
 
-            var selectMenu = new SelectMenuBuilder(properties.CustomId, properties.Options, properties.Placeholder, properties.MinValues,
-                properties.MaxValues, properties.IsDisabled ?? context.ShouldDisable(), properties.Type, properties.ChannelTypes, properties.DefaultValues);
+            var selectMenu = new SelectMenuBuilder(properties.CustomId, properties.Options, properties.Placeholder, properties.MaxValues,
+                properties.MinValues, properties.IsDisabled ?? context.ShouldDisable(), properties.Type, properties.ChannelTypes, properties.DefaultValues);
 
             builder.WithSelectMenu(selectMenu);
         }
-
 
         return builder;
     }
