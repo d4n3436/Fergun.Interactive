@@ -880,7 +880,6 @@ public class InteractiveService
                     page.Text, embeds, page.IsTTS, ephemeral, page.AllowedMentions, component).ConfigureAwait(false);
 
             case InteractionResponseType.DeferredUpdateMessage:
-                InteractiveGuards.ValidResponseType(responseType, interaction);
                 return await interaction.ModifyOriginalResponseAsync(UpdateMessage).ConfigureAwait(false);
 
             case InteractionResponseType.UpdateMessage:
