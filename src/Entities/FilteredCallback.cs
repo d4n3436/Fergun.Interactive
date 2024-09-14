@@ -8,7 +8,7 @@ namespace Fergun.Interactive;
 /// Represents an event handler with a filter.
 /// </summary>
 /// <typeparam name="TInput">The type of the incoming inputs.</typeparam>
-internal sealed class FilteredCallback<TInput> : IInteractiveCallback<TInput>
+internal sealed class FilteredCallback<TInput> : IFilteredCallback, IInteractiveCallback<TInput>
 {
     private bool _disposed;
 
@@ -87,6 +87,12 @@ internal sealed class FilteredCallback<TInput> : IInteractiveCallback<TInput>
 
         throw new ArgumentException("Cannot execute this callback using an interaction.", nameof(interaction));
     }
+
+    /// <inheritdoc/>
+    public bool IsCompatible<T>(T obj) => obj is TInput;
+
+    /// <inheritdoc/>
+    public bool TriggersFilter<T>(T obj) => obj is TInput input && Filter(input);
 
     /// <inheritdoc/>
     public void Dispose() => Dispose(true);

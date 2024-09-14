@@ -2,6 +2,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -24,7 +25,7 @@ public class InteractiveService
 {
     private readonly BaseSocketClient _client;
     private readonly ConcurrentDictionary<ulong, IInteractiveCallback> _callbacks = new();
-    private readonly ConcurrentDictionary<Guid, IInteractiveCallback> _filteredCallbacks = new();
+    private readonly ConcurrentDictionary<Guid, IFilteredCallback> _filteredCallbacks = new();
     private readonly InteractiveConfig _config;
 
     /// <summary>
@@ -149,7 +150,7 @@ public class InteractiveService
     /// <param name="id">The ID of the callback.</param>
     /// <param name="callback">The callback, if found.</param>
     /// <returns>Whether the callback was removed.</returns>
-    public bool TryRemoveCallback(ulong id, out IInteractiveCallback callback)
+    public bool TryRemoveCallback(ulong id, [MaybeNullWhen(false)] out IInteractiveCallback callback)
         => _callbacks.TryRemove(id, out callback);
 
     /// <summary>
@@ -649,6 +650,106 @@ public class InteractiveService
         return await WaitForSelectionResultAsync(callback).ConfigureAwait(false);
     }
 
+    /// <summary>
+    /// Returns a value that indicates whether the <paramref name="interaction"/> targets a message that is managed by an active paginator or selection, either through a component interaction or a modal.
+    /// </summary>
+    /// <param name="interaction">The incoming interaction.</param>
+    /// <returns>Whether the interaction targets a message that is managed by an active paginator or selection.</returns>
+    public bool IsManaged(SocketInteraction interaction)
+    {
+        InteractiveGuards.NotNull(interaction);
+
+        return interaction is SocketMessageComponent componentInteraction
+            && IsManaged(componentInteraction.Message)
+            || interaction is SocketModal modal
+            && ulong.TryParse(modal.Data.CustomId, out ulong messageId)
+            && _callbacks.ContainsKey(messageId);
+    }
+
+    /// <summary>
+    /// Returns a value that indicates whether the <paramref name="message"/> is managed by an active paginator or selection.
+    /// </summary>
+    /// <param name="message">The message.</param>
+    /// <returns>Whether the message is managed by an active paginator or selection.</returns>
+    public bool IsManaged(IUserMessage message)
+    {
+        InteractiveGuards.NotNull(message);
+        return IsManaged(message.Id);
+    }
+
+    /// <summary>
+    /// Returns a value that indicates whether the specified ID belongs to a message that is managed by an active paginator or selection.
+    /// </summary>
+    /// <param name="messageId">The message ID.</param>
+    /// <returns>Whether the message is managed by an active paginator or selection.</returns>
+    public bool IsManaged(ulong messageId) => _callbacks.ContainsKey(messageId);
+
+    /// <summary>
+    /// Attempts to get a paginator from the message it is currently managing.
+    /// </summary>
+    /// <param name="message">The message.</param>
+    /// <param name="paginator">The paginator, if found.</param>
+    /// <returns><see langword="true"/> if the paginator was found, otherwise <see langword="false"/>.</returns>
+    public bool TryGetPaginator(IUserMessage message, [MaybeNullWhen(false)] out Paginator paginator)
+    {
+        InteractiveGuards.NotNull(message);
+        return TryGetPaginator(message.Id, out paginator);
+    }
+
+    /// <summary>
+    /// Attempts to get a paginator from the ID of the message it is currently managing.
+    /// </summary>
+    /// <param name="messageId">The ID of the message.</param>
+    /// <param name="paginator">The paginator, if found.</param>
+    /// <returns><see langword="true"/> if the paginator was found, otherwise <see langword="false"/>.</returns>
+    public bool TryGetPaginator(ulong messageId, [MaybeNullWhen(false)] out Paginator paginator)
+    {
+        paginator = null;
+        if (!_callbacks.TryGetValue(messageId, out var callback) || callback is not PaginatorCallback paginatorCallback)
+            return false;
+
+        paginator = paginatorCallback.Paginator;
+        return true;
+    }
+
+    /// <summary>
+    /// Attempts to get a selection from the message it is currently managing.
+    /// </summary>
+    /// <typeparam name="TOption">The type of the options the selection contains.</typeparam>
+    /// <param name="message">The message.</param>
+    /// <param name="selection">The selection, if found.</param>
+    /// <returns><see langword="true"/> if the selection was found, otherwise <see langword="false"/>.</returns>
+    public bool TryGetSelection<TOption>(IUserMessage message, [MaybeNullWhen(false)] out BaseSelection<TOption> selection)
+    {
+        InteractiveGuards.NotNull(message);
+        return TryGetSelection(message.Id, out selection);
+    }
+
+    /// <summary>
+    /// Attempts to get a selection from the ID of the message it is currently managing.
+    /// </summary>
+    /// <typeparam name="TOption">The type of the options the selection contains.</typeparam>
+    /// <param name="messageId">The ID of the message.</param>
+    /// <param name="selection">The selection, if found.</param>
+    /// <returns><see langword="true"/> if the selection was found, otherwise <see langword="false"/>.</returns>
+    public bool TryGetSelection<TOption>(ulong messageId, [MaybeNullWhen(false)] out BaseSelection<TOption> selection)
+    {
+        selection = null;
+        if (!_callbacks.TryGetValue(messageId, out var callback) || callback is not SelectionCallback<TOption> selectionCallback)
+            return false;
+
+        selection = selectionCallback.Selection;
+        return true;
+    }
+
+    /// <summary>
+    /// Returns a value that indicates whether an incoming object (such as a message, reaction or interaction) triggers at least one of the filters registered by the Next{Entity}Async() commands.
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    /// <param name="obj">The incoming object.</param>
+    /// <returns>Whether the specified object triggers at least one of the filters.</returns>
+    public bool TriggersAnyFilter<T>(T obj) => _filteredCallbacks.Values.Any(x => x.TriggersFilter(obj));
+
     private async Task<InteractiveMessageResult> SendPaginatorInternalAsync(Paginator paginator, IMessageChannel? channel, TimeSpan? timeout = null,
         IUserMessage? message = null, Action<IUserMessage>? messageAction = null, bool resetTimeoutOnInput = false, CancellationToken cancellationToken = default)
     {
@@ -1040,13 +1141,13 @@ public class InteractiveService
 
         foreach (var pair in _filteredCallbacks)
         {
-            if (pair.Value is FilteredCallback<SocketMessage> filteredCallback)
+            if (pair.Value.IsCompatible(message))
             {
                 _ = Task.Run(async () =>
                 {
                     try
                     {
-                        await filteredCallback.ExecuteAsync(message).ConfigureAwait(false);
+                        await pair.Value.ExecuteAsync(message).ConfigureAwait(false);
                     }
                     catch (Exception ex)
                     {
@@ -1079,13 +1180,13 @@ public class InteractiveService
 
         foreach (var pair in _filteredCallbacks)
         {
-            if (pair.Value is FilteredCallback<SocketReaction> filteredCallback)
+            if (pair.Value.IsCompatible(reaction))
             {
                 _ = Task.Run(async () =>
                 {
                     try
                     {
-                        await filteredCallback.ExecuteAsync(reaction).ConfigureAwait(false);
+                        await pair.Value.ExecuteAsync(reaction).ConfigureAwait(false);
                     }
                     catch (Exception ex)
                     {
@@ -1123,11 +1224,7 @@ public class InteractiveService
 
         foreach (var pair in _filteredCallbacks)
         {
-            // Ugly but works
-            if (pair.Value is FilteredCallback<SocketInteraction> or FilteredCallback<SocketMessageComponent>
-                or FilteredCallback<SocketSlashCommand> or FilteredCallback<SocketUserCommand>
-                or FilteredCallback<SocketMessageCommand> or FilteredCallback<SocketAutocompleteInteraction>
-                or FilteredCallback<SocketModal>)
+            if (pair.Value.IsCompatible(interaction))
             {
                 _ = Task.Run(async () =>
                 {
