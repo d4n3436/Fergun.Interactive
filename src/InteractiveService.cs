@@ -743,9 +743,9 @@ public class InteractiveService
     }
 
     /// <summary>
-    /// Returns a value that indicates whether an incoming object (such as a message, reaction or interaction) triggers at least one of the filters registered by the Next{Entity}Async() commands.
+    /// Returns a value that indicates whether an incoming object (such as a message, reaction or interaction) triggers at least one of the filters registered by the Next{Entity}Async() methods.
     /// </summary>
-    /// <typeparam name="T"></typeparam>
+    /// <typeparam name="T">The type of the incoming object.</typeparam>
     /// <param name="obj">The incoming object.</param>
     /// <returns>Whether the specified object triggers at least one of the filters.</returns>
     public bool TriggersAnyFilter<T>(T obj) => _filteredCallbacks.Values.Any(x => x.TriggersFilter(obj));
