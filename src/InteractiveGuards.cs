@@ -26,6 +26,14 @@ internal static class InteractiveGuards
         }
     }
 
+    public static void NotEmpty<T>(IReadOnlyCollection<T> collection, [CallerArgumentExpression(nameof(collection))] string? parameterName = null)
+    {
+        if (collection.Count == 0)
+        {
+            throw new ArgumentException("Collection must not be empty.", parameterName);
+        }
+    }
+
     public static void NoDuplicates<TOption>(ICollection<TOption> collection, IEqualityComparer<TOption> equalityComparer,
         [CallerArgumentExpression(nameof(collection))] string? parameterName = null)
     {
