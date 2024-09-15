@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Linq;
+using Discord;
 
 namespace Fergun.Interactive.Extensions;
 
@@ -25,5 +27,28 @@ public static class InteractiveBuilderExtensions
 
         action((TBuilder)builder);
         return (TBuilder)builder;
+    }
+
+    /// <summary>
+    /// Configures the builder with a default restricted page. The page contains an embed with the description "🚫 Only (<c>allowed users</c>) can respond to this interaction.".
+    /// </summary>
+    /// <typeparam name="TElement">The type of the built element.</typeparam>
+    /// <typeparam name="TOption">The type of the options.</typeparam>
+    /// <typeparam name="TBuilder">The type of this builder.</typeparam>
+    /// <param name="builder">The builder.</param>
+    /// <returns>This builder.</returns>
+    public static TBuilder WithDefaultRestrictedPage<TElement, TOption, TBuilder>(this IInteractiveBuilder<TElement, TOption, TBuilder> builder)
+        where TElement : IInteractiveElement<TOption>
+        where TBuilder : IInteractiveBuilder<TElement, TOption, TBuilder>
+    {
+        InteractiveGuards.NotNull(builder);
+
+        return builder.WithRestrictedPageFactory(users =>
+        {
+            return new PageBuilder()
+                .WithColor(Color.Orange)
+                .WithDescription($"🚫 Only {string.Join(", ", users.Select(x => x.Mention))} can respond to this interaction.")
+                .Build();
+        });
     }
 }

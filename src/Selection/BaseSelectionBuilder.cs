@@ -66,6 +66,18 @@ public abstract class BaseSelectionBuilder<TSelection, TOption, TBuilder>
     /// <inheritdoc />
     public virtual ActionOnStop ActionOnTimeout { get; set; }
 
+    /// <summary>
+    /// Gets or sets the behavior the <typeparamref name="TSelection"/> should exhibit when a user is not allowed to interact with it.
+    /// </summary>
+    /// <remarks>The default value is <see cref="RestrictedInputBehavior.Auto"/>.</remarks>
+    public virtual RestrictedInputBehavior RestrictedInputBehavior { get; set; }
+
+    /// <summary>
+    /// Gets or sets the factory of the <see cref="IPage"/> that will be displayed ephemerally to a user when they are not allowed to interact with the <typeparamref name="TSelection"/>.
+    /// </summary>
+    /// <remarks>The first argument of the factory is a read-only collection of users who are allowed to interact with the paginator.</remarks>
+    public virtual Func<IReadOnlyCollection<IUser>, IPage>? RestrictedPageFactory { get; set; }
+
     /// <inheritdoc/>
     public virtual ActionOnStop ActionOnSuccess { get; set; }
 
@@ -265,6 +277,41 @@ public abstract class BaseSelectionBuilder<TSelection, TOption, TBuilder>
     public virtual TBuilder WithActionOnTimeout(ActionOnStop action)
     {
         ActionOnTimeout = action;
+        return (TBuilder)this;
+    }
+
+    /// <summary>
+    /// Sets the behavior the <typeparamref name="TSelection"/> should exhibit when a user is not allowed to interact with it.
+    /// </summary>
+    /// <param name="behavior">The behavior.</param>
+    /// <returns>This builder.</returns>
+    public TBuilder WithRestrictedInputBehavior(RestrictedInputBehavior behavior)
+    {
+        RestrictedInputBehavior = behavior;
+        return (TBuilder)this;
+    }
+
+    /// <summary>
+    /// Sets the <see cref="IPage"/> that will be displayed ephemerally to a user when they are not allowed to interact with the <typeparamref name="TSelection"/>.
+    /// </summary>
+    /// <param name="page">The page.</param>
+    /// <returns>This builder.</returns>
+    public virtual TBuilder WithRestrictedPage(IPage page)
+    {
+        InteractiveGuards.NotNull(page);
+        return WithRestrictedPageFactory(_ => page);
+    }
+
+    /// <summary>
+    /// Sets the factory of the <see cref="IPage"/> that will be displayed ephemerally to a user when they are not allowed to interact with the <typeparamref name="TSelection"/>.
+    /// </summary>
+    /// <remarks>The first argument of the factory is a read-only collection of users who are allowed to interact with the selection.</remarks>
+    /// <param name="pageFactory">The restricted page factory. The first argument is a read-only collection of users who are allowed to interact with the selection.</param>
+    /// <returns>This builder.</returns>
+    public virtual TBuilder WithRestrictedPageFactory(Func<IReadOnlyCollection<IUser>, IPage> pageFactory)
+    {
+        InteractiveGuards.NotNull(pageFactory);
+        RestrictedPageFactory = pageFactory;
         return (TBuilder)this;
     }
 

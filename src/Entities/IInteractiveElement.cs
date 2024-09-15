@@ -30,6 +30,11 @@ public interface IInteractiveElement<out TOption> : IInteractiveInputHandler
     IPage? TimeoutPage { get; }
 
     /// <summary>
+    /// Gets the <see cref="IPage"/> that will be displayed ephemerally to a user when they are not allowed to interact with this element.
+    /// </summary>
+    IPage? RestrictedPage { get; }
+
+    /// <summary>
     /// Gets what type of inputs this element should delete.
     /// </summary>
     DeletionOptions Deletion { get; }
@@ -48,6 +53,11 @@ public interface IInteractiveElement<out TOption> : IInteractiveInputHandler
     /// Gets the action that will be done after a timeout.
     /// </summary>
     ActionOnStop ActionOnTimeout { get; }
+
+    /// <summary>
+    /// Gets the behavior the element should exhibit when a user is not allowed to interact with it.
+    /// </summary>
+    RestrictedInputBehavior RestrictedInputBehavior { get; }
 
     /// <summary>
     /// Gets a <see cref="ComponentBuilder"/> containing the components that a message that represents this element would have.<br/>

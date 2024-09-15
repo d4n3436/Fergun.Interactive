@@ -32,6 +32,11 @@ public abstract class BaseSelection<TOption> : IInteractiveElement<TOption>
         InteractiveGuards.NotEmpty(properties.Options);
         InteractiveGuards.NoDuplicates(properties.Options, properties.EqualityComparer);
 
+        if (properties.RestrictedInputBehavior == RestrictedInputBehavior.SendMessage)
+        {
+            InteractiveGuards.NotNull(properties.RestrictedPageFactory);
+        }
+
         StringConverter = properties.StringConverter;
         EmoteConverter = properties.EmoteConverter;
         EqualityComparer = properties.EqualityComparer;
@@ -42,11 +47,13 @@ public abstract class BaseSelection<TOption> : IInteractiveElement<TOption>
         Options = properties.Options.ToArray();
         CanceledPage = properties.CanceledPage?.Build();
         TimeoutPage = properties.TimeoutPage?.Build();
+        RestrictedPage = properties.RestrictedPageFactory?.Invoke(Users);
         SuccessPage = properties.SuccessPage?.Build();
         Deletion = properties.Deletion;
         InputType = properties.InputType;
         ActionOnCancellation = properties.ActionOnCancellation;
         ActionOnTimeout = properties.ActionOnTimeout;
+        RestrictedInputBehavior = properties.RestrictedInputBehavior;
         ActionOnSuccess = properties.ActionOnSuccess;
 
         if (StringConverter is null && (!InputType.HasFlag(InputType.Buttons) || EmoteConverter is null))
@@ -105,6 +112,11 @@ public abstract class BaseSelection<TOption> : IInteractiveElement<TOption>
     public IPage? TimeoutPage { get; }
 
     /// <summary>
+    /// Gets the <see cref="IPage"/> that will be displayed ephemerally to a user when they are not allowed to interact with this selection.
+    /// </summary>
+    public IPage? RestrictedPage { get; }
+
+    /// <summary>
     /// Gets the <see cref="IPage"/> which this selection gets modified to after a valid input is received
     /// (except if <see cref="CancelOption"/> is received).
     /// </summary>
@@ -121,6 +133,11 @@ public abstract class BaseSelection<TOption> : IInteractiveElement<TOption>
 
     /// <inheritdoc/>
     public ActionOnStop ActionOnTimeout { get; }
+
+    /// <summary>
+    /// Gets the behavior the selection should exhibit when a user is not allowed to interact with it.
+    /// </summary>
+    public RestrictedInputBehavior RestrictedInputBehavior { get; }
 
     /// <summary>
     /// Gets the action that will be done after valid input is received (except if <see cref="CancelOption"/> is received).
@@ -291,19 +308,30 @@ public abstract class BaseSelection<TOption> : IInteractiveElement<TOption>
     }
 
     /// <inheritdoc cref="IInteractiveInputHandler.HandleInteractionAsync"/>
-    public virtual Task<InteractiveInputResult<TOption>> HandleInteractionAsync(SocketMessageComponent input, IUserMessage message)
+    public virtual async Task<InteractiveInputResult<TOption>> HandleInteractionAsync(SocketMessageComponent input, IUserMessage message)
     {
         InteractiveGuards.NotNull(input);
         InteractiveGuards.NotNull(message);
 
         if (!InputType.HasFlag(InputType.Buttons) && !InputType.HasFlag(InputType.SelectMenus))
         {
-            return Task.FromResult<InteractiveInputResult<TOption>>(InteractiveInputStatus.Ignored);
+            return InteractiveInputStatus.Ignored;
         }
 
-        if (input.Message.Id != message.Id || !this.CanInteract(input.User))
+        if (input.Message.Id != message.Id)
         {
-            return Task.FromResult<InteractiveInputResult<TOption>>(InteractiveInputStatus.Ignored);
+            return InteractiveInputStatus.Ignored;
+        }
+
+        if (!this.CanInteract(input.User))
+        {
+            return RestrictedInputBehavior switch
+            {
+                RestrictedInputBehavior.Ignore or RestrictedInputBehavior.Auto when RestrictedPage is null => InteractiveInputStatus.Ignored,
+                RestrictedInputBehavior.SendMessage or RestrictedInputBehavior.Auto when RestrictedPage is not null => await SendRestrictedMessageAsync(input).ConfigureAwait(false),
+                RestrictedInputBehavior.Defer => await DeferInteractionAsync(input).ConfigureAwait(false),
+                _ => InteractiveInputStatus.Ignored
+            };
         }
 
         TOption? selected = default;
@@ -317,7 +345,7 @@ public abstract class BaseSelection<TOption> : IInteractiveElement<TOption>
 
         if (customId is null)
         {
-            return Task.FromResult<InteractiveInputResult<TOption>>(InteractiveInputStatus.Ignored);
+            return InteractiveInputStatus.Ignored;
         }
 
         foreach (var value in Options)
@@ -331,12 +359,12 @@ public abstract class BaseSelection<TOption> : IInteractiveElement<TOption>
 
         if (selectedString is null)
         {
-            return Task.FromResult<InteractiveInputResult<TOption>>(InteractiveInputStatus.Ignored);
+            return InteractiveInputStatus.Ignored;
         }
 
         bool isCanceled = AllowCancel && (EmoteConverter?.Invoke(CancelOption)?.ToString() ?? StringConverter?.Invoke(CancelOption)) == selectedString;
 
-        return Task.FromResult(new InteractiveInputResult<TOption>(isCanceled ? InteractiveInputStatus.Canceled : InteractiveInputStatus.Success, selected));
+        return new InteractiveInputResult<TOption>(isCanceled ? InteractiveInputStatus.Canceled : InteractiveInputStatus.Success, selected);
     }
 
     /// <inheritdoc/>
@@ -387,5 +415,25 @@ public abstract class BaseSelection<TOption> : IInteractiveElement<TOption>
                 await message.AddReactionAsync(emote).ConfigureAwait(false);
             }
         }
+    }
+
+    private async Task<InteractiveInputResult<TOption>> SendRestrictedMessageAsync(SocketMessageComponent input)
+    {
+        var page = RestrictedPage;
+        if (page is null)
+        {
+            throw new InvalidOperationException($"Expected {nameof(RestrictedPage)} to be non-null.");
+        }
+
+        var attachments = page.AttachmentsFactory is null ? null : await page.AttachmentsFactory().ConfigureAwait(false);
+        await input.RespondWithFilesAsync(attachments ?? [], page.Text, page.GetEmbedArray(), page.IsTTS, true, page.AllowedMentions).ConfigureAwait(false);
+
+        return InteractiveInputStatus.Ignored;
+    }
+
+    private static async Task<InteractiveInputResult<TOption>> DeferInteractionAsync(SocketMessageComponent input)
+    {
+        await input.DeferAsync().ConfigureAwait(false);
+        return InteractiveInputStatus.Ignored;
     }
 }

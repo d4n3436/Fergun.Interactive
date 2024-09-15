@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using Discord;
 
@@ -59,6 +60,18 @@ public interface IInteractiveBuilderProperties<TOption>
     /// Gets or sets the action that will be done after a timeout.
     /// </summary>
     ActionOnStop ActionOnTimeout { get; set; }
+
+    /// <summary>
+    /// Gets or sets the behavior the element should exhibit when a user is not allowed to interact with it.
+    /// </summary>
+    /// <remarks>The default value is <see cref="RestrictedInputBehavior.Auto"/>.</remarks>
+    RestrictedInputBehavior RestrictedInputBehavior { get; set; }
+
+    /// <summary>
+    /// Gets or sets the factory of the <see cref="IPage"/> that will be displayed ephemerally to a user when they are not allowed to interact with the element.
+    /// </summary>
+    /// <remarks>The first argument of the factory is a read-only collection of users who are allowed to interact with the paginator.</remarks>
+    Func<IReadOnlyCollection<IUser>, IPage>? RestrictedPageFactory { get; set; }
 }
 
 /// <summary>
@@ -151,4 +164,26 @@ public interface IInteractiveBuilderMethods<out TElement, TOption, out TBuilder>
     /// <param name="action">The action.</param>
     /// <returns>This builder.</returns>
     TBuilder WithActionOnTimeout(ActionOnStop action);
+
+    /// <summary>
+    /// Sets the behavior the <typeparamref name="TElement"/> should exhibit when a user is not allowed to interact with it.
+    /// </summary>
+    /// <param name="behavior">The behavior.</param>
+    /// <returns>This builder.</returns>
+    TBuilder WithRestrictedInputBehavior(RestrictedInputBehavior behavior);
+
+    /// <summary>
+    /// Sets the <see cref="IPage"/> that will be displayed ephemerally to a user when they are not allowed to interact with the <typeparamref name="TElement"/>.
+    /// </summary>
+    /// <param name="page">The page.</param>
+    /// <returns>This builder.</returns>
+    TBuilder WithRestrictedPage(IPage page);
+
+    /// <summary>
+    /// Sets the factory of the <see cref="IPage"/> that will be displayed ephemerally to a user when they are not allowed to interact with the <typeparamref name="TElement"/>.
+    /// </summary>
+    /// <remarks>The first argument of the factory is a read-only collection of users who are allowed to interact with the paginator.</remarks>
+    /// <param name="pageFactory">The restricted page factory.</param>
+    /// <returns>This builder.</returns>
+    TBuilder WithRestrictedPageFactory(Func<IReadOnlyCollection<IUser>, IPage> pageFactory);
 }
