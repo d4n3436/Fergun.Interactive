@@ -311,15 +311,7 @@ public abstract class BaseSelection<TOption> : IInteractiveElement<TOption>
         string? customId = input.Data.Type switch
         {
             ComponentType.Button => input.Data.CustomId,
-            ComponentType.SelectMenu => (input
-                    .Message
-                    .Components
-                    .FirstOrDefault(x => x.Components.Any(y => y.Type == ComponentType.SelectMenu && y.CustomId == input.Data.CustomId))?
-                    .Components
-                    .FirstOrDefault() as SelectMenuComponent)?
-                .Options
-                .FirstOrDefault(x => x.Value == input.Data.Values.FirstOrDefault())?
-                .Value,
+            ComponentType.SelectMenu => input.Data.Values.FirstOrDefault(),
             _ => null
         };
 
