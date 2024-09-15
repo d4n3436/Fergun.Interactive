@@ -58,16 +58,16 @@ Example modules:
   - [Wait for an interaction](ExampleBot/Modules/WaitModule.cs#L47) (`!next interaction`)
 
 - Selection
-  - [Simple selection](ExampleBot/Modules/SelectionModule.cs#L28) (`!select simple`)
-  - [Emote selection](ExampleBot/Modules/SelectionModule.cs#L68) (`!select emote`) (for selections using reactions/buttons as input)
-  - [Emote selection 2](ExampleBot/Modules/SelectionModule.cs#L102) (`!select emote2`)
-  - [Selection with extra features](ExampleBot/Modules/SelectionModule.cs#L139) (`!select extra`)
-  - [Menu](ExampleBot/Modules/SelectionModule.cs#L193) (`!select menu`) (How to reuse a selection message)
+  - [Simple selection](ExampleBot/Modules/SelectionModule.cs#L29) (`!select simple`)
+  - [Emote selection](ExampleBot/Modules/SelectionModule.cs#L69) (`!select emote`) (for selections using reactions/buttons as input)
+  - [Emote selection 2](ExampleBot/Modules/SelectionModule.cs#L104) (`!select emote2`)
+  - [Selection with extra features](ExampleBot/Modules/SelectionModule.cs#L141) (`!select extra`)
+  - [Menu](ExampleBot/Modules/SelectionModule.cs#L195) (`!select menu`) (How to reuse a selection message)
 
 - Pagination
-  - [Static paginator](ExampleBot/Modules/PaginatorModule.cs#L26) (`!paginator static`)
-  - [Lazy paginator](ExampleBot/Modules/PaginatorModule.cs#L60) (`!paginator lazy`)
-  - [Image paginator](ExampleBot/Modules/PaginatorModule.cs#L80) (`!paginator img [query]`)
+  - [Static paginator](ExampleBot/Modules/PaginatorModule.cs#L27) (`!paginator static`)
+  - [Lazy paginator](ExampleBot/Modules/PaginatorModule.cs#L68) (`!paginator lazy`)
+  - [Image paginator](ExampleBot/Modules/PaginatorModule.cs#L89) (`!paginator img [query]`)
 
 - Customization
   - [Selection with custom button colors](ExampleBot/Modules/CustomButtonModule.cs#L16) (`!custom button`)

@@ -7,6 +7,7 @@ using Discord;
 using Discord.Commands;
 using ExampleBot.Extensions;
 using Fergun.Interactive;
+using Fergun.Interactive.Extensions;
 using Fergun.Interactive.Selection;
 
 namespace ExampleBot.Modules;
@@ -80,6 +81,7 @@ public class SelectionModule : ModuleBase
 
         var selection = new EmoteSelectionBuilder()
             .AddUser(Context.User)
+            .WithDefaultRestrictedPage() // Set a page that a user will see if they are not allowed to use the paginator. This is an extension method that provides a default page for convenience.
             .WithOptions(emotes)
             .WithSelectionPage(pageBuilder)
             // Normally you would need to specify an EmoteConverter, but EmoteSelectionBuilder has already implemented a default converter for emotes.

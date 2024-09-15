@@ -5,6 +5,7 @@ using Discord;
 using Discord.Commands;
 using ExampleBot.Extensions;
 using Fergun.Interactive;
+using Fergun.Interactive.Extensions;
 using Fergun.Interactive.Pagination;
 using GScraper.Google;
 
@@ -27,10 +28,17 @@ public class PaginatorModule : ModuleBase
     {
         IPageBuilder[] pages =
         [
-            new PageBuilder().WithDescription("Lorem ipsum dolor sit amet, consectetur adipiscing elit."),
-            new PageBuilder().WithDescription("Praesent eu est vitae dui sollicitudin volutpat."),
-            new PageBuilder().WithDescription("Etiam in ex sed turpis imperdiet viverra id eget nunc."),
-            new PageBuilder().WithDescription("Donec eget feugiat nisi. Praesent faucibus malesuada nulla, a vulputate velit eleifend ut.")
+            new PageBuilder().WithDescription("This is the first page of the static paginator. Use the provided buttons to navigate through the pages.").WithColor(Color.Blue),
+            new MultiEmbedPageBuilder
+            {
+                Builders =
+                [
+                    new EmbedBuilder().WithTitle("Customization").WithColor(Color.Gold),
+                    new EmbedBuilder().WithDescription("You can customize the paginator with various settings, including user restrictions, timeouts and the ability to have multiple embeds.").WithColor(Color.LightGrey)
+                ]
+            },
+            new PageBuilder().WithDescription($"This paginator is restricted to {Context.User.Mention} and will expire in 10 minutes.").WithColor(Color.Green),
+            new PageBuilder().WithDescription("Once the paginator reaches the last page, the 'Forward' and 'Skip to end' buttons are automatically disabled since there are no further pages to navigate.").WithColor(Color.Red)
         ];
 
         var paginator = new StaticPaginatorBuilder()
@@ -61,6 +69,7 @@ public class PaginatorModule : ModuleBase
     {
         var paginator = new LazyPaginatorBuilder()
             .AddUser(Context.User)
+            .WithDefaultRestrictedPage() // Set a page that a user will see if they are not allowed to use the paginator. This is an extension method that provides a default page for convenience.
             .WithPageFactory(GeneratePage) // The pages are now generated on demand using a local method.
             .WithMaxPageIndex(9) // You must specify the max. index the page factory can go. max. index 9 = 10 pages
             .Build();
@@ -85,7 +94,7 @@ public class PaginatorModule : ModuleBase
         var paginator = new LazyPaginatorBuilder()
             .AddUser(Context.User)
             .WithPageFactory(GeneratePage)
-            .WithMaxPageIndex(images.Count - 1) // You must specify the max. index the page factory can go.
+            .WithMaxPageIndex(images) // Convenience extension method that sets the max. page index based on the number of items in a collection.
             .AddOption(context =>
             {
                 // Factory method that creates a disabled blurple button with text "Page x / y"
