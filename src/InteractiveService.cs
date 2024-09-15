@@ -348,80 +348,80 @@ public class InteractiveService
         => await NextEntityAsync(filter, action, timeout, cancellationToken).ConfigureAwait(false);
 
     /// <summary>
-    /// Gets the next message component that passes the <paramref name="filter"/>.
+    /// Gets the next component interaction that passes the <paramref name="filter"/>.
     /// </summary>
-    /// <param name="filter">A filter which the message component has to pass.</param>
+    /// <param name="filter">A filter which the component interaction has to pass.</param>
     /// <param name="action">
     /// An action which gets executed to incoming interactions,
-    /// where <see cref="SocketMessageComponent"/> is the incoming message component and <see cref="bool"/>
-    /// is whether the message component passed the <paramref name="filter"/>.
+    /// where <see cref="SocketMessageComponent"/> is the incoming component interaction and <see cref="bool"/>
+    /// is whether the component interaction passed the <paramref name="filter"/>.
     /// </param>
     /// <param name="timeout">The time to wait before the methods returns a timeout result.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to cancel the request.</param>
     /// <returns>
-    /// A task that represents the asynchronous wait operation for the next message component.
+    /// A task that represents the asynchronous wait operation for the next component interaction.
     /// The task result contains an <see cref="InteractiveResult{T}"/> with the
-    /// message component (if successful), the elapsed time and the status.
+    /// component interaction (if successful), the elapsed time and the status.
     /// </returns>
     public async Task<InteractiveResult<SocketMessageComponent?>> NextMessageComponentAsync(Func<SocketMessageComponent, bool>? filter = null,
         Func<SocketMessageComponent, bool, Task>? action = null, TimeSpan? timeout = null, CancellationToken cancellationToken = default)
         => await NextEntityAsync(filter, action, timeout, cancellationToken).ConfigureAwait(false);
 
     /// <summary>
-    /// Gets the next slash command that passes the <paramref name="filter"/>.
+    /// Gets the next slash command interaction that passes the <paramref name="filter"/>.
     /// </summary>
-    /// <param name="filter">A filter which the slash command has to pass.</param>
+    /// <param name="filter">A filter which the slash command interaction has to pass.</param>
     /// <param name="action">
     /// An action which gets executed to incoming interactions,
-    /// where <see cref="SocketSlashCommand"/> is the incoming slash command and <see cref="bool"/>
-    /// is whether the slash command passed the <paramref name="filter"/>.
+    /// where <see cref="SocketSlashCommand"/> is the incoming slash command interaction and <see cref="bool"/>
+    /// is whether the slash command interaction passed the <paramref name="filter"/>.
     /// </param>
     /// <param name="timeout">The time to wait before the methods returns a timeout result.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to cancel the request.</param>
     /// <returns>
-    /// A task that represents the asynchronous wait operation for the next slash command.
+    /// A task that represents the asynchronous wait operation for the next slash command interaction.
     /// The task result contains an <see cref="InteractiveResult{T}"/> with the
-    /// slash command (if successful), the elapsed time and the status.
+    /// slash command interaction (if successful), the elapsed time and the status.
     /// </returns>
     public async Task<InteractiveResult<SocketSlashCommand?>> NextSlashCommandAsync(Func<SocketSlashCommand, bool>? filter = null,
         Func<SocketSlashCommand, bool, Task>? action = null, TimeSpan? timeout = null, CancellationToken cancellationToken = default)
         => await NextEntityAsync(filter, action, timeout, cancellationToken).ConfigureAwait(false);
 
     /// <summary>
-    /// Gets the next user command that passes the <paramref name="filter"/>.
+    /// Gets the next user command interaction that passes the <paramref name="filter"/>.
     /// </summary>
-    /// <param name="filter">A filter which the user command has to pass.</param>
+    /// <param name="filter">A filter which the user command interaction has to pass.</param>
     /// <param name="action">
     /// An action which gets executed to incoming interactions,
-    /// where <see cref="SocketUserCommand"/> is the incoming user command and <see cref="bool"/>
-    /// is whether the user command passed the <paramref name="filter"/>.
+    /// where <see cref="SocketUserCommand"/> is the incoming user command interaction and <see cref="bool"/>
+    /// is whether the user command interaction passed the <paramref name="filter"/>.
     /// </param>
     /// <param name="timeout">The time to wait before the methods returns a timeout result.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to cancel the request.</param>
     /// <returns>
-    /// A task that represents the asynchronous wait operation for the next user command.
+    /// A task that represents the asynchronous wait operation for the next user command interaction.
     /// The task result contains an <see cref="InteractiveResult{T}"/> with the
-    /// user command (if successful), the elapsed time and the status.
+    /// user command interaction (if successful), the elapsed time and the status.
     /// </returns>
     public async Task<InteractiveResult<SocketUserCommand?>> NextUserCommandAsync(Func<SocketUserCommand, bool>? filter = null,
         Func<SocketUserCommand, bool, Task>? action = null, TimeSpan? timeout = null, CancellationToken cancellationToken = default)
         => await NextEntityAsync(filter, action, timeout, cancellationToken).ConfigureAwait(false);
 
     /// <summary>
-    /// Gets the next message command that passes the <paramref name="filter"/>.
+    /// Gets the next message command interaction that passes the <paramref name="filter"/>.
     /// </summary>
-    /// <param name="filter">A filter which the message command has to pass.</param>
+    /// <param name="filter">A filter which the message command interaction has to pass.</param>
     /// <param name="action">
     /// An action which gets executed to incoming interactions,
-    /// where <see cref="SocketMessageCommand"/> is the incoming message command and <see cref="bool"/>
-    /// is whether the message command passed the <paramref name="filter"/>.
+    /// where <see cref="SocketMessageCommand"/> is the incoming message command interaction and <see cref="bool"/>
+    /// is whether the message command interaction passed the <paramref name="filter"/>.
     /// </param>
     /// <param name="timeout">The time to wait before the methods returns a timeout result.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to cancel the request.</param>
     /// <returns>
-    /// A task that represents the asynchronous wait operation for the next message command.
+    /// A task that represents the asynchronous wait operation for the next message command interaction.
     /// The task result contains an <see cref="InteractiveResult{T}"/> with the
-    /// message command (if successful), the elapsed time and the status.
+    /// message command interaction (if successful), the elapsed time and the status.
     /// </returns>
     public async Task<InteractiveResult<SocketMessageCommand?>> NextMessageCommandAsync(Func<SocketMessageCommand, bool>? filter = null,
         Func<SocketMessageCommand, bool, Task>? action = null, TimeSpan? timeout = null, CancellationToken cancellationToken = default)

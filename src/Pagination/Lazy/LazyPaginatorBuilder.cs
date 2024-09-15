@@ -1,8 +1,6 @@
 namespace Fergun.Interactive.Pagination;
 
-/// <summary>
-/// Represents a builder class for making a <see cref="LazyPaginator"/>.
-/// </summary>
+/// <inheritdoc/>
 public sealed class LazyPaginatorBuilder : BaseLazyPaginatorBuilder<LazyPaginator, LazyPaginatorBuilder>
 {
     /// <summary>

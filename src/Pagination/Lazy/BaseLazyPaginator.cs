@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 namespace Fergun.Interactive.Pagination;
 
 /// <summary>
-/// Represents the base of lazy paginators.
+/// Represents a paginator that lazily loads pages using a factory.
 /// </summary>
 public abstract class BaseLazyPaginator : Paginator
 {

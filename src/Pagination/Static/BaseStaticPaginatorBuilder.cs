@@ -4,7 +4,8 @@ using System.Linq;
 namespace Fergun.Interactive.Pagination;
 
 /// <summary>
-/// Represents the base of static paginator builders.
+/// Represents a builder class for constructing instances of <typeparamref name="TPaginator"/>.
+/// The paginator holds a fixed, read-only collection of pages.
 /// </summary>
 /// <typeparam name="TPaginator">The type of the paginator.</typeparam>
 /// <typeparam name="TBuilder">The type of the builder.</typeparam>

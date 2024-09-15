@@ -1,7 +1,7 @@
 namespace Fergun.Interactive.Pagination;
 
 /// <summary>
-/// Specifies the paginator actions related to emotes.
+/// Defines the possible actions a paginator can perform.
 /// </summary>
 public enum PaginatorAction
 {
@@ -16,17 +16,17 @@ public enum PaginatorAction
     Backward,
 
     /// <summary>
-    /// Skip to the end.
+    /// Skip to the end (last page).
     /// </summary>
     SkipToEnd,
 
     /// <summary>
-    /// Skip to the start.
+    /// Skip to the start (first page).
     /// </summary>
     SkipToStart,
 
     /// <summary>
-    /// Exit the paginator.
+    /// Exit (stop) the paginator.
     /// </summary>
     Exit,
 

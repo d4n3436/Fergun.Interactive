@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 namespace Fergun.Interactive.Pagination;
 
 /// <summary>
-/// Represents the base of static paginators.
+/// Represents a paginator that holds a fixed, read-only collection of pages.
 /// </summary>
 public abstract class BaseStaticPaginator : Paginator
 {

@@ -1,8 +1,6 @@
 namespace Fergun.Interactive.Pagination;
 
-/// <summary>
-/// Represents a lazy paginator.
-/// </summary>
+/// <inheritdoc/>
 public sealed class LazyPaginator : BaseLazyPaginator
 {
     internal LazyPaginator(LazyPaginatorBuilder properties)

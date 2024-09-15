@@ -11,6 +11,7 @@ public interface IBaseLazyPaginatorBuilderProperties : IBasePaginatorBuilderProp
     /// <summary>
     /// Gets or sets the method used to load the pages of the paginator lazily.
     /// </summary>
+    /// <remarks>The first argument of the factory is the current page index.</remarks>
     Func<int, Task<IPageBuilder>> PageFactory { get; set; }
 
     /// <summary>

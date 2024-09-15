@@ -7,7 +7,7 @@ using Discord;
 namespace Fergun.Interactive.Pagination;
 
 /// <summary>
-/// Represents an abstract paginator builder.
+/// Represents a builder class for constructing instances of <typeparamref name="TPaginator"/>.
 /// </summary>
 /// <typeparam name="TPaginator">The type of the paginator.</typeparam>
 /// <typeparam name="TBuilder">The type of the builder.</typeparam>
@@ -61,6 +61,7 @@ public abstract class PaginatorBuilder<TPaginator, TBuilder>
     public virtual IPageBuilder? TimeoutPage { get; set; }
 
     /// <inheritdoc/>
+    /// <remarks>This property is ignored on button-based paginators.</remarks>
     public virtual DeletionOptions Deletion { get; set; } = DeletionOptions.Valid | DeletionOptions.Invalid;
 
     /// <inheritdoc/>

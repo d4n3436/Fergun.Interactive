@@ -1,8 +1,6 @@
 namespace Fergun.Interactive.Pagination;
 
-/// <summary>
-/// Represents a builder class for making a <see cref="StaticPaginator"/>.
-/// </summary>
+///<inheritdoc/>
 public sealed class StaticPaginatorBuilder : BaseStaticPaginatorBuilder<StaticPaginator, StaticPaginatorBuilder>
 {
     /// <summary>

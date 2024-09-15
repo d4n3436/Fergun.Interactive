@@ -4,7 +4,8 @@ using System.Threading.Tasks;
 namespace Fergun.Interactive.Pagination;
 
 /// <summary>
-/// Represents the base of lazy paginator builders.
+/// Represents a builder class for constructing instances of <typeparamref name="TPaginator"/>.
+/// The paginator lazy-loads pages using a factory.
 /// </summary>
 /// <typeparam name="TPaginator">The type of the paginator.</typeparam>
 /// <typeparam name="TBuilder">The type of the builder.</typeparam>
@@ -23,9 +24,10 @@ public abstract class BaseLazyPaginatorBuilder<TPaginator, TBuilder>
     public virtual bool CacheLoadedPages { get; set; } = true;
 
     /// <summary>
-    /// Sets the <see cref="PageFactory"/> of the paginator.
+    /// Sets the method used to load the pages of the paginator lazily.
     /// </summary>
-    /// <param name="pageFactory">The page factory.</param>
+    /// <remarks>The first argument of the factory is the current page index.</remarks>
+    /// <param name="pageFactory">The page factory. The first argument is the current page index.</param>
     /// <returns>This builder.</returns>
     public virtual TBuilder WithPageFactory(Func<int, IPageBuilder> pageFactory)
     {
@@ -34,9 +36,10 @@ public abstract class BaseLazyPaginatorBuilder<TPaginator, TBuilder>
     }
 
     /// <summary>
-    /// Sets the <see cref="PageFactory"/> of the paginator.
+    /// Sets the method used to load the pages of the paginator lazily.
     /// </summary>
-    /// <param name="pageFactory">The page factory.</param>
+    /// <remarks>The first argument of the factory is the current page index.</remarks>
+    /// <param name="pageFactory">The page factory. The first argument is the current page index.</param>
     /// <typeparam name="TPageBuilder">A type that is or implements <see cref="IPageBuilder"/>.</typeparam>
     /// <returns>This builder.</returns>
     public virtual TBuilder WithPageFactory<TPageBuilder>(Func<int, Task<TPageBuilder>> pageFactory)

@@ -53,9 +53,11 @@ public abstract class BaseSelectionBuilder<TSelection, TOption, TBuilder>
     public virtual IPageBuilder? SuccessPage { get; set; }
 
     /// <inheritdoc />
+    /// <remarks>This property is ignored on interaction-based selections.</remarks>
     public virtual DeletionOptions Deletion { get; set; } = DeletionOptions.Valid;
 
     /// <inheritdoc />
+    /// <remarks>The default value is <see cref="InputType.Buttons"/>.</remarks>
     public virtual InputType InputType { get; set; } = InputType.Buttons;
 
     /// <inheritdoc />
@@ -122,11 +124,11 @@ public abstract class BaseSelectionBuilder<TSelection, TOption, TBuilder>
     }
 
     /// <summary>
-    /// Sets whether the <see cref="BaseSelection{TOption}"/> allows for cancellation.
+    /// Sets whether the <typeparamref name="TSelection"/> allows for cancellation.
     /// </summary>
     /// <param name="allowCancel">Whether this selection allows for cancellation.</param>
     /// <remarks>When this value is <see langword="true"/>, the last element in <see cref="Options"/>
-    /// will be used to cancel the <see cref="BaseSelection{TOption}"/>.</remarks>
+    /// will be used to cancel the <typeparamref name="TSelection"/>.</remarks>
     /// <returns>This builder.</returns>
     public virtual TBuilder WithAllowCancel(bool allowCancel)
     {
@@ -147,7 +149,7 @@ public abstract class BaseSelectionBuilder<TSelection, TOption, TBuilder>
     }
 
     /// <summary>
-    /// Sets the users who can interact with the <see cref="BaseSelection{TOption}"/>.
+    /// Sets the users who can interact with the <typeparamref name="TSelection"/>.
     /// </summary>
     /// <param name="users">The users.</param>
     /// <returns>This builder.</returns>
@@ -159,7 +161,7 @@ public abstract class BaseSelectionBuilder<TSelection, TOption, TBuilder>
     }
 
     /// <summary>
-    /// Sets the users who can interact with the <see cref="BaseSelection{TOption}"/>.
+    /// Sets the users who can interact with the <typeparamref name="TSelection"/>.
     /// </summary>
     /// <param name="users">The users.</param>
     /// <returns>This builder.</returns>
@@ -171,7 +173,7 @@ public abstract class BaseSelectionBuilder<TSelection, TOption, TBuilder>
     }
 
     /// <summary>
-    /// Adds a user who can interact with the <see cref="BaseSelection{TOption}"/>.
+    /// Adds a user who can interact with the <typeparamref name="TSelection"/>.
     /// </summary>
     /// <param name="user">The user.</param>
     /// <returns>This builder.</returns>
@@ -198,7 +200,7 @@ public abstract class BaseSelectionBuilder<TSelection, TOption, TBuilder>
     }
 
     /// <summary>
-    /// Sets the <see cref="IPage"/> which the <see cref="BaseSelection{TOption}"/> gets modified to after a cancellation.
+    /// Sets the <see cref="IPage"/> which the <typeparamref name="TSelection"/> gets modified to after a cancellation.
     /// </summary>
     /// <param name="page">The page.</param>
     /// <returns>This builder.</returns>
@@ -209,7 +211,7 @@ public abstract class BaseSelectionBuilder<TSelection, TOption, TBuilder>
     }
 
     /// <summary>
-    /// Sets the <see cref="IPage"/> which the <see cref="BaseSelection{TOption}"/> gets modified to after a timeout.
+    /// Sets the <see cref="IPage"/> which the <typeparamref name="TSelection"/> gets modified to after a timeout.
     /// </summary>
     /// <param name="page">The page.</param>
     /// <returns>This builder.</returns>
@@ -220,7 +222,7 @@ public abstract class BaseSelectionBuilder<TSelection, TOption, TBuilder>
     }
 
     /// <summary>
-    /// Sets the <see cref="IPage"/> which the <see cref="BaseSelection{TOption}"/> gets modified to after a valid input is received (except cancellation inputs).
+    /// Sets the <see cref="IPage"/> which the <typeparamref name="TSelection"/> gets modified to after a valid input is received (except cancellation inputs).
     /// </summary>
     /// <param name="page">The page.</param>
     /// <returns>This builder.</returns>
@@ -231,7 +233,7 @@ public abstract class BaseSelectionBuilder<TSelection, TOption, TBuilder>
     }
 
     /// <summary>
-    /// Sets what type of inputs the <see cref="BaseSelection{TOption}"/> should delete.
+    /// Sets what type of inputs the <typeparamref name="TSelection"/> should delete.
     /// </summary>
     /// <param name="deletion">The deletion options.</param>
     /// <returns>This builder.</returns>
@@ -242,7 +244,7 @@ public abstract class BaseSelectionBuilder<TSelection, TOption, TBuilder>
     }
 
     /// <summary>
-    /// Sets the input type, that is, what is used to interact with the <see cref="BaseSelection{TOption}"/>.
+    /// Sets the input type, that is, what is used to interact with the <typeparamref name="TSelection"/>.
     /// </summary>
     /// <param name="type">The input type.</param>
     /// <returns>This builder.</returns>

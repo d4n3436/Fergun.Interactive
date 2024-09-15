@@ -86,12 +86,12 @@ public abstract class Paginator : IInteractiveElement<KeyValuePair<IEmote, Pagin
     /// <summary>
     /// Gets the emotes and their related actions of this paginator.
     /// </summary>
+    /// <remarks>This property has been replaced by <see cref="ButtonFactories"/> and it shouldn't be used on button-based paginators.</remarks>
     public IReadOnlyDictionary<IEmote, PaginatorAction> Emotes { get; }
 
     /// <summary>
     /// Gets the button factories.
     /// </summary>
-    /// <remarks>This property is only used when <see cref="InputType"/> contains <see cref="InputType.Buttons"/>.</remarks>
     public IReadOnlyList<Func<IButtonContext, IPaginatorButton>> ButtonFactories { get; }
 
     /// <summary>
@@ -109,7 +109,7 @@ public abstract class Paginator : IInteractiveElement<KeyValuePair<IEmote, Pagin
     /// <summary>
     /// Gets what type of inputs this paginator should delete.
     /// </summary>
-    /// <remarks>This property is ignored in button-based paginators.</remarks>
+    /// <remarks>This property is ignored on button-based paginators.</remarks>
     public DeletionOptions Deletion { get; }
 
     /// <summary>
