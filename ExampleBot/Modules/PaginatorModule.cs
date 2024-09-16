@@ -14,7 +14,7 @@ namespace ExampleBot.Modules;
 [Group("paginator")]
 public class PaginatorModule : ModuleBase
 {
-    private static readonly GoogleScraper _scraper = new();
+    private static readonly GoogleScraper Scraper = new();
     private readonly InteractiveService _interactive;
 
     public PaginatorModule(InteractiveService interactive)
@@ -89,7 +89,7 @@ public class PaginatorModule : ModuleBase
     public async Task ImgAsync(string query = "discord")
     {
         // Get images from Google Images.
-        var images = (await _scraper.GetImagesAsync(query)).ToList();
+        var images = (await Scraper.GetImagesAsync(query)).ToList();
 
         var paginator = new LazyPaginatorBuilder()
             .AddUser(Context.User)

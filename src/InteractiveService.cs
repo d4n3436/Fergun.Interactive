@@ -1047,6 +1047,7 @@ public class InteractiveService
             {
                 // We want to delete the message so we don't care if the message has been already deleted.
             }
+
             return;
         }
 

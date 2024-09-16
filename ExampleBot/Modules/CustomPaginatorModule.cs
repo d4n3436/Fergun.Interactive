@@ -19,8 +19,8 @@ namespace ExampleBot.Modules;
 
 public partial class CustomModule
 {
-    private static readonly GoogleScraper _googleScraper = new();
-    private static readonly DuckDuckGoScraper _ddgScraper = new();
+    private static readonly GoogleScraper GoogleScraper = new();
+    private static readonly DuckDuckGoScraper DdgScraper = new();
 
     // Sends a paginated (paged) selection
     // A paged selection is a selection where each option contains a paginator
@@ -30,8 +30,8 @@ public partial class CustomModule
     {
         await Context.Channel.TriggerTypingAsync();
 
-        var googleTask = _googleScraper.GetImagesAsync(query);
-        var ddgTask = _ddgScraper.GetImagesAsync(query);
+        var googleTask = GoogleScraper.GetImagesAsync(query);
+        var ddgTask = DdgScraper.GetImagesAsync(query);
 
         try
         {
@@ -93,6 +93,7 @@ public partial class CustomModule
         }
     }
 }
+
 public class PagedSelectionBuilder<TOption> : BaseSelectionBuilder<PagedSelection<TOption>, KeyValuePair<TOption, Paginator>, PagedSelectionBuilder<TOption>>
 {
     public PagedSelection<TOption> Build(PageBuilder startPage)

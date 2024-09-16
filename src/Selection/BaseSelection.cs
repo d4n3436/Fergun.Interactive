@@ -419,12 +419,7 @@ public abstract class BaseSelection<TOption> : IInteractiveElement<TOption>
 
     private async Task<InteractiveInputResult<TOption>> SendRestrictedMessageAsync(SocketMessageComponent input)
     {
-        var page = RestrictedPage;
-        if (page is null)
-        {
-            throw new InvalidOperationException($"Expected {nameof(RestrictedPage)} to be non-null.");
-        }
-
+        var page = RestrictedPage ?? throw new InvalidOperationException($"Expected {nameof(RestrictedPage)} to be non-null.");
         var attachments = page.AttachmentsFactory is null ? null : await page.AttachmentsFactory().ConfigureAwait(false);
         await input.RespondWithFilesAsync(attachments ?? [], page.Text, page.GetEmbedArray(), page.IsTTS, true, page.AllowedMentions).ConfigureAwait(false);
 
