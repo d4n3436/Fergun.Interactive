@@ -62,7 +62,7 @@ public class PageBuilder : IPageBuilder<Page>, IPageBuilder
     /// <summary>
     /// Gets or sets the stickers of the <see cref="Page"/>.
     /// </summary>
-    public IReadOnlyCollection<ISticker> Stickers { get; set; } = Array.Empty<ISticker>();
+    public IReadOnlyCollection<ISticker> Stickers { get; set; } = [];
 
     /// <summary>
     /// Gets or sets the factory of attachments.

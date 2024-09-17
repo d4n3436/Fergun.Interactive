@@ -72,7 +72,7 @@ internal abstract class BaseInteractiveMessageResultBuilder<TValue, TSelf, TResu
     where TSelf : BaseInteractiveMessageResultBuilder<TValue, TSelf, TResult>
     where TResult : IInteractiveMessageResult
 {
-    public IReadOnlyList<TValue> Values { get; set; } = Array.Empty<TValue>();
+    public IReadOnlyList<TValue> Values { get; set; } = [];
 
     public TSelf WithValues(IReadOnlyList<TValue> values)
     {

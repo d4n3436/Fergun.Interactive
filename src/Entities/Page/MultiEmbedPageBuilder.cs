@@ -42,7 +42,7 @@ public class MultiEmbedPageBuilder : IPageBuilder<MultiEmbedPage>, IPageBuilder
     /// <summary>
     /// Gets or sets the stickers of the <see cref="MultiEmbedPage"/>.
     /// </summary>
-    public IReadOnlyCollection<ISticker> Stickers { get; set; } = Array.Empty<ISticker>();
+    public IReadOnlyCollection<ISticker> Stickers { get; set; } = [];
 
     /// <summary>
     /// Gets or sets the builders that will be in the page.

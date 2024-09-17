@@ -947,7 +947,7 @@ public class InteractiveService
         else
         {
             InteractiveGuards.NotNull(channel);
-            message = await channel.SendFilesAsync(attachments ?? Enumerable.Empty<FileAttachment>(), page.Text, page.IsTTS, null, null,
+            message = await channel.SendFilesAsync(attachments ?? [], page.Text, page.IsTTS, null, null,
                 page.AllowedMentions, page.MessageReference, component, page.Stickers.ToArray(), page.GetEmbedArray()).ConfigureAwait(false);
         }
 
@@ -972,12 +972,12 @@ public class InteractiveService
         switch (responseType)
         {
             case InteractionResponseType.ChannelMessageWithSource:
-                await interaction.RespondWithFilesAsync(attachments ?? Enumerable.Empty<FileAttachment>(),
+                await interaction.RespondWithFilesAsync(attachments ?? [],
                     page.Text, embeds, page.IsTTS, ephemeral, page.AllowedMentions, component).ConfigureAwait(false);
                 return await interaction.GetOriginalResponseAsync().ConfigureAwait(false);
 
             case InteractionResponseType.DeferredChannelMessageWithSource:
-                return await interaction.FollowupWithFilesAsync(attachments ?? Enumerable.Empty<FileAttachment>(),
+                return await interaction.FollowupWithFilesAsync(attachments ?? [],
                     page.Text, embeds, page.IsTTS, ephemeral, page.AllowedMentions, component).ConfigureAwait(false);
 
             case InteractionResponseType.DeferredUpdateMessage:

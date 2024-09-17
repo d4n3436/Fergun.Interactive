@@ -77,7 +77,7 @@ public class InteractiveInputResult<TOption> : InteractiveInputResult
     /// Gets a read-only list containing the selected options.
     /// </summary>
     /// <remarks>The list won't be empty if at least one or multiple options were selected (e.g., through a select menu).</remarks>
-    public IReadOnlyList<TOption> SelectedOptions { get; } = Array.Empty<TOption>();
+    public IReadOnlyList<TOption> SelectedOptions { get; } = [];
 
     /// <summary>
     /// Defines an implicit conversion of an <see cref="InteractiveInputStatus"/> to an <see cref="InteractiveInputResult{TOption}"/>.
