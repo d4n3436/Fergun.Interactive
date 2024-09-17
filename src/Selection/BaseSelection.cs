@@ -249,17 +249,15 @@ public abstract class BaseSelection<TOption> : IInteractiveElement<TOption>
         bool manageMessages = await message.Channel.CurrentUserHasManageMessagesAsync().ConfigureAwait(false);
 
         TOption? selected = default;
-        string? selectedString = null;
         foreach (var value in Options)
         {
             string? temp = StringConverter?.Invoke(value);
             if (temp != input.Content) continue;
-            selectedString = temp;
             selected = value;
             break;
         }
 
-        if (selectedString is null)
+        if (selected is null)
         {
             if (manageMessages && Deletion.HasFlag(DeletionOptions.Invalid))
             {
@@ -269,7 +267,7 @@ public abstract class BaseSelection<TOption> : IInteractiveElement<TOption>
             return InteractiveInputStatus.Ignored;
         }
 
-        bool isCanceled = AllowCancel && StringConverter?.Invoke(CancelOption) == selectedString;
+        bool isCanceled = AllowCancel && EqualityComparer.Equals(selected, CancelOption);
 
         if (isCanceled)
         {
@@ -298,17 +296,15 @@ public abstract class BaseSelection<TOption> : IInteractiveElement<TOption>
         bool manageMessages = await message.Channel.CurrentUserHasManageMessagesAsync().ConfigureAwait(false);
 
         TOption? selected = default;
-        IEmote? selectedEmote = null;
         foreach (var value in Options)
         {
             var temp = EmoteConverter?.Invoke(value);
             if (temp?.Name != input.Emote.Name) continue;
-            selectedEmote = temp;
             selected = value;
             break;
         }
 
-        if (selectedEmote is null)
+        if (selected is null)
         {
             if (manageMessages && Deletion.HasFlag(DeletionOptions.Invalid))
             {
@@ -318,7 +314,7 @@ public abstract class BaseSelection<TOption> : IInteractiveElement<TOption>
             return InteractiveInputStatus.Ignored;
         }
 
-        bool isCanceled = AllowCancel && EmoteConverter?.Invoke(CancelOption).Name == selectedEmote.Name;
+        bool isCanceled = AllowCancel && EqualityComparer.Equals(selected, CancelOption);
 
         if (isCanceled)
         {
@@ -376,7 +372,7 @@ public abstract class BaseSelection<TOption> : IInteractiveElement<TOption>
         foreach (var value in selectedValues)
         {
             var option = Options.FirstOrDefault(option => (EmoteConverter?.Invoke(option)?.ToString() ?? StringConverter?.Invoke(option)) == value);
-            if (option is not null && !EqualityComparer<TOption>.Default.Equals(option, default!))
+            if (option is not null && !EqualityComparer.Equals(option, default!))
             {
                 options.Add(option);
             }
@@ -387,8 +383,8 @@ public abstract class BaseSelection<TOption> : IInteractiveElement<TOption>
             return InteractiveInputStatus.Ignored;
         }
 
-        var status = AllowCancel && options.Contains(CancelOption) ? InteractiveInputStatus.Canceled : InteractiveInputStatus.Success;
-        return new InteractiveInputResult<TOption>(status, options);
+        var status = AllowCancel && options.Contains(CancelOption, EqualityComparer) ? InteractiveInputStatus.Canceled : InteractiveInputStatus.Success;
+        return new InteractiveInputResult<TOption>(status, options.AsReadOnly());
     }
 
     /// <inheritdoc/>
