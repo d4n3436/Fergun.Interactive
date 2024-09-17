@@ -61,8 +61,9 @@ Example modules:
   - [Simple selection](ExampleBot/Modules/SelectionModule.cs#L29) (`!select simple`)
   - [Emote selection](ExampleBot/Modules/SelectionModule.cs#L69) (`!select emote`) (for selections using reactions/buttons as input)
   - [Emote selection 2](ExampleBot/Modules/SelectionModule.cs#L104) (`!select emote2`)
-  - [Selection with extra features](ExampleBot/Modules/SelectionModule.cs#L141) (`!select extra`)
-  - [Menu](ExampleBot/Modules/SelectionModule.cs#L195) (`!select menu`) (How to reuse a selection message)
+  - [Selection that allows choosing multiple options](ExampleBot/Modules/SelectionModule.cs#L140) (`!select multi`)
+  - [Selection with extra features](ExampleBot/Modules/SelectionModule.cs#L187) (`!select extra`)
+  - [Menu](ExampleBot/Modules/SelectionModule.cs#L236) (`!select menu`) (How to reuse a selection message)
 
 - Pagination
   - [Static paginator](ExampleBot/Modules/PaginatorModule.cs#L27) (`!paginator static`)

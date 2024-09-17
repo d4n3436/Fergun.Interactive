@@ -66,4 +66,22 @@ public interface IBaseSelectionBuilderProperties<TOption> : IInteractiveBuilderP
     /// Gets or sets the action that will be done after valid input is received (except cancellation inputs).
     /// </summary>
     ActionOnStop ActionOnSuccess { get; set; }
+
+    /// <summary>
+    /// Gets or sets the minimum number of items a user must select.
+    /// </summary>
+    /// <remarks>Only applicable to selections using select menus.</remarks>
+    int MinValues { get; set; }
+
+    /// <summary>
+    /// Gets or sets the maximum number of items a user can select.
+    /// </summary>
+    /// <remarks>Only applicable to selections using select menus.</remarks>
+    int MaxValues { get; set; }
+
+    /// <summary>
+    /// Gets or sets the placeholder text of the selection.
+    /// </summary>
+    /// <remarks>Only applicable to selections using select menus.</remarks>
+    string? Placeholder { get; set; }
 }

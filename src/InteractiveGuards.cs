@@ -51,6 +51,34 @@ internal static class InteractiveGuards
         }
     }
 
+    public static void ValueInRange(int min, int max, int value, [CallerArgumentExpression(nameof(value))] string? parameterName = null)
+    {
+        if (value < min)
+        {
+            throw new ArgumentOutOfRangeException(parameterName, value, $"Value must be greater than or equal to {min}.");
+        }
+
+        if (value > max)
+        {
+            throw new ArgumentOutOfRangeException(parameterName, value, $"Value must be lower than or equal to {max}.");
+        }
+    }
+
+    public static void StringLengthInRange(int min, int max, string str, [CallerArgumentExpression(nameof(str))] string? parameterName = null)
+    {
+        NotNull(str);
+
+        if (str.Length < min)
+        {
+            throw new ArgumentOutOfRangeException(parameterName, str.Length, $"String length must be greater than or equal to {min}.");
+        }
+
+        if (str.Length > max)
+        {
+            throw new ArgumentOutOfRangeException(parameterName, str.Length, $"String length must be lower than or equal to {max}.");
+        }
+    }
+
     public static void ExpectedType<TInput, TExpected>(TInput obj, out TExpected expected, [CallerArgumentExpression(nameof(obj))] string? parameterName = null)
     {
         if (obj is not TExpected temp)

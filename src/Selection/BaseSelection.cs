@@ -43,6 +43,9 @@ public abstract class BaseSelection<TOption> : IInteractiveElement<TOption>
         SelectionPage = properties.SelectionPage.Build();
         AllowCancel = properties is { AllowCancel: true, Options.Count: > 1 };
         CancelOption = AllowCancel ? properties.Options.Last() : default;
+        MinValues = properties.MinValues;
+        MaxValues = properties.MaxValues;
+        Placeholder = properties.Placeholder;
         Users = properties.Users.ToArray();
         Options = properties.Options.ToArray();
         CanceledPage = properties.CanceledPage?.Build();
@@ -98,6 +101,24 @@ public abstract class BaseSelection<TOption> : IInteractiveElement<TOption>
     /// Gets the <see cref="IPage"/> which is sent into the channel.
     /// </summary>
     public IPage SelectionPage { get; }
+
+    /// <summary>
+    /// Gets the minimum number of items a user must select.
+    /// </summary>
+    /// <remarks>Only applicable to selections using select menus.</remarks>
+    public int MinValues { get; }
+
+    /// <summary>
+    /// Gets the maximum number of items a user can select.
+    /// </summary>
+    /// <remarks>Only applicable to selections using select menus.</remarks>
+    public int MaxValues { get; }
+
+    /// <summary>
+    /// Gets the placeholder text of the selection.
+    /// </summary>
+    /// <remarks>Only applicable to selections using select menus.</remarks>
+    public string? Placeholder { get; }
 
     /// <inheritdoc/>
     public IReadOnlyCollection<IUser> Users { get; }
@@ -177,7 +198,12 @@ public abstract class BaseSelection<TOption> : IInteractiveElement<TOption>
             var selectMenu = new SelectMenuBuilder()
                 .WithCustomId("foobar")
                 .WithOptions(options)
-                .WithDisabled(disableAll);
+                .WithDisabled(disableAll)
+                .WithMinValues(MinValues)
+                .WithMaxValues(MaxValues);
+
+            if (!string.IsNullOrEmpty(Placeholder))
+                selectMenu.WithPlaceholder(Placeholder);
 
             builder.WithSelectMenu(selectMenu);
         }
@@ -334,37 +360,35 @@ public abstract class BaseSelection<TOption> : IInteractiveElement<TOption>
             };
         }
 
-        TOption? selected = default;
-        string? selectedString = null;
-        string? customId = input.Data.Type switch
+        IReadOnlyCollection<string> selectedValues = input.Data.Type switch
         {
-            ComponentType.Button => input.Data.CustomId,
-            ComponentType.SelectMenu => input.Data.Values.FirstOrDefault(),
-            _ => null
+            ComponentType.Button => [input.Data.CustomId],
+            ComponentType.SelectMenu => input.Data.Values,
+            _ => []
         };
 
-        if (customId is null)
+        if (selectedValues.Count == 0)
         {
             return InteractiveInputStatus.Ignored;
         }
 
-        foreach (var value in Options)
+        List<TOption> options = [];
+        foreach (var value in selectedValues)
         {
-            string? stringValue = EmoteConverter?.Invoke(value)?.ToString() ?? StringConverter?.Invoke(value);
-            if (customId != stringValue) continue;
-            selected = value;
-            selectedString = stringValue;
-            break;
+            var option = Options.FirstOrDefault(option => (EmoteConverter?.Invoke(option)?.ToString() ?? StringConverter?.Invoke(option)) == value);
+            if (option is not null && !EqualityComparer<TOption>.Default.Equals(option, default!))
+            {
+                options.Add(option);
+            }
         }
 
-        if (selectedString is null)
+        if (options.Count == 0)
         {
             return InteractiveInputStatus.Ignored;
         }
 
-        bool isCanceled = AllowCancel && (EmoteConverter?.Invoke(CancelOption)?.ToString() ?? StringConverter?.Invoke(CancelOption)) == selectedString;
-
-        return new InteractiveInputResult<TOption>(isCanceled ? InteractiveInputStatus.Canceled : InteractiveInputStatus.Success, selected);
+        var status = AllowCancel && options.Contains(CancelOption) ? InteractiveInputStatus.Canceled : InteractiveInputStatus.Success;
+        return new InteractiveInputResult<TOption>(status, options);
     }
 
     /// <inheritdoc/>

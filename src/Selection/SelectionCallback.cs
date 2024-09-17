@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Discord;
 using Discord.WebSocket;
@@ -14,7 +15,7 @@ internal sealed class SelectionCallback<TOption> : IInteractiveCallback
     private bool _disposed;
 
     public SelectionCallback(BaseSelection<TOption> selection, IUserMessage message,
-        TimeoutTaskCompletionSource<(TOption?, InteractiveStatus)> timeoutTaskSource,
+        TimeoutTaskCompletionSource<(IReadOnlyList<TOption>, InteractiveStatus)> timeoutTaskSource,
         DateTimeOffset startTime, IDiscordInteraction? initialInteraction = null)
     {
         Selection = selection;
@@ -37,7 +38,7 @@ internal sealed class SelectionCallback<TOption> : IInteractiveCallback
     /// <summary>
     /// Gets the <see cref="TimeoutTaskCompletionSource{TResult}"/> used to set the result of the selection.
     /// </summary>
-    public TimeoutTaskCompletionSource<(TOption?, InteractiveStatus)> TimeoutTaskSource { get; }
+    public TimeoutTaskCompletionSource<(IReadOnlyList<TOption>, InteractiveStatus)> TimeoutTaskSource { get; }
 
     /// <inheritdoc/>
     public DateTimeOffset StartTime { get; }
@@ -75,12 +76,12 @@ internal sealed class SelectionCallback<TOption> : IInteractiveCallback
         {
             case InteractiveInputStatus.Success:
                 StopMessage = message;
-                TimeoutTaskSource.TrySetResult((result.SelectedOption, InteractiveStatus.Success));
+                TimeoutTaskSource.TrySetResult((result.SelectedOptions, InteractiveStatus.Success));
                 break;
 
             case InteractiveInputStatus.Canceled:
                 StopMessage = message;
-                TimeoutTaskSource.TrySetResult((result.SelectedOption, InteractiveStatus.Canceled));
+                TimeoutTaskSource.TrySetResult((result.SelectedOptions, InteractiveStatus.Canceled));
                 break;
 
             case InteractiveInputStatus.Ignored:
@@ -98,12 +99,12 @@ internal sealed class SelectionCallback<TOption> : IInteractiveCallback
         {
             case InteractiveInputStatus.Success:
                 StopReaction = reaction;
-                TimeoutTaskSource.TrySetResult((result.SelectedOption, InteractiveStatus.Success));
+                TimeoutTaskSource.TrySetResult((result.SelectedOptions, InteractiveStatus.Success));
                 break;
 
             case InteractiveInputStatus.Canceled:
                 StopReaction = reaction;
-                TimeoutTaskSource.TrySetResult((result.SelectedOption, InteractiveStatus.Canceled));
+                TimeoutTaskSource.TrySetResult((result.SelectedOptions, InteractiveStatus.Canceled));
                 break;
 
             case InteractiveInputStatus.Ignored:
@@ -124,12 +125,12 @@ internal sealed class SelectionCallback<TOption> : IInteractiveCallback
         {
             case InteractiveInputStatus.Success:
                 StopInteraction = component;
-                TimeoutTaskSource.TrySetResult((result.SelectedOption, InteractiveStatus.Success));
+                TimeoutTaskSource.TrySetResult((result.SelectedOptions, InteractiveStatus.Success));
                 break;
 
             case InteractiveInputStatus.Canceled:
                 StopInteraction = component;
-                TimeoutTaskSource.TrySetResult((result.SelectedOption, InteractiveStatus.Canceled));
+                TimeoutTaskSource.TrySetResult((result.SelectedOptions, InteractiveStatus.Canceled));
                 break;
 
             case InteractiveInputStatus.Ignored:

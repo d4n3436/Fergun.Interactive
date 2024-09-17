@@ -572,13 +572,13 @@ public class InteractiveService
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to cancel the selection.</param>
     /// <returns>
     /// A task that represents the asynchronous operation for sending the selection and waiting for a valid input, a timeout or a cancellation.<br/>
-    /// The task result contains an <see cref="InteractiveMessageResult{T}"/> with the selected value (if valid), the message used for the selection
+    /// The task result contains an <see cref="InteractiveMessageResult{T}"/> with the selected values (if valid), the message used for the selection
     /// (which may not be valid if the message has been deleted), the elapsed time and the status.
     /// </returns>
     /// <exception cref="ArgumentException"/>
     /// <exception cref="ArgumentNullException"/>
     /// <exception cref="NotSupportedException"/>
-    public async Task<InteractiveMessageResult<TOption?>> SendSelectionAsync<TOption>(BaseSelection<TOption> selection, IMessageChannel channel,
+    public async Task<InteractiveMessageResult<TOption>> SendSelectionAsync<TOption>(BaseSelection<TOption> selection, IMessageChannel channel,
         TimeSpan? timeout = null, Action<IUserMessage>? messageAction = null, CancellationToken cancellationToken = default)
         => await SendSelectionInternalAsync(selection, channel, timeout, null, messageAction, cancellationToken).ConfigureAwait(false);
 
@@ -593,13 +593,13 @@ public class InteractiveService
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to cancel the selection.</param>
     /// <returns>
     /// A task that represents the asynchronous operation for modifying the message to a selection and waiting for a valid input, a timeout or a cancellation.<br/>
-    /// The task result contains an <see cref="InteractiveMessageResult{T}"/> with the selected value (if valid), the message used for the selection
+    /// The task result contains an <see cref="InteractiveMessageResult{T}"/> with the selected values (if valid), the message used for the selection
     /// (which may not be valid if the message has been deleted), the elapsed time and the status.
     /// </returns>
     /// <exception cref="ArgumentException"/>
     /// <exception cref="ArgumentNullException"/>
     /// <exception cref="NotSupportedException"/>
-    public async Task<InteractiveMessageResult<TOption?>> SendSelectionAsync<TOption>(BaseSelection<TOption> selection, IUserMessage message,
+    public async Task<InteractiveMessageResult<TOption>> SendSelectionAsync<TOption>(BaseSelection<TOption> selection, IUserMessage message,
         TimeSpan? timeout = null, Action<IUserMessage>? messageAction = null, CancellationToken cancellationToken = default)
         => await SendSelectionInternalAsync(selection, null, timeout, message, messageAction, cancellationToken).ConfigureAwait(false);
 
@@ -620,13 +620,13 @@ public class InteractiveService
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to cancel the selection.</param>
     /// <returns>
     /// A task that represents the asynchronous operation for sending the selection and waiting for a valid input, a timeout or a cancellation.<br/>
-    /// The task result contains an <see cref="InteractiveMessageResult{T}"/> with the selected value (if valid), the message used for the selection
+    /// The task result contains an <see cref="InteractiveMessageResult{T}"/> with the selected values (if valid), the message used for the selection
     /// (which may not be valid if the message has been deleted), the elapsed time and the status.
     /// </returns>
     /// <exception cref="ArgumentException"/>
     /// <exception cref="ArgumentNullException"/>
     /// <exception cref="NotSupportedException"/>
-    public async Task<InteractiveMessageResult<TOption?>> SendSelectionAsync<TOption>(BaseSelection<TOption> selection, IDiscordInteraction interaction,
+    public async Task<InteractiveMessageResult<TOption>> SendSelectionAsync<TOption>(BaseSelection<TOption> selection, IDiscordInteraction interaction,
         TimeSpan? timeout = null, InteractionResponseType responseType = InteractionResponseType.ChannelMessageWithSource, bool ephemeral = false,
         Action<IUserMessage>? messageAction = null, CancellationToken cancellationToken = default)
     {
@@ -642,8 +642,8 @@ public class InteractiveService
         var message = await SendOrModifyMessageAsync(selection, interaction, responseType, ephemeral).ConfigureAwait(false);
         messageAction?.Invoke(message);
 
-        var timeoutTaskSource = new TimeoutTaskCompletionSource<(TOption?, InteractiveStatus)>(timeout ?? _config.DefaultTimeout,
-            false, (default, InteractiveStatus.Timeout), (default, InteractiveStatus.Canceled), cancellationToken);
+        var timeoutTaskSource = new TimeoutTaskCompletionSource<(IReadOnlyList<TOption>, InteractiveStatus)>(timeout ?? _config.DefaultTimeout,
+            false, (Array.Empty<TOption>(), InteractiveStatus.Timeout), (Array.Empty<TOption>(), InteractiveStatus.Canceled), cancellationToken);
 
         using var callback = new SelectionCallback<TOption>(selection, message, timeoutTaskSource, DateTimeOffset.UtcNow, interaction);
 
@@ -791,7 +791,7 @@ public class InteractiveService
         }
     }
 
-    private async Task<InteractiveMessageResult<TOption?>> SendSelectionInternalAsync<TOption>(BaseSelection<TOption> selection, IMessageChannel? channel,
+    private async Task<InteractiveMessageResult<TOption>> SendSelectionInternalAsync<TOption>(BaseSelection<TOption> selection, IMessageChannel? channel,
         TimeSpan? timeout = null, IUserMessage? message = null, Action<IUserMessage>? messageAction = null, CancellationToken cancellationToken = default)
     {
         InteractiveGuards.NotNull(selection);
@@ -805,8 +805,8 @@ public class InteractiveService
         message = await SendOrModifyMessageAsync(selection, message, channel).ConfigureAwait(false);
         messageAction?.Invoke(message);
 
-        var timeoutTaskSource = new TimeoutTaskCompletionSource<(TOption?, InteractiveStatus)>(timeout ?? _config.DefaultTimeout,
-            false, (default, InteractiveStatus.Timeout), (default, InteractiveStatus.Canceled), cancellationToken);
+        var timeoutTaskSource = new TimeoutTaskCompletionSource<(IReadOnlyList<TOption>, InteractiveStatus)>(timeout ?? _config.DefaultTimeout,
+            false, (Array.Empty<TOption>(), InteractiveStatus.Timeout), (Array.Empty<TOption>(), InteractiveStatus.Canceled), cancellationToken);
 
         using var callback = new SelectionCallback<TOption>(selection, message, timeoutTaskSource, DateTimeOffset.UtcNow);
 
@@ -883,7 +883,7 @@ public class InteractiveService
         }
     }
 
-    private async Task<InteractiveMessageResult<TOption?>> WaitForSelectionResultAsync<TOption>(SelectionCallback<TOption> callback)
+    private async Task<InteractiveMessageResult<TOption>> WaitForSelectionResultAsync<TOption>(SelectionCallback<TOption> callback)
     {
         _callbacks[callback.Message.Id] = callback;
 
@@ -910,7 +910,7 @@ public class InteractiveService
         var (selected, status) = await callback.TimeoutTaskSource.Task.ConfigureAwait(false);
         cts?.Cancel();
 
-        var result = InteractiveMessageResultBuilder<TOption?>.FromCallback(callback, selected, status).Build();
+        var result = InteractiveMessageResultBuilder<TOption>.FromCallback(callback, selected, status).Build();
 
         if (_callbacks.TryRemove(callback.Message.Id, out _))
         {

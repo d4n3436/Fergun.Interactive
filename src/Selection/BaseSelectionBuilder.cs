@@ -81,6 +81,15 @@ public abstract class BaseSelectionBuilder<TSelection, TOption, TBuilder>
     /// <inheritdoc/>
     public virtual ActionOnStop ActionOnSuccess { get; set; }
 
+    /// <inheritdoc/>
+    public virtual int MinValues { get; set; } = 1;
+
+    /// <inheritdoc/>
+    public virtual int MaxValues { get; set; } = 1;
+
+    /// <inheritdoc/>
+    public virtual string? Placeholder { get; set; }
+
     /// <summary>
     /// Builds this <typeparamref name="TBuilder"/> into an immutable <typeparamref name="TSelection"/>.
     /// </summary>
@@ -323,6 +332,46 @@ public abstract class BaseSelectionBuilder<TSelection, TOption, TBuilder>
     public virtual TBuilder WithActionOnSuccess(ActionOnStop action)
     {
         ActionOnSuccess = action;
+        return (TBuilder)this;
+    }
+
+    /// <summary>
+    /// Sets the minimum number of items a user must select.
+    /// </summary>
+    /// <remarks>Only applicable to selections using select menus.</remarks>
+    /// <param name="minValues">The minimum number of items a user must select.</param>
+    /// <returns>This builder.</returns>
+    public virtual TBuilder WithMinValues(int minValues)
+    {
+        InteractiveGuards.ValueInRange(0, SelectMenuBuilder.MaxValuesCount, minValues);
+        MinValues = minValues;
+        return (TBuilder)this;
+    }
+
+    /// <summary>
+    /// Sets the maximum number of items a user can select.
+    /// </summary>
+    /// <remarks>Only applicable to selections using select menus.</remarks>
+    /// <param name="maxValues">The maximum number of items a user can select.</param>
+    /// <returns>This builder.</returns>
+    public virtual TBuilder WithMaxValues(int maxValues)
+    {
+        InteractiveGuards.ValueInRange(1, SelectMenuBuilder.MaxValuesCount, maxValues);
+        MaxValues = maxValues;
+        return (TBuilder)this;
+    }
+
+    /// <summary>
+    /// Gets or sets the placeholder text of the selection.
+    /// </summary>
+    /// <remarks>Only applicable to selections using select menus.</remarks>
+    /// <param name="placeholder">The placeholder text.</param>
+    /// <returns>This builder.</returns>
+    public virtual TBuilder WithPlaceholder(string placeholder)
+    {
+        InteractiveGuards.NotNull(placeholder);
+        InteractiveGuards.StringLengthInRange(1, SelectMenuBuilder.MaxPlaceholderLength, placeholder);
+        Placeholder = placeholder;
         return (TBuilder)this;
     }
 }

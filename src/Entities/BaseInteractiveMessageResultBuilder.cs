@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using Discord;
 using Discord.WebSocket;
 
@@ -71,11 +72,11 @@ internal abstract class BaseInteractiveMessageResultBuilder<TValue, TSelf, TResu
     where TSelf : BaseInteractiveMessageResultBuilder<TValue, TSelf, TResult>
     where TResult : IInteractiveMessageResult
 {
-    public TValue? Value { get; set; }
+    public IReadOnlyList<TValue> Values { get; set; } = Array.Empty<TValue>();
 
-    public TSelf WithValue(TValue? value)
+    public TSelf WithValues(IReadOnlyList<TValue> values)
     {
-        Value = value;
+        Values = values;
         return (TSelf)this;
     }
 }

@@ -1,17 +1,18 @@
 using Fergun.Interactive.Extensions;
 using Fergun.Interactive.Pagination;
 using Fergun.Interactive.Selection;
+using System.Collections.Generic;
 
 namespace Fergun.Interactive;
 
 internal sealed class InteractiveMessageResultBuilder<T> : BaseInteractiveMessageResultBuilder<T, InteractiveMessageResultBuilder<T>, InteractiveMessageResult<T>>
 {
-    public static InteractiveMessageResultBuilder<T> FromCallback<TOption>(SelectionCallback<TOption> callback, T? option, InteractiveStatus status)
+    public static InteractiveMessageResultBuilder<T> FromCallback<TOption>(SelectionCallback<TOption> callback, IReadOnlyList<T> options, InteractiveStatus status)
     {
         var user = callback.StopMessage?.Author ?? callback.StopReaction?.User.GetValueOrDefault() ?? callback.StopInteraction?.User;
 
         return new InteractiveMessageResultBuilder<T>()
-            .WithValue(option)
+            .WithValues(options)
             .WithElapsed(callback.GetElapsedTime(status))
             .WithStatus(status)
             .WithMessage(callback.Message)

@@ -135,6 +135,52 @@ public class SelectionModule : ModuleBase
         await ReplyAsync(embed: builder.Build());
     }
 
+    // Sends a selection uses a select menu and allows selecting multiple options
+    [Command("multi", RunMode = RunMode.Async)]
+    public async Task MultiAsync()
+    {
+        var colors = new Item[]
+        {
+            new("Red", new Emoji("\ud83d\udd34")),
+            new("Green", new Emoji("\ud83d\udfe2")),
+            new("Blue", new Emoji("\ud83d\udd35")),
+            new("Yellow", new Emoji("\ud83d\udfe1")),
+            new("Purple", new Emoji("\ud83d\udfe3"))
+        };
+
+        var color = Utils.GetRandomColor();
+
+        var pageBuilder = new PageBuilder()
+            .WithDescription("Select a color\nYou can select multiple options.")
+            .WithColor(color);
+
+        var selection = new SelectionBuilder<Item>()
+            .AddUser(Context.User)
+            .WithOptions(colors)
+            .WithSelectionPage(pageBuilder)
+            .WithStringConverter(x => x.Name)
+            .WithEmoteConverter(x => x.Emote)
+            .WithActionOnSuccess(ActionOnStop.DeleteInput) // Delete select menu when the user selects any option
+            .WithInputType(InputType.SelectMenus) // Set the input type to select menus. This is required to receive multiple options.
+            .WithMaxValues(3) // Change the max. values so the user can select up to 3 options
+            .WithPlaceholder("Select a color") // Set the placeholder text for the select menu
+            .Build();
+
+        var result = await _interactive.SendSelectionAsync(selection, Context.Channel, TimeSpan.FromMinutes(1));
+
+        if (result.IsSuccess)
+        {
+            var selected = result.Values;
+
+            var embed = new EmbedBuilder()
+                .WithDescription($"You selected the color(s): {string.Join(", ", selected.Select(x => $"{x.Emote} {x.Name}"))}")
+                .WithColor(color)
+                .Build();
+
+            await result.StopInteraction!.ModifyOriginalResponseAsync(x => x.Embed = embed);
+        }
+    }
+
     // Sends a selection that can be canceled, disables/deletes its input (reactions/buttons) after selecting an option,
     // modifies itself to a specific page after ending, and deletes itself after cancelling it.
     [Command("extra", RunMode = RunMode.Async)]
@@ -173,18 +219,13 @@ public class SelectionModule : ModuleBase
             .WithSelectionPage(pageBuilder)
             .WithSuccessPage(successPage)
             .WithTimeoutPage(timeoutPage)
-            // Tell the selection to modify the message to successPage and delete the input (reactions, buttons, select menu) if a valid input is received.
-            .WithActionOnSuccess(ActionOnStop.ModifyMessage | ActionOnStop.DeleteInput)
-            // Tell the selection to modify the message to timeoutPage and delete the input if the selection times out.
-            .WithActionOnTimeout(ActionOnStop.ModifyMessage | ActionOnStop.DeleteInput)
+            .WithActionOnSuccess(ActionOnStop.ModifyMessage | ActionOnStop.DeleteInput) // Modify the message to successPage and delete the input (reactions, buttons, select menu) if a valid input is received.
+            .WithActionOnTimeout(ActionOnStop.ModifyMessage | ActionOnStop.DeleteInput) // Modify the message to timeoutPage and delete the input if the selection times out.
             .WithAllowCancel(true) // We need to tell the selection there's a cancel option.
             .WithActionOnCancellation(ActionOnStop.DeleteMessage) // Delete the message if the selection gets canceled.
-            // The Name property is used to get a string representation of an item. This is required in selections using messages and select menus as input.
-            .WithStringConverter(item => item.Name)
-            // The Emote property is used to get an emote representation of an item. This is required in selections using reactions as input.
-            .WithEmoteConverter(item => item.Emote)
-            // Since we have set both string and emote converters, we can use all 4 input types.
-            .WithInputType(InputType.Reactions | InputType.Messages | InputType.Buttons | InputType.SelectMenus)
+            .WithStringConverter(item => item.Name) // The Name property is used to get a string representation of an item. This is required in selections using messages and select menus as input.
+            .WithEmoteConverter(item => item.Emote) // The Emote property is used to get an emote representation of an item. This is required in selections using reactions as input.
+            .WithInputType(InputType.Reactions | InputType.Messages | InputType.Buttons | InputType.SelectMenus) // Since we have set both string and emote converters, we can use all 4 input types.
             .Build();
 
         await _interactive.SendSelectionAsync(selection, Context.Channel, TimeSpan.FromMinutes(1));

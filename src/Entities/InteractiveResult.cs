@@ -1,27 +1,47 @@
 using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 
 namespace Fergun.Interactive;
 
 /// <summary>
 /// Represents a generic result of an interactive action.
 /// </summary>
-/// <typeparam name="T">The type of the value of this result.</typeparam>
+/// <typeparam name="T">The type of the value or values of this result.</typeparam>
 public class InteractiveResult<T> : InteractiveResult
 {
     internal InteractiveResult(T? value, TimeSpan elapsed, InteractiveStatus status = InteractiveStatus.Success)
         : base(elapsed, status)
     {
         Value = value;
+        Values = value is null || EqualityComparer<T>.Default.Equals(value, default!) ? Array.Empty<T>() : [value];
+    }
+
+    internal InteractiveResult(IReadOnlyList<T> values, TimeSpan elapsed, InteractiveStatus status = InteractiveStatus.Success)
+        : base(elapsed, status)
+    {
+        InteractiveGuards.NotNull(values);
+
+        Values = values;
+        Value = values.FirstOrDefault();
     }
 
     /// <summary>
     /// Gets the value representing the result returned by the interactive action.
     /// </summary>
     /// <remarks>
-    /// This value is not <see langword="null"/> if <see cref="IsSuccess"/> is <see langword="true"/>.
+    /// This value is not <see langword="null"/> if <see cref="IsSuccess"/> is <see langword="true"/>.<br/>
+    /// If multiple values were returned because the interactive action allowed for it, this property will only contain the first value (the complete list of values is exposed on <see cref="Values"/>).
     /// </remarks>
     public T? Value { get; }
+
+    /// <summary>
+    /// Gets read-only list containing the values returned by the interactive action.
+    /// </summary>
+    /// <remarks>The list won't be empty if at least one or multiple options were selected (e.g., through a selection using a select menu).</remarks>
+
+    public IReadOnlyList<T> Values { get; }
 
     /// <inheritdoc/>
     [MemberNotNullWhen(true, nameof(Value))]
