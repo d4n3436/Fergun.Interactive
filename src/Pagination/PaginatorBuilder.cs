@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Linq;
 using Discord;
 
@@ -75,7 +74,7 @@ public abstract class PaginatorBuilder<TPaginator, TBuilder>
     /// <inheritdoc/>
     /// <remarks>The default value is <see cref="ActionOnStop.ModifyMessage"/>.</remarks>
     public virtual ActionOnStop ActionOnTimeout { get; set; } = ActionOnStop.ModifyMessage;
-    
+
     /// <summary>
     /// Gets or sets the behavior the <typeparamref name="TPaginator"/> should exhibit when a user is not allowed to interact with it.
     /// </summary>
@@ -270,9 +269,7 @@ public abstract class PaginatorBuilder<TPaginator, TBuilder>
     /// <param name="style">The button style. If the value is null, the library will decide the style of the button.</param>
     /// <returns>This builder.</returns>
     public virtual TBuilder AddOption(string text, PaginatorAction action, ButtonStyle? style)
-    {
-        return AddOption(action, null, text, style);
-    }
+        => AddOption(action, null, text, style);
 
     /// <summary>
     /// Adds a paginator button with the specified emote, action and style.
@@ -282,9 +279,7 @@ public abstract class PaginatorBuilder<TPaginator, TBuilder>
     /// <param name="style">The button style. If the value is null, the library will decide the style of the button.</param>
     /// <returns>This builder.</returns>
     public virtual TBuilder AddOption(IEmote emote, PaginatorAction action, ButtonStyle? style)
-    {
-        return AddOption(action, emote, null, style);
-    }
+        => AddOption(action, emote, null, style);
 
     /// <summary>
     /// Adds a link-style paginator button with the specified properties.

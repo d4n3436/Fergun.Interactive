@@ -38,7 +38,8 @@ public class InteractiveInputResult<TOption> : InteractiveInputResult
     /// Initializes a new instance of the <see cref="InteractiveInputResult{TOption}"/> class with the specified status.
     /// </summary>
     /// <param name="status">The status.</param>
-    public InteractiveInputResult(InteractiveInputStatus status) : base(status)
+    public InteractiveInputResult(InteractiveInputStatus status)
+        : base(status)
     {
     }
 
@@ -47,7 +48,8 @@ public class InteractiveInputResult<TOption> : InteractiveInputResult
     /// </summary>
     /// <param name="status">The status.</param>
     /// <param name="selectedOption">The selected option.</param>
-    public InteractiveInputResult(InteractiveInputStatus status, TOption? selectedOption) : this(status)
+    public InteractiveInputResult(InteractiveInputStatus status, TOption? selectedOption)
+        : this(status)
     {
         SelectedOption = selectedOption;
         SelectedOptions = selectedOption is null || EqualityComparer<TOption>.Default.Equals(selectedOption, default!) ? Array.Empty<TOption>() : [selectedOption];
@@ -58,7 +60,8 @@ public class InteractiveInputResult<TOption> : InteractiveInputResult
     /// </summary>
     /// <param name="status">The status.</param>
     /// <param name="selectedOptions">The selected options.</param>
-    public InteractiveInputResult(InteractiveInputStatus status, IReadOnlyList<TOption> selectedOptions) : this(status)
+    public InteractiveInputResult(InteractiveInputStatus status, IReadOnlyList<TOption> selectedOptions)
+        : this(status)
     {
         InteractiveGuards.NotNull(selectedOptions);
         InteractiveGuards.NotEmpty(selectedOptions);

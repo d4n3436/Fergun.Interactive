@@ -82,15 +82,13 @@ public partial class CustomModule
         await _interactive.SendSelectionAsync(pagedSelection, Context.Channel, TimeSpan.FromMinutes(10));
 
         PageBuilder GeneratePage(IReadOnlyList<IImageResult> images, string scraper, int index)
-        {
-            return new PageBuilder()
+            => new PageBuilder()
                 .WithAuthor(Context.User)
                 .WithTitle(images[index].Title)
                 .WithDescription($"{scraper} Images")
                 .WithImageUrl(images[index].Url)
                 .WithFooter($"Page {index + 1}/{images.Count}")
                 .WithRandomColor();
-        }
     }
 }
 

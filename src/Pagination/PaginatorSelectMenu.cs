@@ -57,7 +57,7 @@ public class PaginatorSelectMenu : IPaginatorSelectMenu
     public List<ChannelType>? ChannelTypes => _builder.ChannelTypes;
 
     /// <inheritdoc />
-    public List<SelectMenuDefaultValue>? DefaultValues  => _builder.DefaultValues;
+    public List<SelectMenuDefaultValue>? DefaultValues => _builder.DefaultValues;
 
     /// <inheritdoc />
     public bool IsHidden { get; }

@@ -241,8 +241,8 @@ public abstract class Paginator : IInteractiveElement<KeyValuePair<IEmote, Pagin
     /// </summary>
     /// <param name="action">The paginator action.</param>
     /// <returns>A task representing the asynchronous operation. The task result contains whether the action succeeded.</returns>
-    public virtual ValueTask<bool> ApplyActionAsync(PaginatorAction action) =>
-        action switch
+    public virtual ValueTask<bool> ApplyActionAsync(PaginatorAction action)
+        => action switch
         {
             PaginatorAction.Backward => SetPageAsync(CurrentPageIndex - 1),
             PaginatorAction.Forward => SetPageAsync(CurrentPageIndex + 1),

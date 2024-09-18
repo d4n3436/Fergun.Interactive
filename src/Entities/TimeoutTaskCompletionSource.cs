@@ -14,7 +14,7 @@ public class TimeoutTaskCompletionSource<TResult> : IDisposable
     private readonly bool _canReset;
     private TaskCompletionSource<TResult> _taskSource;
     private bool _disposed;
-    private CancellationTokenRegistration _tokenRegistration; // Do not make readonly
+    private readonly CancellationTokenRegistration _tokenRegistration;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="TimeoutTaskCompletionSource{TResult}"/> class.
@@ -106,8 +106,5 @@ public class TimeoutTaskCompletionSource<TResult> : IDisposable
         }
     }
 
-    private void OnTimerFired(object state)
-    {
-        TrySetResult(TimeoutResult);
-    }
+    private void OnTimerFired(object state) => TrySetResult(TimeoutResult);
 }

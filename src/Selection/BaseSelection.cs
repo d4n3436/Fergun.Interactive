@@ -271,7 +271,7 @@ public abstract class BaseSelection<TOption> : IInteractiveElement<TOption>
 
         if (isCanceled)
         {
-            return new InteractiveInputResult<TOption>(InteractiveInputStatus.Canceled, selected!);
+            return new InteractiveInputResult<TOption>(InteractiveInputStatus.Canceled, selected);
         }
 
         if (manageMessages && Deletion.HasFlag(DeletionOptions.Valid))
@@ -279,7 +279,7 @@ public abstract class BaseSelection<TOption> : IInteractiveElement<TOption>
             await input.DeleteAsync().ConfigureAwait(false);
         }
 
-        return new InteractiveInputResult<TOption>(InteractiveInputStatus.Success, selected!);
+        return new InteractiveInputResult<TOption>(InteractiveInputStatus.Success, selected);
     }
 
     /// <inheritdoc cref="IInteractiveInputHandler.HandleReactionAsync"/>
@@ -356,7 +356,7 @@ public abstract class BaseSelection<TOption> : IInteractiveElement<TOption>
             };
         }
 
-        IReadOnlyCollection<string> selectedValues = input.Data.Type switch
+        var selectedValues = input.Data.Type switch
         {
             ComponentType.Button => [input.Data.CustomId],
             ComponentType.SelectMenu => input.Data.Values,
@@ -369,7 +369,7 @@ public abstract class BaseSelection<TOption> : IInteractiveElement<TOption>
         }
 
         List<TOption> options = [];
-        foreach (var value in selectedValues)
+        foreach (string value in selectedValues)
         {
             var option = Options.FirstOrDefault(option => (EmoteConverter?.Invoke(option)?.ToString() ?? StringConverter?.Invoke(option)) == value);
             if (option is not null && !EqualityComparer.Equals(option, default!))

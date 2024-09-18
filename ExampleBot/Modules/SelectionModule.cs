@@ -50,8 +50,6 @@ public class SelectionModule : ModuleBase
         string selected = result.Value;
 
         // You can check whether a selection failed or ended successfully with the Status property.
-        // var status = result.Status;
-
         // You can also use the IsSuccess, IsCanceled and IsTimeout properties.
         bool isSuccess = result.IsSuccess;
 

@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
 
 namespace Fergun.Interactive;
 
@@ -24,7 +23,7 @@ public class InteractiveResult<T> : InteractiveResult
         InteractiveGuards.NotNull(values);
 
         Values = values;
-        Value = values.FirstOrDefault();
+        Value = values.Count > 0 ? values[0] : default;
     }
 
     /// <summary>

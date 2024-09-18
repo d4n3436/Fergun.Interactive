@@ -103,7 +103,7 @@ public partial class CustomModule
             .WithColor(color)
             .Build();
 
-        await message.ModifyAsync(x =>
+        await message!.ModifyAsync(x =>
         {
             x.Embed = embed;
             x.Components = new ComponentBuilder().Build(); // Remove components

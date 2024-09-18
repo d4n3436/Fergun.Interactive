@@ -92,7 +92,7 @@ public class PaginatorButton : IPaginatorButton
     /// <summary>
     /// Returns a hidden button.
     /// </summary>
-    public static PaginatorButton Hidden { get; } = new(true); 
+    public static PaginatorButton Hidden { get; } = new(true);
 
     /// <inheritdoc/>
     public ButtonStyle? Style { get; }

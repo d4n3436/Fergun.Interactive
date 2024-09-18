@@ -9,7 +9,7 @@ namespace Fergun.Interactive.Pagination;
 internal sealed class OptionsWrapper : IDictionary<IEmote, PaginatorAction>
 {
     private readonly IDictionary<IEmote, PaginatorAction> _dictionary = new Dictionary<IEmote, PaginatorAction>();
-    private readonly IDictionary<IEmote, Func<IButtonContext, IPaginatorButton>> _factoryDictionary = new Dictionary<IEmote, Func<IButtonContext, IPaginatorButton>>();
+    private readonly Dictionary<IEmote, Func<IButtonContext, IPaginatorButton>> _factoryDictionary = [];
     private readonly IList<Func<IButtonContext, IPaginatorButton>> _buttonFactories;
 
     public OptionsWrapper(IList<Func<IButtonContext, IPaginatorButton>> buttonFactories)

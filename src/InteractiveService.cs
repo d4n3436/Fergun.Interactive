@@ -659,11 +659,11 @@ public class InteractiveService
     {
         InteractiveGuards.NotNull(interaction);
 
-        return interaction is SocketMessageComponent componentInteraction
-            && IsManaged(componentInteraction.Message)
-            || interaction is SocketModal modal
+        return (interaction is SocketMessageComponent componentInteraction
+            && IsManaged(componentInteraction.Message))
+            || (interaction is SocketModal modal
             && ulong.TryParse(modal.Data.CustomId, out ulong messageId)
-            && _callbacks.ContainsKey(messageId);
+            && _callbacks.ContainsKey(messageId));
     }
 
     /// <summary>
@@ -1204,11 +1204,11 @@ public class InteractiveService
     {
         ulong messageId = 0;
 
-        if (interaction is SocketMessageComponent componentInteraction
-            && _callbacks.TryGetValue(componentInteraction.Message.Id, out var callback)
-            || interaction is SocketModal modal
+        if ((interaction is SocketMessageComponent componentInteraction
+            && _callbacks.TryGetValue(componentInteraction.Message.Id, out var callback))
+            || (interaction is SocketModal modal
             && ulong.TryParse(modal.Data.CustomId, out messageId)
-            && _callbacks.TryGetValue(messageId, out callback))
+            && _callbacks.TryGetValue(messageId, out callback)))
         {
             _ = Task.Run(async () =>
             {
@@ -1247,8 +1247,8 @@ public class InteractiveService
     private void LogError(string source, string message, Exception? exception = null)
         => Log(new LogMessage(LogSeverity.Error, source, message, exception));
 
-    private Task LogMessage(LogMessage message) =>
-        _config.LogLevel >= message.Severity
+    private Task LogMessage(LogMessage message)
+        => _config.LogLevel >= message.Severity
             ? Task.FromResult(message)
             : Task.CompletedTask;
 }

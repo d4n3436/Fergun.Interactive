@@ -23,7 +23,7 @@ public class Page : IPage
         MessageReference = page.MessageReference;
         Stickers = page.Stickers;
         AttachmentsFactory = page.AttachmentsFactory;
-        
+
         bool isEmpty = false;
         var builder = page.GetEmbedBuilder();
 
