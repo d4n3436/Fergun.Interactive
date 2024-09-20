@@ -35,6 +35,8 @@ internal static class InteractiveExtensions
     public static TimeSpan GetElapsedTime(this InteractiveStatus status, DateTimeOffset startTime, TimeSpan timeoutDelay)
         => status == InteractiveStatus.Timeout ? timeoutDelay : startTime.GetElapsedTime();
 
+#if !NET7_0_OR_GREATER
     public static IReadOnlyDictionary<TKey, TValue> AsReadOnly<TKey, TValue>(this IDictionary<TKey, TValue> dictionary)
         => new ReadOnlyDictionary<TKey, TValue>(dictionary);
+#endif
 }

@@ -106,5 +106,5 @@ public class TimeoutTaskCompletionSource<TResult> : IDisposable
         }
     }
 
-    private void OnTimerFired(object state) => TrySetResult(TimeoutResult);
+    private void OnTimerFired(object? state) => TrySetResult(TimeoutResult);
 }

@@ -6,7 +6,7 @@
     <Nullable>enable</Nullable>
     <Authors>d4n3436</Authors>
     <NeutralLanguage>en</NeutralLanguage>
-    <TargetFrameworks>netstandard2.0;netstandard2.1</TargetFrameworks>
+    <TargetFrameworks>netstandard2.0;netstandard2.1;net8.0</TargetFrameworks>
     <IncludeSymbols>true</IncludeSymbols>
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
