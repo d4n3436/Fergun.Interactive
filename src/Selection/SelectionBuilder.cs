@@ -1,7 +1,7 @@
 namespace Fergun.Interactive.Selection;
 
 /// <summary>
-/// Represents the default selection builder.
+/// Represents a builder class for constructing instances of <see cref="Selection{TOption}"/>.
 /// </summary>
 /// <typeparam name="TOption">The type of the options the selection will have.</typeparam>
 public class SelectionBuilder<TOption> : BaseSelectionBuilder<Selection<TOption>, TOption, SelectionBuilder<TOption>>

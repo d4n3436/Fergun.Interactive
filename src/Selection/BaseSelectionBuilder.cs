@@ -6,7 +6,7 @@ using Discord;
 namespace Fergun.Interactive.Selection;
 
 /// <summary>
-/// Represents the base of the selection builders.
+/// Represents a builder class for constructing instances of <typeparamref name="TSelection"/>.
 /// </summary>
 /// <typeparam name="TSelection">The type of the built selection.</typeparam>
 /// <typeparam name="TOption">The type of the options the selection will have.</typeparam>

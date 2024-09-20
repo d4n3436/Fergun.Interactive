@@ -11,7 +11,7 @@ using Fergun.Interactive.Extensions;
 namespace Fergun.Interactive.Selection;
 
 /// <summary>
-/// Represents the base of selections.
+/// Represents a selection of options.
 /// </summary>
 /// <typeparam name="TOption">The type of the options.</typeparam>
 public abstract class BaseSelection<TOption> : IInteractiveElement<TOption>

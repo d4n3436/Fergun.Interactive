@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 using Discord;
 using Discord.Commands;
@@ -233,9 +232,6 @@ public class SelectionModule : ModuleBase
     [Command("menu", RunMode = RunMode.Async)]
     public async Task MenuAsync()
     {
-        // Create CancellationTokenSource that will be canceled after 10 minutes.
-        using var cts = new CancellationTokenSource(TimeSpan.FromMinutes(10));
-
         string[] options =
         [
             "Cache messages",
@@ -259,50 +255,35 @@ public class SelectionModule : ModuleBase
         // Add the cancel emote at the end of the dictionary
         emotes.Add(new Emoji("❌"), -1);
 
-        var color = Utils.GetRandomColor();
+        var selection = new MenuSelectionBuilder<KeyValuePair<IEmote, int>>()
+            .AddUser(Context.User)
+            .WithSelectionPage(GeneratePage())
+            .WithInputHandler(HandleResult) // We use a method that handles the result and returns a page.
+            .WithOptions(emotes)
+            .WithAllowCancel(true)
+            .WithEmoteConverter(pair => pair.Key)
+            .WithActionOnCancellation(ActionOnStop.DisableInput) // Prefer disabling the input (buttons, select menus) instead of removing them from the message.
+            .WithActionOnTimeout(ActionOnStop.DisableInput)
+            .Build();
 
-        // Prefer disabling the input (buttons, select menus) instead of removing them from the message.
-        var actionOnStop = ActionOnStop.DisableInput;
+        await _interactive.SendSelectionAsync(selection, Context.Channel, TimeSpan.FromMinutes(10));
 
-        InteractiveMessageResult<KeyValuePair<IEmote, int>> result = null;
-        IUserMessage message = null;
-
-        while (result is null || result.Status == InteractiveStatus.Success)
-        {
-            var pageBuilder = new PageBuilder()
+        PageBuilder GeneratePage()
+            => new PageBuilder()
                 .WithTitle("Bot Control Panel")
                 .WithDescription("Use the reactions/buttons to enable or disable an option.")
                 .AddField("Option", string.Join('\n', options.Select((x, i) => $"**{i + 1}**. {x}")), true)
                 .AddField("Value", string.Join('\n', values), true)
-                .WithColor(color);
+                .WithColor(Color.Blue);
 
-            var selection = new EmoteSelectionBuilder<int>()
-                .AddUser(Context.User)
-                .WithSelectionPage(pageBuilder)
-                .WithOptions(emotes)
-                .WithAllowCancel(true)
-                .WithActionOnCancellation(actionOnStop)
-                .WithActionOnTimeout(actionOnStop)
-                .Build();
-
-            // if message is null, SendSelectionAsync() will send a message, otherwise it will modify the message.
-            // The cancellation token persists here, so it will be canceled after 10 minutes no matter how many times the selection is used.
-            result = message is null
-                ? await _interactive.SendSelectionAsync(selection, Context.Channel, TimeSpan.FromMinutes(10), cancellationToken: cts.Token)
-                : await _interactive.SendSelectionAsync(selection, message, TimeSpan.FromMinutes(10), cancellationToken: cts.Token);
-
-            // Store the used message.
-            message = result.Message;
-
-            // Break the loop if the result isn't successful
-            if (!result.IsSuccess) break;
-
-            int selected = result.Value.Value;
-
+        Page HandleResult(KeyValuePair<IEmote, int> input)
+        {
+            int selected = input.Value;
             // Invert the value of the selected option
             values[selected - 1] = !values[selected - 1];
 
-            // Do stuff with the selected option
+            // Return a new page, this page will be applied to the message.
+            return GeneratePage().Build();
         }
     }
 
