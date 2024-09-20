@@ -77,11 +77,9 @@ public class PaginatorModule : ModuleBase
         await _interactive.SendPaginatorAsync(paginator, Context.Channel, TimeSpan.FromMinutes(10));
 
         static PageBuilder GeneratePage(int index)
-        {
-            return new PageBuilder()
+            => new PageBuilder()
                 .WithDescription($"This is page {index + 1}.")
                 .WithRandomColor();
-        }
     }
 
     // Sends a lazy paginator that displays images and uses more complex buttons.
@@ -114,14 +112,12 @@ public class PaginatorModule : ModuleBase
         await _interactive.SendPaginatorAsync(paginator, Context.Channel, TimeSpan.FromMinutes(10));
 
         PageBuilder GeneratePage(int index)
-        {
-            return new PageBuilder()
+            => new PageBuilder()
                 .WithAuthor(Context.User)
                 .WithTitle(images[index].Title)
                 .WithUrl(images[index].SourceUrl)
                 .WithDescription("Image paginator example")
                 .WithImageUrl(images[index].Url)
                 .WithRandomColor();
-        }
     }
 }
