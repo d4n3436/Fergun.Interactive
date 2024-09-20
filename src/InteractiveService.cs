@@ -29,7 +29,7 @@ public class InteractiveService
     private readonly InteractiveConfig _config;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="InteractiveService"/> class using the default timeout.
+    /// Initializes a new instance of the <see cref="InteractiveService"/> class using the default configuration.
     /// </summary>
     /// <param name="client">An instance of <see cref="BaseSocketClient"/>.</param>
     public InteractiveService(BaseSocketClient client)
@@ -38,19 +38,7 @@ public class InteractiveService
     }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="InteractiveService"/> class using a specified default timeout.
-    /// </summary>
-    /// <param name="client">An instance of <see cref="BaseSocketClient"/>.</param>
-    /// <param name="defaultTimeout">The default timeout for the interactive actions.</param>
-    [Obsolete("This constructor is deprecated and it will be removed in a future version. Use InteractiveService(BaseSocketClient, InteractiveConfig) instead.")]
-    public InteractiveService(BaseSocketClient client, TimeSpan defaultTimeout)
-        : this(client, new InteractiveConfig { DefaultTimeout = defaultTimeout })
-    {
-        DefaultTimeout = defaultTimeout;
-    }
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="InteractiveService"/> class using the default timeout.
+    /// Initializes a new instance of the <see cref="InteractiveService"/> class using the default configuration.
     /// </summary>
     /// <param name="client">An instance of <see cref="DiscordSocketClient"/>.</param>
     public InteractiveService(DiscordSocketClient client)
@@ -59,33 +47,11 @@ public class InteractiveService
     }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="InteractiveService"/> class using a specified default timeout.
-    /// </summary>
-    /// <param name="client">An instance of <see cref="DiscordSocketClient"/>.</param>
-    /// <param name="defaultTimeout">The default timeout for the interactive actions.</param>
-    [Obsolete("This constructor is deprecated and will be removed in a future version. Use InteractiveService(DiscordSocketClient, InteractiveConfig) instead.")]
-    public InteractiveService(DiscordSocketClient client, TimeSpan defaultTimeout)
-        : this((BaseSocketClient)client, defaultTimeout)
-    {
-    }
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="InteractiveService"/> class using the default timeout.
+    /// Initializes a new instance of the <see cref="InteractiveService"/> class using the default configuration.
     /// </summary>
     /// <param name="client">An instance of <see cref="DiscordShardedClient"/>.</param>
     public InteractiveService(DiscordShardedClient client)
         : this((BaseSocketClient)client)
-    {
-    }
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="InteractiveService"/> class using a specified default timeout.
-    /// </summary>
-    /// <param name="client">An instance of <see cref="DiscordShardedClient"/>.</param>
-    /// <param name="defaultTimeout">The default timeout for the interactive actions.</param>
-    [Obsolete("This constructor is deprecated and will be removed in a future version. Use InteractiveService(DiscordShardedClient, InteractiveConfig) instead.")]
-    public InteractiveService(DiscordShardedClient client, TimeSpan defaultTimeout)
-        : this((BaseSocketClient)client, defaultTimeout)
     {
     }
 
@@ -137,12 +103,6 @@ public class InteractiveService
     /// Gets a dictionary of active callbacks.
     /// </summary>
     public IDictionary<ulong, IInteractiveCallback> Callbacks => _callbacks;
-
-    /// <summary>
-    /// Gets the default timeout for interactive actions provided by this service.
-    /// </summary>
-    [Obsolete("This property is deprecated and will be removed in a future version.")]
-    public TimeSpan DefaultTimeout { get; }
 
     /// <summary>
     /// Attempts to remove and return a callback.
