@@ -26,7 +26,7 @@ internal static class Program
         services.GetRequiredService<InteractiveService>().Log += LogAsync;
         client.Log += LogAsync;
 
-        string token = config["Token"];
+        string? token = config["Token"];
 
         try
         {

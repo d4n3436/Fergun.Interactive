@@ -55,13 +55,13 @@ public partial class CustomModule : ModuleBase
     public class ButtonSelection<T>(ButtonSelectionBuilder<T> builder) : BaseSelection<ButtonOption<T>>(builder)
     {
         // This method needs to be overriden to build our own component the way we want.
-        public override ComponentBuilder GetOrAddComponents(bool disableAll, ComponentBuilder builder = null)
+        public override ComponentBuilder GetOrAddComponents(bool disableAll, ComponentBuilder? builder = null)
         {
             builder ??= new ComponentBuilder();
             foreach (var option in Options)
             {
                 var emote = EmoteConverter?.Invoke(option);
-                string label = StringConverter?.Invoke(option);
+                string? label = StringConverter?.Invoke(option);
                 if (emote is null && label is null)
                 {
                     throw new InvalidOperationException($"Neither {nameof(EmoteConverter)} nor {nameof(StringConverter)} returned a valid emote or string.");

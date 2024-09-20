@@ -93,6 +93,7 @@ public partial class CustomModule
 }
 
 public class PagedSelectionBuilder<TOption> : BaseSelectionBuilder<PagedSelection<TOption>, KeyValuePair<TOption, Paginator>, PagedSelectionBuilder<TOption>>
+    where TOption : notnull
 {
     public PagedSelection<TOption> Build(PageBuilder startPage)
     {
@@ -112,7 +113,7 @@ public class PagedSelectionBuilder<TOption> : BaseSelectionBuilder<PagedSelectio
     /// </summary>
     public new IDictionary<TOption, Paginator> Options { get; set; } = new Dictionary<TOption, Paginator>();
 
-    public override Func<KeyValuePair<TOption, Paginator>, string> StringConverter { get; set; } = option => option.Key?.ToString();
+    public override Func<KeyValuePair<TOption, Paginator>, string>? StringConverter { get; set; } = option => option.Key.ToString()!;
 
     public PagedSelectionBuilder<TOption> WithOptions<TPaginator>(IDictionary<TOption, TPaginator> options) where TPaginator : Paginator
     {
@@ -128,6 +129,7 @@ public class PagedSelectionBuilder<TOption> : BaseSelectionBuilder<PagedSelectio
 }
 
 public class PagedSelection<TOption> : BaseSelection<KeyValuePair<TOption, Paginator>>
+    where TOption : notnull
 {
     /// <inheritdoc />
     public PagedSelection(PagedSelectionBuilder<TOption> builder) : base(builder)
@@ -146,7 +148,7 @@ public class PagedSelection<TOption> : BaseSelection<KeyValuePair<TOption, Pagin
     /// </summary>
     public TOption CurrentOption { get; private set; }
 
-    public override ComponentBuilder GetOrAddComponents(bool disableAll, ComponentBuilder builder = null)
+    public override ComponentBuilder GetOrAddComponents(bool disableAll, ComponentBuilder? builder = null)
     {
         builder ??= new ComponentBuilder();
         var paginator = Options[CurrentOption];
@@ -160,7 +162,7 @@ public class PagedSelection<TOption> : BaseSelection<KeyValuePair<TOption, Pagin
         foreach (var selection in Options)
         {
             var emote = EmoteConverter?.Invoke(selection);
-            string label = StringConverter?.Invoke(selection);
+            string? label = StringConverter?.Invoke(selection);
             if (emote is null && label is null)
             {
                 throw new InvalidOperationException($"Neither {nameof(EmoteConverter)} nor {nameof(StringConverter)} returned a valid emote or string.");
@@ -192,16 +194,16 @@ public class PagedSelection<TOption> : BaseSelection<KeyValuePair<TOption, Pagin
             return InteractiveInputStatus.Ignored;
         }
 
-        string option = input.Data.Values?.FirstOrDefault();
+        string? option = input.Data.Values?.FirstOrDefault();
 
         if (input.Data.Type == ComponentType.SelectMenu && option is not null)
         {
             KeyValuePair<TOption, Paginator> selected = default;
-            string selectedString = null;
+            string? selectedString = null;
 
             foreach (var value in Options)
             {
-                string stringValue = EmoteConverter?.Invoke(value)?.ToString() ?? StringConverter?.Invoke(value);
+                string? stringValue = EmoteConverter?.Invoke(value)?.ToString() ?? StringConverter?.Invoke(value);
                 if (option != stringValue) continue;
                 selected = value;
                 selectedString = stringValue;

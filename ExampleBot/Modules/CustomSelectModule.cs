@@ -32,10 +32,10 @@ public partial class CustomModule
         var color = Utils.GetRandomColor();
 
         // Used to track the selected module
-        string selectedModule = null;
+        string? selectedModule = null;
 
-        IUserMessage message = null;
-        InteractiveMessageResult<MultiSelectionOption<string>> result = null;
+        IUserMessage? message = null;
+        InteractiveMessageResult<MultiSelectionOption<string>>? result = null;
 
         // This timeout page is used for both cancellation (from the cancellation token) and timeout (specified in the SendSelectionAsync method).
         var timeoutPage = new PageBuilder()
@@ -112,6 +112,7 @@ public partial class CustomModule
 }
 
 public class MultiSelectionBuilder<T> : BaseSelectionBuilder<MultiSelection<T>, MultiSelectionOption<T>, MultiSelectionBuilder<T>>
+    where T : notnull
 {
     public override InputType InputType => InputType.SelectMenus;
 
@@ -119,8 +120,9 @@ public class MultiSelectionBuilder<T> : BaseSelectionBuilder<MultiSelection<T>, 
 }
 
 public class MultiSelection<T>(MultiSelectionBuilder<T> builder) : BaseSelection<MultiSelectionOption<T>>(builder)
+    where T : notnull
 {
-    public override ComponentBuilder GetOrAddComponents(bool disableAll, ComponentBuilder builder = null)
+    public override ComponentBuilder GetOrAddComponents(bool disableAll, ComponentBuilder? builder = null)
     {
         builder ??= new ComponentBuilder();
         var selectMenus = new Dictionary<int, SelectMenuBuilder>();
@@ -136,18 +138,16 @@ public class MultiSelection<T>(MultiSelectionBuilder<T> builder) : BaseSelection
             }
 
             var emote = EmoteConverter?.Invoke(option);
-            string label = StringConverter?.Invoke(option);
+            string? label = StringConverter?.Invoke(option);
             if (emote is null && label is null)
             {
                 throw new InvalidOperationException($"Neither {nameof(EmoteConverter)} nor {nameof(StringConverter)} returned a valid emote or string.");
             }
 
-            string optionValue = emote?.ToString() ?? label;
-
             var optionBuilder = new SelectMenuOptionBuilder()
                 .WithLabel(label)
                 .WithEmote(emote)
-                .WithValue(optionValue)
+                .WithValue(emote?.ToString() ?? label)
                 .WithDefault(option.IsDefault);
 
             value.AddOption(optionBuilder);
@@ -163,6 +163,7 @@ public class MultiSelection<T>(MultiSelectionBuilder<T> builder) : BaseSelection
 }
 
 public class MultiSelectionOption<T>(T option, int row, bool isDefault = false)
+    where T : notnull
 {
     public T Option { get; } = option;
 
@@ -170,9 +171,9 @@ public class MultiSelectionOption<T>(T option, int row, bool isDefault = false)
 
     public bool IsDefault { get; set; } = isDefault;
 
-    public override string ToString() => Option.ToString();
+    public override string? ToString() => Option.ToString();
 
     public override int GetHashCode() => Option.GetHashCode();
 
-    public override bool Equals(object obj) => Equals(Option, obj);
+    public override bool Equals(object? obj) => Equals(Option, obj);
 }

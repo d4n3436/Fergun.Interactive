@@ -46,7 +46,7 @@ public class SelectionModule : ModuleBase
         var result = await _interactive.SendSelectionAsync(selection, Context.Channel, TimeSpan.FromMinutes(1));
 
         // Get the selected option. This may be null/default if the selection times out or gets cancelled.
-        string selected = result.Value;
+        string selected = result.Value!;
 
         // You can check whether a selection failed or ended successfully with the Status property.
         // You can also use the IsSuccess, IsCanceled and IsTimeout properties.
