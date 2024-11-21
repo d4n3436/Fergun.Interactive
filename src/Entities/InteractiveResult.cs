@@ -14,7 +14,7 @@ public class InteractiveResult<T> : InteractiveResult
         : base(elapsed, status)
     {
         Value = value;
-        Values = value is null || EqualityComparer<T>.Default.Equals(value, default!) ? Array.Empty<T>() : [value];
+        Values = value is null ? Array.Empty<T>() : [value];
     }
 
     internal InteractiveResult(IReadOnlyList<T> values, TimeSpan elapsed, InteractiveStatus status = InteractiveStatus.Success)

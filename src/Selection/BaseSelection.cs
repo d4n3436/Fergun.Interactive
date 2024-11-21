@@ -371,9 +371,9 @@ public abstract class BaseSelection<TOption> : IInteractiveElement<TOption>
         List<TOption> options = [];
         foreach (string value in selectedValues)
         {
-            var option = Options.FirstOrDefault(option => (EmoteConverter?.Invoke(option)?.ToString() ?? StringConverter?.Invoke(option)) == value);
-            if (option is not null && !EqualityComparer.Equals(option, default!))
+            if (Options.Any(option => (EmoteConverter?.Invoke(option)?.ToString() ?? StringConverter?.Invoke(option)) == value))
             {
+                var option = Options.First(option => (EmoteConverter?.Invoke(option)?.ToString() ?? StringConverter?.Invoke(option)) == value);
                 options.Add(option);
             }
         }

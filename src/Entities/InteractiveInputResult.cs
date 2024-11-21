@@ -52,7 +52,7 @@ public class InteractiveInputResult<TOption> : InteractiveInputResult
         : this(status)
     {
         SelectedOption = selectedOption;
-        SelectedOptions = selectedOption is null || EqualityComparer<TOption>.Default.Equals(selectedOption, default!) ? Array.Empty<TOption>() : [selectedOption];
+        SelectedOptions = selectedOption is null ? Array.Empty<TOption>() : [selectedOption];
     }
 
     /// <summary>
