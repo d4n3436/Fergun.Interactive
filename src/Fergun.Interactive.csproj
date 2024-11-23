@@ -24,7 +24,7 @@ This is a fork of Discord.InteractivityAddon that adds several features like mor
 
   <ItemGroup>
     <PackageReference Include="Discord.Net.WebSocket" Version="3.16.0" />
-    <PackageReference Include="PolySharp" Version="1.14.1">
+    <PackageReference Include="PolySharp" Version="1.15.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
