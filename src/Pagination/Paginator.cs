@@ -559,6 +559,7 @@ public abstract class Paginator : IInteractiveElement<KeyValuePair<IEmote, Pagin
             var emote = (input
                     .Message
                     .Components
+                    .OfType<ActionRowComponent>()
                     .SelectMany(x => x.Components)
                     .FirstOrDefault(x => x is ButtonComponent button && button.CustomId == input.Data.CustomId) as ButtonComponent)?
                 .Emote;
