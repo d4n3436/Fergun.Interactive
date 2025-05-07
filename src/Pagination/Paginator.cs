@@ -680,6 +680,7 @@ public abstract class Paginator : IInteractiveElement<KeyValuePair<IEmote, Pagin
                 x.Components = includeComponents ? components : new Optional<MessageComponent>();
                 x.AllowedMentions = currentPage.AllowedMentions;
                 x.Attachments = attachments is null ? new Optional<IEnumerable<FileAttachment>>() : new Optional<IEnumerable<FileAttachment>>(attachments);
+                x.Flags = currentPage.MessageFlags;
             }, null).ConfigureAwait(false);
         }
         catch
@@ -693,7 +694,7 @@ public abstract class Paginator : IInteractiveElement<KeyValuePair<IEmote, Pagin
     {
         var page = RestrictedPage ?? throw new InvalidOperationException($"Expected {nameof(RestrictedPage)} to be non-null.");
         var attachments = page.AttachmentsFactory is null ? null : await page.AttachmentsFactory().ConfigureAwait(false);
-        await input.RespondWithFilesAsync(attachments ?? [], page.Text, page.GetEmbedArray(), page.IsTTS, true, page.AllowedMentions).ConfigureAwait(false);
+        await input.RespondWithFilesAsync(attachments ?? [], page.Text, page.GetEmbedArray(), page.IsTTS, true, page.AllowedMentions, flags: page.MessageFlags).ConfigureAwait(false);
 
         return InteractiveInputStatus.Success;
     }

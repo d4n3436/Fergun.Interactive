@@ -36,6 +36,7 @@ public class PageBuilder : IPageBuilder<Page>, IPageBuilder
         MessageReference = page.MessageReference;
         Stickers = page.Stickers;
         AttachmentsFactory = page.AttachmentsFactory;
+        MessageFlags = page.MessageFlags;
     }
 
     /// <summary>
@@ -68,6 +69,11 @@ public class PageBuilder : IPageBuilder<Page>, IPageBuilder
     /// Gets or sets the factory of attachments.
     /// </summary>
     public Func<ValueTask<IEnumerable<FileAttachment>?>>? AttachmentsFactory { get; set; }
+
+    /// <summary>
+    /// Gets or sets the message flags.
+    /// </summary>
+    public MessageFlags MessageFlags { get; set; } = MessageFlags.None;
 
     /// <summary>
     /// Gets or sets the title of the <see cref="Page"/>.
@@ -539,6 +545,17 @@ public class PageBuilder : IPageBuilder<Page>, IPageBuilder
     public PageBuilder WithAttachmentsFactory(Func<ValueTask<IEnumerable<FileAttachment>?>>? attachmentsFactory)
     {
         AttachmentsFactory = attachmentsFactory;
+        return this;
+    }
+
+    /// <summary>
+    /// Sets the message flags.
+    /// </summary>
+    /// <param name="flags">The message flags.</param>
+    /// <returns>The current builder.</returns>
+    public PageBuilder WithMessageFlags(MessageFlags flags)
+    {
+        MessageFlags = flags;
         return this;
     }
 

@@ -30,6 +30,7 @@ public class MultiEmbedPage : IPage
         MessageReference = builder.MessageReference;
         Stickers = builder.Stickers;
         AttachmentsFactory = builder.AttachmentsFactory;
+        MessageFlags = builder.MessageFlags;
         _embedArray = builder.Builders.Select(x => x.Build()).ToArray();
     }
 
@@ -54,6 +55,9 @@ public class MultiEmbedPage : IPage
     /// <inheritdoc/>
     public Func<ValueTask<IEnumerable<FileAttachment>?>>? AttachmentsFactory { get; }
 
+    /// <inheritdoc/>
+    public MessageFlags MessageFlags { get; }
+
     /// <summary>
     /// Converts this <see cref="MultiEmbedPage"/> into a <see cref="MultiEmbedPageBuilder"/>.
     /// </summary>
@@ -66,7 +70,8 @@ public class MultiEmbedPage : IPage
         .WithMessageReference(MessageReference)
         .WithStickers(Stickers)
         .WithBuilders(Embeds)
-        .WithAttachmentsFactory(AttachmentsFactory);
+        .WithAttachmentsFactory(AttachmentsFactory)
+        .WithMessageFlags(MessageFlags);
 
     /// <inheritdoc />
     Embed[] IPage.GetEmbedArray() => _embedArray;

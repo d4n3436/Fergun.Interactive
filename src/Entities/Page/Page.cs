@@ -23,6 +23,7 @@ public class Page : IPage
         MessageReference = page.MessageReference;
         Stickers = page.Stickers;
         AttachmentsFactory = page.AttachmentsFactory;
+        MessageFlags = page.MessageFlags;
 
         bool isEmpty = false;
         var builder = page.GetEmbedBuilder();
@@ -67,6 +68,9 @@ public class Page : IPage
 
     /// <inheritdoc/>
     public Func<ValueTask<IEnumerable<FileAttachment>?>>? AttachmentsFactory { get; }
+
+    /// <inheritdoc/>
+    public MessageFlags MessageFlags { get; }
 
     /// <summary>
     /// Gets the embed of this page.

@@ -56,6 +56,11 @@ public class MultiEmbedPageBuilder : IPageBuilder<MultiEmbedPage>, IPageBuilder
     public Func<ValueTask<IEnumerable<FileAttachment>?>>? AttachmentsFactory { get; set; }
 
     /// <summary>
+    /// Gets or sets the message flags.
+    /// </summary>
+    public MessageFlags MessageFlags { get; set; } = MessageFlags.None;
+
+    /// <summary>
     /// Builds this builder into a <see cref="MultiEmbedPage"/>.
     /// </summary>
     /// <returns>A <see cref="MultiEmbedPage"/>.</returns>
@@ -242,6 +247,17 @@ public class MultiEmbedPageBuilder : IPageBuilder<MultiEmbedPage>, IPageBuilder
     public MultiEmbedPageBuilder WithAttachmentsFactory(Func<ValueTask<IEnumerable<FileAttachment>?>>? attachmentsFactory)
     {
         AttachmentsFactory = attachmentsFactory;
+        return this;
+    }
+
+    /// <summary>
+    /// Sets the message flags.
+    /// </summary>
+    /// <param name="flags">The message flags.</param>
+    /// <returns>The current builder.</returns>
+    public MultiEmbedPageBuilder WithMessageFlags(MessageFlags flags)
+    {
+        MessageFlags = flags;
         return this;
     }
 

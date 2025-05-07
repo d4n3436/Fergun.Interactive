@@ -902,13 +902,14 @@ public class InteractiveService
                 x.Components = component;
                 x.AllowedMentions = page.AllowedMentions;
                 x.Attachments = attachments is null ? new Optional<IEnumerable<FileAttachment>>() : new Optional<IEnumerable<FileAttachment>>(attachments);
+                x.Flags = page.MessageFlags;
             }).ConfigureAwait(false);
         }
         else
         {
             InteractiveGuards.NotNull(channel);
             message = await channel.SendFilesAsync(attachments ?? [], page.Text, page.IsTTS, null, null,
-                page.AllowedMentions, page.MessageReference, component, page.Stickers.ToArray(), page.GetEmbedArray()).ConfigureAwait(false);
+                page.AllowedMentions, page.MessageReference, component, page.Stickers.ToArray(), page.GetEmbedArray(), flags: page.MessageFlags).ConfigureAwait(false);
         }
 
         return message;
@@ -933,12 +934,12 @@ public class InteractiveService
         {
             case InteractionResponseType.ChannelMessageWithSource:
                 await interaction.RespondWithFilesAsync(attachments ?? [],
-                    page.Text, embeds, page.IsTTS, ephemeral, page.AllowedMentions, component).ConfigureAwait(false);
+                    page.Text, embeds, page.IsTTS, ephemeral, page.AllowedMentions, component, flags: page.MessageFlags).ConfigureAwait(false);
                 return await interaction.GetOriginalResponseAsync().ConfigureAwait(false);
 
             case InteractionResponseType.DeferredChannelMessageWithSource:
                 return await interaction.FollowupWithFilesAsync(attachments ?? [],
-                    page.Text, embeds, page.IsTTS, ephemeral, page.AllowedMentions, component).ConfigureAwait(false);
+                    page.Text, embeds, page.IsTTS, ephemeral, page.AllowedMentions, component, flags: page.MessageFlags).ConfigureAwait(false);
 
             case InteractionResponseType.DeferredUpdateMessage:
                 return await interaction.ModifyOriginalResponseAsync(UpdateMessage).ConfigureAwait(false);
@@ -959,6 +960,7 @@ public class InteractiveService
             props.Components = component;
             props.AllowedMentions = page.AllowedMentions;
             props.Attachments = attachments is null ? new Optional<IEnumerable<FileAttachment>>() : new Optional<IEnumerable<FileAttachment>>(attachments);
+            props.Flags = page.MessageFlags;
         }
     }
 

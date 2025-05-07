@@ -45,6 +45,11 @@ public interface IPage<out TEmbed> where TEmbed : IEmbed
     /// Gets the factory of attachments.
     /// </summary>
     Func<ValueTask<IEnumerable<FileAttachment>?>>? AttachmentsFactory { get; }
+
+    /// <summary>
+    /// Gets the message flags.
+    /// </summary>
+    MessageFlags MessageFlags { get; }
 }
 
 /// <inheritdoc/>
