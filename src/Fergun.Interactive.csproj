@@ -15,10 +15,11 @@
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageTags>discord;discordapp;discord-bot;discordbot;discord-net;interactive</PackageTags>
     <Description>
-An addon that provides interactive functionality to Discord commands.
+Fergun.Interactive is an addon that provides interactive functionality to Discord commands.
 This is a fork of Discord.InteractivityAddon that adds several features like more customization and support for interactions.
     </Description>
     <PackageReleaseNotes>https://github.com/d4n3436/Fergun.Interactive/releases</PackageReleaseNotes>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
     <EnableNETAnalyzers>True</EnableNETAnalyzers>
 	<RestoreAdditionalProjectSources>https://baget.discordnet.dev/v3/index.json</RestoreAdditionalProjectSources>
   </PropertyGroup>
@@ -29,6 +30,10 @@ This is a fork of Discord.InteractivityAddon that adds several features like mor
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="$(SolutionDir)README.md" Pack="true" PackagePath="" Visible="false" />
   </ItemGroup>
 
 </Project>
