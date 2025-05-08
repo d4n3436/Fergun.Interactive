@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <Version>1.8.3-dev</Version>
+    <Version>1.8.3-dev2</Version>
     <LangVersion>12</LangVersion>
     <Nullable>enable</Nullable>
     <Authors>d4n3436</Authors>
@@ -21,7 +21,7 @@ This is a fork of Discord.InteractivityAddon that adds several features like mor
     <PackageReleaseNotes>https://github.com/d4n3436/Fergun.Interactive/releases</PackageReleaseNotes>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <EnableNETAnalyzers>True</EnableNETAnalyzers>
-	<RestoreAdditionalProjectSources>https://baget.discordnet.dev/v3/index.json</RestoreAdditionalProjectSources>
+    <RestoreAdditionalProjectSources>https://baget.discordnet.dev/v3/index.json</RestoreAdditionalProjectSources>
   </PropertyGroup>
 
   <ItemGroup>
