@@ -9,12 +9,12 @@
   </PropertyGroup>
 
 	<ItemGroup>
-    <PackageReference Include="Discord.Net.Commands" Version="3.17.4-nightly.20250508.501" />
-    <PackageReference Include="Discord.Net.WebSocket" Version="3.17.4-nightly.20250508.501" />
+    <PackageReference Include="Discord.Net.Commands" Version="3.18.0-beta.1" />
+    <PackageReference Include="Discord.Net.WebSocket" Version="3.18.0-beta.1" />
     <PackageReference Include="GScraper" Version="1.1.3" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="9.0.0" />
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="9.0.0" />
-    <PackageReference Include="System.Text.Json" Version="9.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="9.0.4" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="9.0.4" />
+    <PackageReference Include="System.Text.Json" Version="9.0.4" />
     <ProjectReference Include="..\src\Fergun.Interactive.csproj" />
   </ItemGroup>
 
