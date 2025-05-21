@@ -4,7 +4,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Discord;
-using Discord.Commands;
+using Discord.Interactions;
 using Fergun.Interactive;
 using Fergun.Interactive.Selection;
 
@@ -12,17 +12,16 @@ namespace ExampleBot.Modules;
 
 public partial class CustomModule
 {
-    private readonly CommandService _commandService;
+    private readonly InteractionService _commandService;
     private readonly InteractiveService _interactive;
 
-    public CustomModule(CommandService commandService, InteractiveService interactive)
+    public CustomModule(InteractionService commandService, InteractiveService interactive)
     {
         _commandService = commandService;
         _interactive = interactive;
     }
 
-    // Sends a multi selection (a message with multiple select menus with options)
-    [Command("select", RunMode = RunMode.Async)]
+    [SlashCommand("select", "Sends a multi selection (a message with multiple select menus with options).")]
     public async Task MultiSelectionAsync()
     {
         // Create CancellationTokenSource that will be canceled after 10 minutes.
@@ -34,7 +33,7 @@ public partial class CustomModule
         // Used to track the selected module
         string? selectedModule = null;
 
-        IUserMessage? message = null;
+        var interaction = Context.Interaction;
         InteractiveMessageResult<MultiSelectionOption<string>>? result = null;
 
         // This timeout page is used for both cancellation (from the cancellation token) and timeout (specified in the SendSelectionAsync method).
@@ -50,7 +49,8 @@ public partial class CustomModule
             // A multi selection uses the Row property of MultiSelectionOption to determine the position (the select menu) the options will appear.
             // The modules will appear in the first select menu.
             // There's also an IsDefault property used to determine whether an option is the default for a specific row.
-            var options = modules.Select(x => new MultiSelectionOption<string>(option: x.Name, row: 0, isDefault: x.Name == selectedModule));
+            string? module = selectedModule;
+            var options = modules.Select(x => new MultiSelectionOption<string>(option: x.Name, row: 0, isDefault: x.Name == module));
 
             string description = "Select a module";
 
@@ -61,7 +61,7 @@ public partial class CustomModule
                 description = "Select a command\nNote: You can also update your selected module.";
                 var commands = modules
                     .First(x => x.Name == result.Value!.Option)
-                    .Commands
+                    .SlashCommands
                     .Select(x => new MultiSelectionOption<string>(x.Name, 1));
 
                 options = options.Concat(commands);
@@ -82,16 +82,15 @@ public partial class CustomModule
                 .AddUser(Context.User)
                 .Build();
 
-            result = message is null
-                ? await _interactive.SendSelectionAsync(multiSelection, Context.Channel, TimeSpan.FromMinutes(2), null, cts.Token)
-                : await _interactive.SendSelectionAsync(multiSelection, message, TimeSpan.FromMinutes(2), null, cts.Token);
+            var responseType = interaction is IComponentInteraction ? InteractionResponseType.DeferredUpdateMessage : InteractionResponseType.ChannelMessageWithSource;
+            result = await _interactive.SendSelectionAsync(multiSelection, interaction, TimeSpan.FromMinutes(2), responseType, false, null, cts.Token);
 
-            message = result.Message;
+            interaction = result.StopInteraction!;
 
-            if (result.IsSuccess && result.Value!.Row == 0)
+            if (result.IsSuccess && result.Value.Row == 0)
             {
                 // We need to track the selected module so we can set it as the default option.
-                selectedModule = result.Value!.Option;
+                selectedModule = result.Value.Option;
             }
         }
 
@@ -99,11 +98,11 @@ public partial class CustomModule
             return;
 
         var embed = new EmbedBuilder()
-            .WithDescription($"You selected:\n**Module**: {selectedModule}\n**Command**: {result.Value!.Option}")
+            .WithDescription($"You selected:\n**Module**: {selectedModule}\n**Command**: {result.Value.Option}")
             .WithColor(color)
             .Build();
 
-        await message!.ModifyAsync(x =>
+        await interaction.ModifyOriginalResponseAsync(x =>
         {
             x.Embed = embed;
             x.Components = new ComponentBuilder().Build(); // Remove components

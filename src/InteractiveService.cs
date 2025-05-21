@@ -109,7 +109,7 @@ public class InteractiveService
     /// </summary>
     /// <param name="id">The ID of the callback.</param>
     /// <param name="callback">The callback, if found.</param>
-    /// <returns>Whether the callback was removed.</returns>
+    /// <returns><see langword="true"/> if the callback was removed; otherwise, <see langword="false"/> .</returns>
     public bool TryRemoveCallback(ulong id, [MaybeNullWhen(false)] out IInteractiveCallback callback)
         => _callbacks.TryRemove(id, out callback);
 
@@ -438,9 +438,9 @@ public class InteractiveService
     /// <param name="timeout">The time until the <see cref="Paginator"/> times out.</param>
     /// <param name="messageAction">A method that gets executed once when a message containing the paginator is modified.</param>
     /// <param name="resetTimeoutOnInput">Whether to reset the internal timeout timer when a valid input is received.</param>
-    /// <param name="cancellationToken">The <see cref="CancellationToken"/> to cancel the paginator.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> used to cancel the paginator.</param>
     /// <returns>
-    /// A task that represents the asynchronous operation for modifying the message to a paginator and waiting for a timeout or cancellation.<br/>
+    /// A <see cref="Task{TResult}"/> that represents the asynchronous operation for modifying the message to a paginator and waiting for a timeout or cancellation.<br/>
     /// The task result contains an <see cref="InteractiveMessageResult"/> with the message used for pagination
     /// (which may not be valid if the message has been deleted), the elapsed time and the status.<br/>
     /// If the paginator only contains one page, the task will return when the message has been sent and the result
@@ -454,11 +454,11 @@ public class InteractiveService
         => await SendPaginatorInternalAsync(paginator, null, timeout, message, messageAction, resetTimeoutOnInput, cancellationToken).ConfigureAwait(false);
 
     /// <summary>
-    /// Responds an interaction with a paginator.
+    /// Responds to an interaction with a paginator.
     /// </summary>
     /// <param name="paginator">The paginator to send.</param>
-    /// <param name="interaction">The interaction to respond.</param>
-    /// <param name="timeout">The time until the <see cref="Paginator"/> times out.</param>
+    /// <param name="interaction">The interaction to respond to.</param>
+    /// <param name="timeout">The amount of time until the <see cref="Paginator"/> times out.</param>
     /// <param name="responseType">The response type. When using the "Deferred" response types, you must pass an interaction that has already been deferred.</param>
     /// <param name="ephemeral">
     /// Whether the response message should be ephemeral. Ignored if modifying a non-ephemeral message.<br/><br/>
@@ -484,8 +484,8 @@ public class InteractiveService
     {
         InteractiveGuards.NotNull(paginator);
         InteractiveGuards.NotNull(interaction);
-        InteractiveGuards.DeleteAndDisableInputNotSet(paginator.ActionOnTimeout);
-        InteractiveGuards.DeleteAndDisableInputNotSet(paginator.ActionOnCancellation);
+        InteractiveGuards.ValidActionOnStop(paginator.ActionOnTimeout);
+        InteractiveGuards.ValidActionOnStop(paginator.ActionOnCancellation);
         InteractiveGuards.SupportedInputType(paginator, ephemeral);
         InteractiveGuards.ValidResponseType(responseType);
         cancellationToken.ThrowIfCancellationRequested();
@@ -500,8 +500,7 @@ public class InteractiveService
                 .Build();
         }
 
-        var timeoutTaskSource = new TimeoutTaskCompletionSource<InteractiveStatus>(timeout ?? _config.DefaultTimeout,
-            resetTimeoutOnInput, InteractiveStatus.Timeout, InteractiveStatus.Canceled, cancellationToken);
+        timeout ??= _config.DefaultTimeout;
 
         if (_config.ReturnAfterSendingPaginator)
         {
@@ -516,9 +515,139 @@ public class InteractiveService
 
         async Task<InteractiveMessageResult> WaitForPaginatorResultUsingCallbackAsync()
         {
+            var timeoutTaskSource = new TimeoutTaskCompletionSource<InteractiveStatus>(timeout.Value,
+                resetTimeoutOnInput, InteractiveStatus.Timeout, InteractiveStatus.Canceled, cancellationToken);
+
             using var callback = new PaginatorCallback(paginator, message, timeoutTaskSource, DateTimeOffset.UtcNow, interaction);
             return await WaitForPaginatorResultAsync(callback).ConfigureAwait(false);
         }
+    }
+
+    /// <summary>
+    /// Responds to an interaction with a component paginator.
+    /// </summary>
+    /// <remarks>Component paginators are a new type of paginators that offer more flexibility and support components V2.</remarks>
+    /// <param name="paginator">The paginator to send.</param>
+    /// <param name="interaction">The interaction to respond to.</param>
+    /// <param name="timeout">The amount of time until the paginator times out.</param>
+    /// <param name="responseType">
+    /// The response type to use. This is used to determine how the interaction should be responded. Here's a list explaining the available response types:
+    /// <list type="bullet">
+    ///     <item>
+    ///         <term><see cref="InteractionResponseType.ChannelMessageWithSource"/></term>
+    ///         <description>Sends a new message using <c>IDiscordInteraction.RespondWithFilesAsync</c> (requires a non-deferred interaction).</description>
+    ///     </item>
+    ///     <item>
+    ///         <term><see cref="InteractionResponseType.DeferredChannelMessageWithSource"/></term>
+    ///         <description>Sends a new message using <c>IDiscordInteraction.FollowupWithFilesAsync</c> (requires a deferred interaction).</description>
+    ///     </item>
+    ///     <item>
+    ///         <term><see cref="InteractionResponseType.UpdateMessage"/></term>
+    ///         <description>Updates the message where the interaction comes from using <c>IComponentInteraction.UpdateAsync</c> (requires a non-deferred <see cref="IComponentInteraction"/>).</description>
+    ///     </item>
+    ///     <item>
+    ///         <term><see cref="InteractionResponseType.DeferredUpdateMessage"/></term>
+    ///         <description>Updates the message where the interaction comes from using <c>IComponentInteraction.ModifyOriginalResponseAsync</c> (requires a deferred interaction).</description>
+    ///     </item>
+    /// </list>
+    /// </param>
+    /// <param name="ephemeral">Whether the response message should be ephemeral. Ignored if responding to a non-ephemeral interaction.</param>
+    /// <param name="messageAction">The action to perform once when the message containing the paginator is sent or modified.</param>
+    /// <param name="resetTimeoutOnInput">Whether to reset the internal timeout timer when a valid input is received.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> used to cancel the paginator.</param>
+    /// <returns>
+    /// <para>
+    ///     A <see cref="Task{TResult}"/> that represents the asynchronous operation of sending the paginator and waiting for a timeout or cancellation.<br/>
+    ///     The result contains an <see cref="InteractiveMessageResult"/> with the message used for pagination
+    ///     (which may not be valid if the message has been deleted), the elapsed time and the status.
+    /// </para>
+    /// <para>
+    ///     If the paginator only contains one page and <see cref="InteractiveConfig.ProcessSinglePagePaginators"/> is set to <see langword="false"/>, the task will return when the message has been sent and the result
+    ///     will contain the message sent and a <see cref="InteractiveStatus.Success"/> status.
+    /// </para>
+    /// </returns>
+    /// <exception cref="ArgumentNullException">Thrown when a required argument is <see langword="null"/>.</exception>
+    /// <exception cref="OperationCanceledException">Thrown when <paramref name="cancellationToken"/> is already cancelled.</exception>
+    public async Task<InteractiveMessageResult> SendPaginatorAsync(IComponentPaginator paginator, IDiscordInteraction interaction, TimeSpan? timeout = null,
+        InteractionResponseType responseType = InteractionResponseType.ChannelMessageWithSource, bool ephemeral = false,
+        Func<IUserMessage, Task>? messageAction = null, bool resetTimeoutOnInput = false, CancellationToken cancellationToken = default)
+    {
+        InteractiveGuards.NotNull(paginator);
+        InteractiveGuards.NotNull(interaction);
+        cancellationToken.ThrowIfCancellationRequested();
+
+        var message = await paginator.RenderPageAsync(interaction, responseType, ephemeral).ConfigureAwait(false);
+        return await SendPaginatorInternalAsync(paginator, message, interaction, timeout, messageAction, resetTimeoutOnInput, cancellationToken).ConfigureAwait(false);
+    }
+
+    /// <summary>
+    /// Sends a component paginator to the given message channel.
+    /// </summary>
+    /// <remarks>Component paginators are a new type of paginators that offer more flexibility and support components V2.</remarks>
+    /// <param name="paginator">The paginator to send.</param>
+    /// <param name="channel">The channel where the paginator will be sent.</param>
+    /// <param name="timeout">The amount of time until the paginator times out.</param>
+    /// <param name="messageAction">The action to perform once when the message containing the paginator is sent or modified.</param>
+    /// <param name="resetTimeoutOnInput">Whether to reset the internal timeout timer when a valid input is received.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> used to cancel the paginator.</param>
+    /// <returns>
+    /// <para>
+    ///     A <see cref="Task{TResult}"/> that represents the asynchronous operation of sending the paginator and waiting for a timeout or cancellation.<br/>
+    ///     The result contains an <see cref="InteractiveMessageResult"/> with the message used for pagination
+    ///     (which may not be valid if the message has been deleted), the elapsed time and the status.
+    /// </para>
+    /// <para>
+    ///     If the paginator only contains one page and <see cref="InteractiveConfig.ProcessSinglePagePaginators"/> is set to <see langword="false"/>, the task will return when the message has been sent and the result
+    ///     will contain the message sent and a <see cref="InteractiveStatus.Success"/> status.
+    /// </para>
+    /// </returns>
+    /// <exception cref="ArgumentNullException">Thrown when a required argument is <see langword="null"/>.</exception>
+    /// <exception cref="OperationCanceledException">Thrown when <paramref name="cancellationToken"/> is already cancelled.</exception>
+    public async Task<InteractiveMessageResult> SendPaginatorAsync(IComponentPaginator paginator, IMessageChannel channel, TimeSpan? timeout = null,
+        Func<IUserMessage, Task>? messageAction = null, bool resetTimeoutOnInput = false, CancellationToken cancellationToken = default)
+    {
+        InteractiveGuards.NotNull(paginator);
+        InteractiveGuards.NotNull(channel);
+        cancellationToken.ThrowIfCancellationRequested();
+
+        var message = await paginator.RenderPageAsync(channel).ConfigureAwait(false);
+        return await SendPaginatorInternalAsync(paginator, message, null, timeout, messageAction, resetTimeoutOnInput, cancellationToken).ConfigureAwait(false);
+    }
+
+    /// <summary>
+    /// Modifies a message to display a component paginator.
+    /// </summary>
+    /// <remarks>Component paginators are a new type of paginators that offer more flexibility and support components V2.</remarks>
+    /// <param name="paginator">The paginator to send.</param>
+    /// <param name="message">The channel where the paginator will be sent.</param>
+    /// <param name="timeout">The amount of time until the paginator times out.</param>
+    /// <param name="messageAction">The action to perform once when the message containing the paginator is sent or modified.</param>
+    /// <param name="resetTimeoutOnInput">Whether to reset the internal timeout timer when a valid input is received.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> used to cancel the paginator.</param>
+    /// <returns>
+    /// <para>
+    ///     A <see cref="Task{TResult}"/> that represents the asynchronous operation of sending the paginator and waiting for a timeout or cancellation.<br/>
+    ///     The result contains an <see cref="InteractiveMessageResult"/> with the message used for pagination
+    ///     (which may not be valid if the message has been deleted), the elapsed time and the status.
+    /// </para>
+    /// <para>
+    ///     If the paginator only contains one page and <see cref="InteractiveConfig.ProcessSinglePagePaginators"/> is set to <see langword="false"/>, the task will return when the message has been sent and the result
+    ///     will contain the message sent and a <see cref="InteractiveStatus.Success"/> status.
+    /// </para>
+    /// </returns>
+    /// <exception cref="ArgumentException">Thrown when <paramref name="message"/> is not owned by the current user.</exception>
+    /// <exception cref="ArgumentNullException">Thrown when a required argument is <see langword="null"/>.</exception>
+    /// <exception cref="OperationCanceledException">Thrown when <paramref name="cancellationToken"/> is already cancelled.</exception>
+    public async Task<InteractiveMessageResult> SendPaginatorAsync(IComponentPaginator paginator, IUserMessage message, TimeSpan? timeout = null,
+        Func<IUserMessage, Task>? messageAction = null, bool resetTimeoutOnInput = false, CancellationToken cancellationToken = default)
+    {
+        InteractiveGuards.NotNull(paginator);
+        InteractiveGuards.NotNull(message);
+        InteractiveGuards.MessageFromCurrentUser(_client, message);
+        cancellationToken.ThrowIfCancellationRequested();
+
+        await paginator.RenderPageAsync(message).ConfigureAwait(false);
+        return await SendPaginatorInternalAsync(paginator, message, null, timeout, messageAction, resetTimeoutOnInput, cancellationToken).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -564,11 +693,11 @@ public class InteractiveService
         => await SendSelectionInternalAsync(selection, null, timeout, message, messageAction, cancellationToken).ConfigureAwait(false);
 
     /// <summary>
-    /// Responds an interaction with a selection.
+    /// Responds to an interaction with a selection.
     /// </summary>
     /// <typeparam name="TOption">The type of the options the selection contains.</typeparam>
     /// <param name="selection">The selection to send.</param>
-    /// <param name="interaction">The interaction to respond.</param>
+    /// <param name="interaction">The interaction to respond to.</param>
     /// <param name="timeout">The time until the selection times out.</param>
     /// <param name="responseType">The response type. When using the "Deferred" response types, you must pass an interaction that has already been deferred.</param>
     /// <param name="ephemeral">
@@ -592,9 +721,9 @@ public class InteractiveService
     {
         InteractiveGuards.NotNull(selection);
         InteractiveGuards.NotNull(interaction);
-        InteractiveGuards.DeleteAndDisableInputNotSet(selection.ActionOnTimeout);
-        InteractiveGuards.DeleteAndDisableInputNotSet(selection.ActionOnCancellation);
-        InteractiveGuards.DeleteAndDisableInputNotSet(selection.ActionOnSuccess);
+        InteractiveGuards.ValidActionOnStop(selection.ActionOnTimeout);
+        InteractiveGuards.ValidActionOnStop(selection.ActionOnCancellation);
+        InteractiveGuards.ValidActionOnStop(selection.ActionOnSuccess);
         InteractiveGuards.SupportedInputType(selection, ephemeral);
         InteractiveGuards.ValidResponseType(responseType);
         cancellationToken.ThrowIfCancellationRequested();
@@ -603,7 +732,7 @@ public class InteractiveService
         messageAction?.Invoke(message);
 
         var timeoutTaskSource = new TimeoutTaskCompletionSource<(IReadOnlyList<TOption>, InteractiveStatus)>(timeout ?? _config.DefaultTimeout,
-            false, (Array.Empty<TOption>(), InteractiveStatus.Timeout), (Array.Empty<TOption>(), InteractiveStatus.Canceled), cancellationToken);
+            false, ([], InteractiveStatus.Timeout), ([], InteractiveStatus.Canceled), cancellationToken);
 
         using var callback = new SelectionCallback<TOption>(selection, message, timeoutTaskSource, DateTimeOffset.UtcNow, interaction);
 
@@ -614,23 +743,35 @@ public class InteractiveService
     /// Returns a value that indicates whether the <paramref name="interaction"/> targets a message that is managed by an active paginator or selection, either through a component interaction or a modal.
     /// </summary>
     /// <param name="interaction">The incoming interaction.</param>
-    /// <returns>Whether the interaction targets a message that is managed by an active paginator or selection.</returns>
+    /// <returns><see langword="true"/> if the interaction targets a message that is managed by an active paginator or selection; otherwise, <see langword="false"/>.</returns>
     public bool IsManaged(SocketInteraction interaction)
     {
         InteractiveGuards.NotNull(interaction);
 
-        return (interaction is SocketMessageComponent componentInteraction
-            && IsManaged(componentInteraction.Message))
-            || (interaction is SocketModal modal
-            && ulong.TryParse(modal.Data.CustomId, out ulong messageId)
-            && _callbacks.ContainsKey(messageId));
+        if (interaction is SocketMessageComponent componentInteraction)
+        {
+            if (TryGetPaginator(componentInteraction.Message, out var paginator) && paginator.TryGetAction(componentInteraction, out _))
+            {
+                return true;
+            }
+
+            if (TryGetComponentPaginator(componentInteraction.Message, out _) && componentInteraction.Data.CustomId.StartsWith(ComponentPaginator.IdPrefix))
+            {
+                return true;
+            }
+        }
+
+        string? customId = (interaction as SocketModal)?.Data?.CustomId ?? (interaction as SocketMessageComponent)?.Data?.CustomId;
+
+        return ulong.TryParse(customId, out ulong messageId)
+            && _callbacks.ContainsKey(messageId);
     }
 
     /// <summary>
     /// Returns a value that indicates whether the <paramref name="message"/> is managed by an active paginator or selection.
     /// </summary>
     /// <param name="message">The message.</param>
-    /// <returns>Whether the message is managed by an active paginator or selection.</returns>
+    /// <returns><see langword="true"/> if the message is managed by an active paginator or selection; otherwise, <see langword="false"/>.</returns>
     public bool IsManaged(IUserMessage message)
     {
         InteractiveGuards.NotNull(message);
@@ -641,7 +782,7 @@ public class InteractiveService
     /// Returns a value that indicates whether the specified ID belongs to a message that is managed by an active paginator or selection.
     /// </summary>
     /// <param name="messageId">The message ID.</param>
-    /// <returns>Whether the message is managed by an active paginator or selection.</returns>
+    /// <returns><see langword="true"/> if the ID of the message is managed by an active paginator or selection; otherwise, <see langword="false"/>.</returns>
     public bool IsManaged(ulong messageId) => _callbacks.ContainsKey(messageId);
 
     /// <summary>
@@ -649,7 +790,7 @@ public class InteractiveService
     /// </summary>
     /// <param name="message">The message.</param>
     /// <param name="paginator">The paginator, if found.</param>
-    /// <returns><see langword="true"/> if the paginator was found, otherwise <see langword="false"/>.</returns>
+    /// <returns><see langword="true"/> if the paginator was found; otherwise, <see langword="false"/>.</returns>
     public bool TryGetPaginator(IUserMessage message, [MaybeNullWhen(false)] out Paginator paginator)
     {
         InteractiveGuards.NotNull(message);
@@ -661,11 +802,39 @@ public class InteractiveService
     /// </summary>
     /// <param name="messageId">The ID of the message.</param>
     /// <param name="paginator">The paginator, if found.</param>
-    /// <returns><see langword="true"/> if the paginator was found, otherwise <see langword="false"/>.</returns>
+    /// <returns><see langword="true"/> if the paginator was found; otherwise, <see langword="false"/>.</returns>
     public bool TryGetPaginator(ulong messageId, [MaybeNullWhen(false)] out Paginator paginator)
     {
         paginator = null;
         if (!_callbacks.TryGetValue(messageId, out var callback) || callback is not PaginatorCallback paginatorCallback)
+            return false;
+
+        paginator = paginatorCallback.Paginator;
+        return true;
+    }
+
+    /// <summary>
+    /// Attempts to get a component paginator from the message it is currently managing.
+    /// </summary>
+    /// <param name="message">The message.</param>
+    /// <param name="paginator">The paginator, if found.</param>
+    /// <returns><see langword="true"/> if the paginator was found; otherwise, <see langword="false"/>.</returns>
+    public bool TryGetComponentPaginator(IUserMessage message, [MaybeNullWhen(false)] out IComponentPaginator paginator)
+    {
+        InteractiveGuards.NotNull(message);
+        return TryGetComponentPaginator(message.Id, out paginator);
+    }
+
+    /// <summary>
+    /// Attempts to get a component paginator from the ID of the message it is currently managing.
+    /// </summary>
+    /// <param name="messageId">The ID of the message.</param>
+    /// <param name="paginator">The paginator, if found.</param>
+    /// <returns><see langword="true"/> if the paginator was found; otherwise, <see langword="false"/>.</returns>
+    public bool TryGetComponentPaginator(ulong messageId, [MaybeNullWhen(false)] out IComponentPaginator paginator)
+    {
+        paginator = null;
+        if (!_callbacks.TryGetValue(messageId, out var callback) || callback is not ComponentPaginatorCallback paginatorCallback)
             return false;
 
         paginator = paginatorCallback.Paginator;
@@ -678,7 +847,7 @@ public class InteractiveService
     /// <typeparam name="TOption">The type of the options the selection contains.</typeparam>
     /// <param name="message">The message.</param>
     /// <param name="selection">The selection, if found.</param>
-    /// <returns><see langword="true"/> if the selection was found, otherwise <see langword="false"/>.</returns>
+    /// <returns><see langword="true"/> if the selection was found; otherwise, <see langword="false"/>.</returns>
     public bool TryGetSelection<TOption>(IUserMessage message, [MaybeNullWhen(false)] out BaseSelection<TOption> selection)
     {
         InteractiveGuards.NotNull(message);
@@ -691,7 +860,7 @@ public class InteractiveService
     /// <typeparam name="TOption">The type of the options the selection contains.</typeparam>
     /// <param name="messageId">The ID of the message.</param>
     /// <param name="selection">The selection, if found.</param>
-    /// <returns><see langword="true"/> if the selection was found, otherwise <see langword="false"/>.</returns>
+    /// <returns><see langword="true"/> if the selection was found; otherwise, <see langword="false"/>.</returns>
     public bool TryGetSelection<TOption>(ulong messageId, [MaybeNullWhen(false)] out BaseSelection<TOption> selection)
     {
         selection = null;
@@ -703,11 +872,11 @@ public class InteractiveService
     }
 
     /// <summary>
-    /// Returns a value that indicates whether an incoming object (such as a message, reaction or interaction) triggers at least one of the filters registered by the Next{Entity}Async() methods.
+    /// Returns a value that indicates whether an incoming object (such as a message, reaction or interaction) triggers at least one of the filters registered by the <c>Next{Entity}Async()</c> methods.
     /// </summary>
     /// <typeparam name="T">The type of the incoming object.</typeparam>
     /// <param name="obj">The incoming object.</param>
-    /// <returns>Whether the specified object triggers at least one of the filters.</returns>
+    /// <returns><see langword="true"/> if specified object triggers at least one of the filters; otherwise, <see langword="false"/>.</returns>
     public bool TriggersAnyFilter<T>(T obj) => _filteredCallbacks.Values.Any(x => x.TriggersFilter(obj));
 
     private async Task<InteractiveMessageResult> SendPaginatorInternalAsync(Paginator paginator, IMessageChannel? channel, TimeSpan? timeout = null,
@@ -715,8 +884,8 @@ public class InteractiveService
     {
         InteractiveGuards.NotNull(paginator);
         InteractiveGuards.MessageFromCurrentUser(_client, message);
-        InteractiveGuards.DeleteAndDisableInputNotSet(paginator.ActionOnTimeout);
-        InteractiveGuards.DeleteAndDisableInputNotSet(paginator.ActionOnCancellation);
+        InteractiveGuards.ValidActionOnStop(paginator.ActionOnTimeout);
+        InteractiveGuards.ValidActionOnStop(paginator.ActionOnCancellation);
         InteractiveGuards.SupportedInputType(paginator, false);
         cancellationToken.ThrowIfCancellationRequested();
 
@@ -730,8 +899,7 @@ public class InteractiveService
                 .Build();
         }
 
-        var timeoutTaskSource = new TimeoutTaskCompletionSource<InteractiveStatus>(timeout ?? _config.DefaultTimeout,
-            resetTimeoutOnInput, InteractiveStatus.Timeout, InteractiveStatus.Canceled, cancellationToken);
+        timeout ??= _config.DefaultTimeout;
 
         if (_config.ReturnAfterSendingPaginator)
         {
@@ -746,7 +914,47 @@ public class InteractiveService
 
         async Task<InteractiveMessageResult> WaitForPaginatorResultUsingCallbackAsync()
         {
+            using var timeoutTaskSource = new TimeoutTaskCompletionSource<InteractiveStatus>(timeout.Value,
+                resetTimeoutOnInput, InteractiveStatus.Timeout, InteractiveStatus.Canceled, cancellationToken);
+
             using var callback = new PaginatorCallback(paginator, message, timeoutTaskSource, DateTimeOffset.UtcNow);
+            return await WaitForPaginatorResultAsync(callback).ConfigureAwait(false);
+        }
+    }
+
+    private async Task<InteractiveMessageResult> SendPaginatorInternalAsync(IComponentPaginator paginator, IUserMessage message, IDiscordInteraction? interaction = null,
+        TimeSpan? timeout = null, Func<IUserMessage, Task>? messageAction = null, bool resetTimeoutOnInput = false, CancellationToken cancellationToken = default)
+    {
+        if (messageAction is not null)
+        {
+            await messageAction(message).ConfigureAwait(false);
+        }
+
+        if (!_config.ProcessSinglePagePaginators && paginator.PageCount == 0)
+        {
+            return new InteractiveMessageResultBuilder()
+                .WithMessage(message)
+                .Build();
+        }
+
+        timeout ??= _config.DefaultTimeout;
+
+        if (_config.ReturnAfterSendingPaginator)
+        {
+            _ = WaitForPaginatorResultUsingCallbackAsync();
+            return new InteractiveMessageResultBuilder()
+                .WithMessage(message)
+                .Build();
+        }
+
+        return await WaitForPaginatorResultUsingCallbackAsync().ConfigureAwait(false);
+
+        async Task<InteractiveMessageResult> WaitForPaginatorResultUsingCallbackAsync()
+        {
+            using var timeoutTaskSource = new TimeoutTaskCompletionSource<InteractiveStatus>(timeout.Value,
+                resetTimeoutOnInput, InteractiveStatus.Timeout, InteractiveStatus.Canceled, cancellationToken);
+
+            using var callback = new ComponentPaginatorCallback(paginator, message, timeoutTaskSource, DateTimeOffset.UtcNow, interaction);
             return await WaitForPaginatorResultAsync(callback).ConfigureAwait(false);
         }
     }
@@ -756,17 +964,17 @@ public class InteractiveService
     {
         InteractiveGuards.NotNull(selection);
         InteractiveGuards.MessageFromCurrentUser(_client, message);
-        InteractiveGuards.DeleteAndDisableInputNotSet(selection.ActionOnTimeout);
-        InteractiveGuards.DeleteAndDisableInputNotSet(selection.ActionOnCancellation);
-        InteractiveGuards.DeleteAndDisableInputNotSet(selection.ActionOnSuccess);
+        InteractiveGuards.ValidActionOnStop(selection.ActionOnTimeout);
+        InteractiveGuards.ValidActionOnStop(selection.ActionOnCancellation);
+        InteractiveGuards.ValidActionOnStop(selection.ActionOnSuccess);
         InteractiveGuards.SupportedInputType(selection, false);
         cancellationToken.ThrowIfCancellationRequested();
 
         message = await SendOrModifyMessageAsync(selection, message, channel).ConfigureAwait(false);
         messageAction?.Invoke(message);
 
-        var timeoutTaskSource = new TimeoutTaskCompletionSource<(IReadOnlyList<TOption>, InteractiveStatus)>(timeout ?? _config.DefaultTimeout,
-            false, (Array.Empty<TOption>(), InteractiveStatus.Timeout), (Array.Empty<TOption>(), InteractiveStatus.Canceled), cancellationToken);
+        using var timeoutTaskSource = new TimeoutTaskCompletionSource<(IReadOnlyList<TOption>, InteractiveStatus)>(timeout ?? _config.DefaultTimeout,
+            false, ([], InteractiveStatus.Timeout), ([], InteractiveStatus.Canceled), cancellationToken);
 
         using var callback = new SelectionCallback<TOption>(selection, message, timeoutTaskSource, DateTimeOffset.UtcNow);
 
@@ -843,6 +1051,29 @@ public class InteractiveService
         }
     }
 
+    private async Task<InteractiveMessageResult> WaitForPaginatorResultAsync(ComponentPaginatorCallback callback)
+    {
+        _callbacks[callback.Message.Id] = callback;
+
+        var status = await callback.TimeoutTaskSource.Task.ConfigureAwait(false);
+
+        var result = InteractiveMessageResultBuilder.FromCallback(callback, status).Build();
+
+        if (_callbacks.TryRemove(callback.Message.Id, out _))
+        {
+            callback.Paginator.Status = result.Status switch
+            {
+                InteractiveStatus.Canceled => PaginatorStatus.Canceled,
+                InteractiveStatus.Timeout => PaginatorStatus.TimedOut,
+                _ => throw new InvalidOperationException("Invalid paginator status.")
+            };
+
+            await callback.Paginator.ApplyActionOnStopAsync(result.Message, result.StopInteraction, _config.DeferStopPaginatorInteractions);
+        }
+
+        return result;
+    }
+
     private async Task<InteractiveMessageResult<TOption>> WaitForSelectionResultAsync<TOption>(SelectionCallback<TOption> callback)
     {
         _callbacks[callback.Message.Id] = callback;
@@ -854,7 +1085,7 @@ public class InteractiveService
             ? new CancellationTokenSource()
             : null;
 
-        _ = callback.Selection.InitializeMessageAsync(callback.Message, cts?.Token ?? default).ConfigureAwait(false);
+        _ = callback.Selection.InitializeMessageAsync(callback.Message, cts?.Token ?? CancellationToken.None).ConfigureAwait(false);
 
         if (callback.Selection.InputType.HasFlag(InputType.Messages))
         {
@@ -905,11 +1136,14 @@ public class InteractiveService
                 x.Flags = page.MessageFlags;
             }).ConfigureAwait(false);
         }
-        else
+        else if (channel is not null)
         {
-            InteractiveGuards.NotNull(channel);
             message = await channel.SendFilesAsync(attachments ?? [], page.Text, page.IsTTS, null, null,
                 page.AllowedMentions, page.MessageReference, component, page.Stickers.ToArray(), page.GetEmbedArray(), flags: page.MessageFlags).ConfigureAwait(false);
+        }
+        else
+        {
+            throw new ArgumentException($"Expected at least one of {nameof(message)} or {nameof(channel)} to not be null");
         }
 
         return message;
@@ -974,7 +1208,6 @@ public class InteractiveService
             InteractiveStatus.Timeout => element.ActionOnTimeout,
             InteractiveStatus.Canceled => element.ActionOnCancellation,
             InteractiveStatus.Success when element is BaseSelection<TOption> selection => selection.ActionOnSuccess,
-            InteractiveStatus.Unknown => throw new ArgumentException("Unknown action.", nameof(result)),
             _ => throw new ArgumentException("Unknown action.", nameof(result))
         };
 
@@ -1164,13 +1397,10 @@ public class InteractiveService
 
     private Task InteractionCreated(SocketInteraction interaction)
     {
-        ulong messageId = 0;
-
         if ((interaction is SocketMessageComponent componentInteraction
             && _callbacks.TryGetValue(componentInteraction.Message.Id, out var callback))
-            || (interaction is SocketModal modal
-            && ulong.TryParse(modal.Data.CustomId, out messageId)
-            && _callbacks.TryGetValue(messageId, out callback)))
+            || (interaction is SocketModal { Message: not null } modal
+                && _callbacks.TryGetValue(modal.Message.Id, out callback)))
         {
             _ = Task.Run(async () =>
             {
@@ -1180,7 +1410,8 @@ public class InteractiveService
                 }
                 catch (Exception ex)
                 {
-                    LogError("InteractiveService", $"Failed to execute interaction callback (message Id: {(interaction as SocketMessageComponent)?.Message?.Id ?? messageId})", ex);
+                    ulong? messageId = (interaction as SocketMessageComponent)?.Message?.Id ?? (interaction as SocketModal)?.Message?.Id;
+                    LogError("InteractiveService", $"Failed to execute interaction callback (message Id: {messageId?.ToString() ?? "?"})", ex);
                 }
             });
         }
@@ -1207,7 +1438,7 @@ public class InteractiveService
     }
 
     private void LogError(string source, string message, Exception? exception = null)
-        => Log(new LogMessage(LogSeverity.Error, source, message, exception));
+        => Log?.Invoke(new LogMessage(LogSeverity.Error, source, message, exception));
 
     private Task LogMessage(LogMessage message)
         => _config.LogLevel >= message.Severity

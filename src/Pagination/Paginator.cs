@@ -46,10 +46,10 @@ public abstract class Paginator : IInteractiveElement<KeyValuePair<IEmote, Pagin
             InteractiveGuards.NotNull(properties.RestrictedPageFactory);
         }
 
-        Users = properties.Users.ToArray();
-        Emotes = properties.Options.AsReadOnly();
-        ButtonFactories = new ReadOnlyCollection<Func<IButtonContext, IPaginatorButton>>(properties.ButtonFactories);
-        SelectMenuFactories = new ReadOnlyCollection<Func<ISelectMenuContext, IPaginatorSelectMenu>>(properties.SelectMenuFactories);
+        Users = new ReadOnlyCollection<IUser>(properties.Users.ToArray());
+        Emotes = new ReadOnlyDictionary<IEmote, PaginatorAction>(new Dictionary<IEmote, PaginatorAction>(properties.Options));
+        ButtonFactories = new ReadOnlyCollection<Func<IButtonContext, IPaginatorButton>>(properties.ButtonFactories.ToArray());
+        SelectMenuFactories = new ReadOnlyCollection<Func<ISelectMenuContext, IPaginatorSelectMenu>>(properties.SelectMenuFactories.ToArray());
         CanceledPage = properties.CanceledPage?.Build();
         TimeoutPage = properties.TimeoutPage?.Build();
         RestrictedPage = properties.RestrictedPageFactory?.Invoke(Users);
@@ -463,12 +463,7 @@ public abstract class Paginator : IInteractiveElement<KeyValuePair<IEmote, Pagin
         InteractiveGuards.NotNull(input);
         InteractiveGuards.NotNull(message);
 
-        if (!this.CanInteract(input.Author))
-        {
-            return Task.FromResult(new InteractiveInputResult(InteractiveInputStatus.Ignored));
-        }
-
-        if (JumpInputUserId == 0)
+        if (!this.CanInteract(input.Author) || JumpInputUserId == 0)
         {
             return Task.FromResult(new InteractiveInputResult(InteractiveInputStatus.Ignored));
         }
@@ -551,23 +546,9 @@ public abstract class Paginator : IInteractiveElement<KeyValuePair<IEmote, Pagin
             };
         }
 
-        // Get last character of custom ID, convert it to a number and cast it to PaginatorAction
-        var action = (PaginatorAction)(input.Data.CustomId?[^1] - '0' ?? -1);
-        if (!Enum.IsDefined(typeof(PaginatorAction), action))
+        if (!TryGetAction(input, out var action))
         {
-            // Old way to get the action for backward compatibility
-            var emote = (input
-                    .Message
-                    .Components
-                    .OfType<ActionRowComponent>()
-                    .SelectMany(x => x.Components)
-                    .FirstOrDefault(x => x is ButtonComponent button && button.CustomId == input.Data.CustomId) as ButtonComponent)?
-                .Emote;
-
-            if (emote is null || !Emotes.TryGetValue(emote, out action))
-            {
-                return InteractiveInputStatus.Ignored;
-            }
+            return InteractiveInputStatus.Ignored;
         }
 
         if (action == PaginatorAction.Exit)
@@ -662,6 +643,27 @@ public abstract class Paginator : IInteractiveElement<KeyValuePair<IEmote, Pagin
 
             await message.AddReactionAsync(emote).ConfigureAwait(false);
         }
+    }
+
+    internal bool TryGetAction(SocketMessageComponent input, out PaginatorAction action)
+    {
+        // Get last character of custom ID, convert it to a number and cast it to PaginatorAction
+        action = (PaginatorAction)(input.Data.CustomId?[^1] - '0' ?? -1);
+        if (Enum.IsDefined(typeof(PaginatorAction), action))
+        {
+            return true;
+        }
+
+        // Old way to get the action for backward compatibility
+        var emote = (input
+                .Message
+                .Components
+                .OfType<ActionRowComponent>()
+                .SelectMany(x => x.Components)
+                .FirstOrDefault(x => x is ButtonComponent button && button.CustomId == input.Data.CustomId) as ButtonComponent)?
+            .Emote;
+
+        return emote is not null && Emotes.TryGetValue(emote, out action);
     }
 
     // Attempts to update the message and reverts the page index to the previous one if an exception occurs

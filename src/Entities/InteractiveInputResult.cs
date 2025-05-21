@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 
 namespace Fergun.Interactive;
@@ -52,7 +51,7 @@ public class InteractiveInputResult<TOption> : InteractiveInputResult
         : this(status)
     {
         SelectedOption = selectedOption;
-        SelectedOptions = selectedOption is null ? Array.Empty<TOption>() : [selectedOption];
+        SelectedOptions = selectedOption is null ? [] : [selectedOption];
     }
 
     /// <summary>

@@ -41,5 +41,17 @@ internal sealed class InteractiveMessageResultBuilder : BaseInteractiveMessageRe
             .WithStopInteraction(callback.StopInteraction);
     }
 
+    public static InteractiveMessageResultBuilder FromCallback(ComponentPaginatorCallback callback, InteractiveStatus status)
+    {
+        var user = callback.StopInteraction?.User;
+
+        return new InteractiveMessageResultBuilder()
+            .WithElapsed(callback.GetElapsedTime(status))
+            .WithStatus(status)
+            .WithMessage(callback.Message)
+            .WithUser(user)
+            .WithStopInteraction(callback.StopInteraction);
+    }
+
     public override InteractiveMessageResult Build() => new(this);
 }

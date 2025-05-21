@@ -418,9 +418,7 @@ public abstract class PaginatorBuilder<TPaginator, TBuilder>
     /// <returns>This builder.</returns>
     public virtual TBuilder AddSelectMenu(string customId, List<SelectMenuOptionBuilder>? options = null, string? placeholder = null, int maxValues = 1, int minValues = 1,
         bool? isDisabled = null, ComponentType type = ComponentType.SelectMenu, List<ChannelType>? channelTypes = null, List<SelectMenuDefaultValue>? defaultValues = null)
-    {
-        return AddSelectMenu(new SelectMenuBuilder(customId, options, placeholder, maxValues, minValues, isDisabled ?? false, type, channelTypes, defaultValues), isDisabled);
-    }
+        => AddSelectMenu(new SelectMenuBuilder(customId, options, placeholder, maxValues, minValues, isDisabled ?? false, type, channelTypes, defaultValues), isDisabled);
 
     /// <summary>
     /// Adds a paginator select menu from a select menu builder.

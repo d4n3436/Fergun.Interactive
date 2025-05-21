@@ -154,7 +154,7 @@ public sealed class MenuSelection<TOption> : BaseSelection<TOption>
             return result;
 
         var page = await InputHandler(result.SelectedOptions).ConfigureAwait(false);
-        
+
         if (SetDefaultValues)
             _lastSelectedOptions = result.SelectedOptions;
 

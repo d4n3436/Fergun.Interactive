@@ -2,10 +2,12 @@
 using System.Threading;
 using System.Threading.Tasks;
 using Discord;
-using Discord.Commands;
+using Discord.Interactions;
 using Discord.WebSocket;
 using ExampleBot.Services;
 using Fergun.Interactive;
+using GScraper.DuckDuckGo;
+using GScraper.Google;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -22,7 +24,7 @@ internal static class Program
         await using var services = ConfigureServices();
         var client = services.GetRequiredService<DiscordSocketClient>();
 
-        services.GetRequiredService<CommandService>().Log += LogAsync;
+        services.GetRequiredService<InteractionService>().Log += LogAsync;
         services.GetRequiredService<InteractiveService>().Log += LogAsync;
         client.Log += LogAsync;
 
@@ -41,7 +43,7 @@ internal static class Program
         await client.LoginAsync(TokenType.Bot, token);
         await client.StartAsync();
 
-        await services.GetRequiredService<CommandHandlingService>().InitializeAsync();
+        await services.GetRequiredService<InteractionHandlingService>().InitializeAsync();
 
         await Task.Delay(Timeout.Infinite);
     }
@@ -56,10 +58,12 @@ internal static class Program
     private static ServiceProvider ConfigureServices()
         => new ServiceCollection()
             .AddSingleton(new DiscordSocketConfig { LogLevel = LogSeverity.Verbose, GatewayIntents = GatewayIntents.AllUnprivileged | GatewayIntents.MessageContent })
-            .AddSingleton(new CommandServiceConfig { LogLevel = LogSeverity.Verbose })
+            .AddSingleton(new InteractionServiceConfig { LogLevel = LogSeverity.Verbose })
             .AddSingleton<DiscordSocketClient>()
-            .AddSingleton<CommandService>()
-            .AddSingleton<CommandHandlingService>()
+            .AddSingleton(x => new InteractionService(x.GetRequiredService<DiscordSocketClient>().Rest))
+            .AddSingleton<InteractionHandlingService>()
             .AddSingleton<InteractiveService>()
+            .AddSingleton<GoogleScraper>()
+            .AddSingleton<DuckDuckGoScraper>()
             .BuildServiceProvider();
 }

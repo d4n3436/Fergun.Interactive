@@ -14,7 +14,7 @@ public class InteractiveResult<T> : InteractiveResult
         : base(elapsed, status)
     {
         Value = value;
-        Values = value is null ? Array.Empty<T>() : [value];
+        Values = value is null ? [] : [value];
     }
 
     internal InteractiveResult(IReadOnlyList<T> values, TimeSpan elapsed, InteractiveStatus status = InteractiveStatus.Success)
@@ -36,10 +36,9 @@ public class InteractiveResult<T> : InteractiveResult
     public T? Value { get; }
 
     /// <summary>
-    /// Gets read-only list containing the values returned by the interactive action.
+    /// Gets a read-only list containing the values returned by the interactive action.
     /// </summary>
     /// <remarks>The list won't be empty if at least one or multiple options were selected (e.g., through a selection using a select menu).</remarks>
-
     public IReadOnlyList<T> Values { get; }
 
     /// <inheritdoc/>

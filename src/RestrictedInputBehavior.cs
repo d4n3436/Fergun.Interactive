@@ -1,3 +1,5 @@
+using Fergun.Interactive.Pagination;
+
 namespace Fergun.Interactive;
 
 /// <summary>
@@ -8,7 +10,6 @@ public enum RestrictedInputBehavior
     /// <summary>
     /// <see cref="SendMessage"/> if a restricted page is present; otherwise <see cref="Ignore"/>.
     /// </summary>
-    /// <remarks>This is the default option.</remarks>
     Auto,
 
     /// <summary>
@@ -22,8 +23,8 @@ public enum RestrictedInputBehavior
     Defer,
 
     /// <summary>
-    /// Send a message (from <see cref="IInteractiveElement{TOption}.RestrictedPage"/>) to the user.
+    /// Send a message (from <see cref="IInteractiveElement{TOption}.RestrictedPage"/> or <see cref="IComponentPaginator.RestrictedPage"/>) to the user.
     /// </summary>
-    /// <remarks>This requires the factory for the restricted page (<see cref="IInteractiveBuilderProperties{TOption}.RestrictedPageFactory"/>) to be set.</remarks>
+    /// <remarks>This requires the factory for the restricted page to be set.</remarks>
     SendMessage
 }

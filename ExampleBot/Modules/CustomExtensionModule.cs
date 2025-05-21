@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Discord;
-using Discord.Commands;
+using Discord.Interactions;
 using ExampleBot.Extensions;
 using Fergun.Interactive;
 using Fergun.Interactive.Pagination;
@@ -12,8 +12,7 @@ namespace ExampleBot.Modules;
 
 public partial class CustomModule
 {
-    // Simple paginator that uses extension methods
-    [Command("extension", RunMode = RunMode.Async)]
+    [SlashCommand("extension", "Sends a simple paginator that uses extension methods.")]
     public async Task CustomExtensionAsync()
     {
         string[] texts =
@@ -80,7 +79,7 @@ public partial class CustomModule
             .WithCustomEmotes()
             .Build();
 
-        await _interactive.SendPaginatorAsync(paginator, Context.Channel, TimeSpan.FromMinutes(10));
+        await _interactive.SendPaginatorAsync(paginator, Context.Interaction, TimeSpan.FromMinutes(10));
     }
 }
 

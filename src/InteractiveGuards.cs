@@ -51,6 +51,14 @@ internal static class InteractiveGuards
         }
     }
 
+    public static void LessThan(int value, int other, [CallerArgumentExpression(nameof(value))] string? parameterName = null)
+    {
+        if (value < other)
+        {
+            throw new ArgumentOutOfRangeException(parameterName, value, $"Value must be greater than or equal to {other}.");
+        }
+    }
+
     public static void ValueInRange(int min, int max, int value, [CallerArgumentExpression(nameof(value))] string? parameterName = null)
     {
         if (value < min)
@@ -105,7 +113,7 @@ internal static class InteractiveGuards
         }
     }
 
-    public static void DeleteAndDisableInputNotSet(ActionOnStop action, [CallerArgumentExpression(nameof(action))] string? parameterName = null)
+    public static void ValidActionOnStop(ActionOnStop action, bool isComponentPaginator = false, [CallerArgumentExpression(nameof(action))] string? parameterName = null)
     {
         if (action.HasFlag(ActionOnStop.DeleteMessage))
         {
@@ -115,6 +123,11 @@ internal static class InteractiveGuards
         if (action.HasFlag(ActionOnStop.DeleteInput | ActionOnStop.DisableInput))
         {
             throw new ArgumentException($"{ActionOnStop.DeleteInput} and {ActionOnStop.DisableInput} are mutually exclusive.", parameterName);
+        }
+
+        if (isComponentPaginator && action.HasFlag(ActionOnStop.ModifyMessage) && !Enum.IsDefined(typeof(ActionOnStop), action))
+        {
+            throw new ArgumentException($"{ActionOnStop.ModifyMessage} is mutually exclusive with all other options on component paginators.");
         }
     }
 
@@ -167,9 +180,9 @@ internal static class InteractiveGuards
 
     public static void ValidResponseType(InteractionResponseType responseType, IDiscordInteraction interaction, [CallerArgumentExpression(nameof(responseType))] string? parameterName = null)
     {
-        if (interaction is not IComponentInteraction && responseType is InteractionResponseType.UpdateMessage)
+        if (interaction is not IComponentInteraction and not IModalInteraction && responseType is InteractionResponseType.UpdateMessage)
         {
-            throw new ArgumentException($"Interaction response type {responseType} can only be used on component interactions.", parameterName);
+            throw new ArgumentException($"Interaction response type {responseType} can only be used on component interactions or modal interactions.", parameterName);
         }
     }
 }

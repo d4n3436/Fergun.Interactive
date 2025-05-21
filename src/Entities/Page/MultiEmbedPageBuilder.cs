@@ -56,6 +56,12 @@ public class MultiEmbedPageBuilder : IPageBuilder<MultiEmbedPage>, IPageBuilder
     public Func<ValueTask<IEnumerable<FileAttachment>?>>? AttachmentsFactory { get; set; }
 
     /// <summary>
+    /// Gets or sets the components of this page.
+    /// </summary>
+    /// <remarks>This property is only used on component paginators. Using the new components (components V2) requires not using <see cref="Text"/>, <see cref="Stickers"/> or any embed property.</remarks>
+    public MessageComponent? Components { get; set; }
+
+    /// <summary>
     /// Gets or sets the message flags.
     /// </summary>
     public MessageFlags MessageFlags { get; set; } = MessageFlags.None;
@@ -247,6 +253,18 @@ public class MultiEmbedPageBuilder : IPageBuilder<MultiEmbedPage>, IPageBuilder
     public MultiEmbedPageBuilder WithAttachmentsFactory(Func<ValueTask<IEnumerable<FileAttachment>?>>? attachmentsFactory)
     {
         AttachmentsFactory = attachmentsFactory;
+        return this;
+    }
+
+    /// <summary>
+    /// Sets the components of the <see cref="Page"/>.
+    /// </summary>
+    /// <remarks>The <see cref="Components"/> property is only used on component paginators. Using the new components (components V2) requires not setting <see cref="Text"/>, <see cref="Stickers"/> or any embed property.</remarks>
+    /// <param name="components">The components.</param>
+    /// <returns>The current builder.</returns>
+    public MultiEmbedPageBuilder WithComponents(MessageComponent? components)
+    {
+        Components = components;
         return this;
     }
 

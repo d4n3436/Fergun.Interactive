@@ -1,5 +1,8 @@
-﻿using System.Collections.Generic;
+﻿using Discord;
 using Fergun.Interactive.Pagination;
+using System;
+using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Fergun.Interactive.Extensions;
 
@@ -26,5 +29,85 @@ public static class PaginatorExtensions
         InteractiveGuards.NotEmpty(collection);
 
         return builder.WithMaxPageIndex(collection.Count - 1);
+    }
+
+    /// <summary>
+    /// Gets a value that indicates whether the specified user can interact with this paginator.
+    /// </summary>
+    /// <param name="paginator">The paginator.</param>
+    /// <param name="user">The user.</param>
+    /// <returns><see langword="true"/> if the user can interact with this paginator; otherwise, <see langword="false"/>.</returns>
+    public static bool CanInteract(this IComponentPaginator paginator, IUser user)
+    {
+        InteractiveGuards.NotNull(paginator);
+        InteractiveGuards.NotNull(user);
+
+        return CanInteract(paginator, user.Id);
+    }
+
+    /// <summary>
+    /// Gets a value that indicates whether the specified user ID can interact with this paginator.
+    /// </summary>
+    /// <param name="paginator">The paginator.</param>
+    /// <param name="userId">The user ID.</param>
+    /// <returns><see langword="true"/> if the user can interact with this paginator; otherwise, <see langword="false"/>.</returns>
+    public static bool CanInteract(this IComponentPaginator paginator, ulong userId)
+    {
+        InteractiveGuards.NotNull(paginator);
+
+        if (paginator.Users.Count == 0)
+        {
+            return true;
+        }
+
+        foreach (var user in paginator.Users)
+        {
+            if (user.Id == userId)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /// <summary>
+    /// Attempts to get the user state of the paginator as the specified type.
+    /// </summary>
+    /// <typeparam name="T">The type of the user state.</typeparam>
+    /// <param name="paginator">The paginator.</param>
+    /// <param name="userState">The user state if it exists and matches the type.</param>
+    /// <returns><see langword="true"/> if the user state exists and is of type <typeparamref name="T"/>; otherwise, <see langword="false"/>.</returns>
+    public static bool TryGetUserState<T>(this IComponentPaginator paginator, [MaybeNullWhen(false)] out T userState)
+    {
+        InteractiveGuards.NotNull(paginator);
+
+        if (paginator.UserState is T state)
+        {
+            userState = state;
+            return true;
+        }
+
+        userState = default;
+        return false;
+    }
+
+    /// <summary>
+    /// Gets the user state of the paginator as the specified type.
+    /// </summary>
+    /// <typeparam name="T">The type of the user state.</typeparam>
+    /// <param name="paginator">The paginator.</param>
+    /// <returns>The user state if it exists and matches the type.</returns>
+    /// <exception cref="InvalidCastException">Thrown when <see cref="IComponentPaginator.UserState"/> is <see langword="null"/>, or is not of type <typeparamref name="T"/>.</exception>
+    public static T GetUserState<T>(this IComponentPaginator paginator)
+    {
+        InteractiveGuards.NotNull(paginator);
+
+        return paginator.UserState switch
+        {
+            T state => state,
+            null => throw new InvalidCastException("User state is null."),
+            _ => throw new InvalidCastException($"User state is of type {paginator.UserState.GetType()}, but type {typeof(T)} was passed.")
+        };
     }
 }

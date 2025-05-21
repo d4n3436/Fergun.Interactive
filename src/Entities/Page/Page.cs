@@ -6,48 +6,49 @@ using Discord;
 namespace Fergun.Interactive;
 
 /// <summary>
-/// Represents a message page. A page consists of a <see cref="Text"/> and an <see cref="Embed"/>.
+/// Represents a message page. A page consists of a <see cref="Text"/>, <see cref="Embed"/> or <see cref="Components"/>.
 /// </summary>
 public class Page : IPage
 {
     private readonly Lazy<Embed[]> _lazyEmbeds;
 
-    internal Page(PageBuilder page)
+    internal Page(PageBuilder builder)
     {
-        InteractiveGuards.NotNull(page);
-        InteractiveGuards.NotNull(page.Stickers);
+        InteractiveGuards.NotNull(builder);
+        InteractiveGuards.NotNull(builder.Stickers);
 
-        Text = page.Text;
-        IsTTS = page.IsTTS;
-        AllowedMentions = page.AllowedMentions;
-        MessageReference = page.MessageReference;
-        Stickers = page.Stickers;
-        AttachmentsFactory = page.AttachmentsFactory;
-        MessageFlags = page.MessageFlags;
+        Text = builder.Text;
+        IsTTS = builder.IsTTS;
+        AllowedMentions = builder.AllowedMentions;
+        MessageReference = builder.MessageReference;
+        Stickers = builder.Stickers;
+        AttachmentsFactory = builder.AttachmentsFactory;
+        Components = builder.Components;
+        MessageFlags = builder.MessageFlags;
 
         bool isEmpty = false;
-        var builder = page.GetEmbedBuilder();
+        var embedBuilder = builder.GetEmbedBuilder();
 
-        if (builder.Author is null &&
-            builder.Color is null &&
-            builder.Description is null &&
-            (builder.Fields is null || builder.Fields.Count == 0) &&
-            builder.Footer is null &&
-            builder.ImageUrl is null &&
-            builder.ThumbnailUrl is null &&
-            builder.Timestamp is null &&
-            builder.Title is null &&
-            builder.Url is null)
+        if (embedBuilder.Author is null &&
+            embedBuilder.Color is null &&
+            embedBuilder.Description is null &&
+            (embedBuilder.Fields is null || embedBuilder.Fields.Count == 0) &&
+            embedBuilder.Footer is null &&
+            embedBuilder.ImageUrl is null &&
+            embedBuilder.ThumbnailUrl is null &&
+            embedBuilder.Timestamp is null &&
+            embedBuilder.Title is null &&
+            embedBuilder.Url is null)
         {
-            if (string.IsNullOrEmpty(page.Text) && AttachmentsFactory is null)
+            if (string.IsNullOrEmpty(builder.Text) && Components is null && AttachmentsFactory is null)
             {
-                throw new InvalidOperationException("Either a text, a valid EmbedBuilder or an AttachmentsFactory must be present.");
+                throw new InvalidOperationException("Either a text, a valid EmbedBuilder, Components or an AttachmentsFactory must be present.");
             }
 
             isEmpty = true;
         }
 
-        Embed = isEmpty ? null : builder.Build();
+        Embed = isEmpty ? null : embedBuilder.Build();
         _lazyEmbeds = new Lazy<Embed[]>(() => Embed is null ? [] : [Embed]);
     }
 
@@ -68,6 +69,9 @@ public class Page : IPage
 
     /// <inheritdoc/>
     public Func<ValueTask<IEnumerable<FileAttachment>?>>? AttachmentsFactory { get; }
+
+    /// <inheritdoc/>
+    public MessageComponent? Components { get; }
 
     /// <inheritdoc/>
     public MessageFlags MessageFlags { get; }

@@ -244,3 +244,6 @@ dotnet_naming_style.begins_with_i.capitalization = pascal_case
 
 # IDE0305: Simplify collection initialization
 dotnet_diagnostic.IDE0305.severity = none
+
+# https://www.jetbrains.com/help/rider/ConvertToPrimaryConstructor.html
+resharper_convert_to_primary_constructor_highlighting = none 

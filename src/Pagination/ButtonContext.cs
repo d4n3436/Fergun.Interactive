@@ -31,8 +31,7 @@ public readonly struct ButtonContext : IButtonContext
 
     /// <inheritdoc />
     public bool ShouldDisable(PaginatorAction action)
-    {
-        return _disableAll || action switch
+        => _disableAll || action switch
         {
             PaginatorAction.SkipToStart => CurrentPageIndex == 0,
             PaginatorAction.Backward => CurrentPageIndex == 0,
@@ -41,5 +40,4 @@ public readonly struct ButtonContext : IButtonContext
             PaginatorAction.Jump => MaxPageIndex == 0,
             _ => false
         };
-    }
 }

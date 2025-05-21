@@ -1,9 +1,9 @@
 namespace Fergun.Interactive;
 
 /// <summary>
-/// Specifies the possible status of an <see cref="IInteractiveResult{TStatus}"/> whose status is <see cref="InteractiveInputStatus"/>.
+/// Specifies the possible status of the input handler of an interactive entity.
 /// </summary>
-/// <remarks>This is used as the status of the result of input handlers in entities that implement <see cref="IInteractiveInputHandler"/>.</remarks>
+/// <remarks>This is used as the status of the result of input handlers on component paginators and entities that implement <see cref="IInteractiveInputHandler"/>.</remarks>
 public enum InteractiveInputStatus
 {
     /// <summary>
@@ -17,7 +17,7 @@ public enum InteractiveInputStatus
     Ignored,
 
     /// <summary>
-    /// The handling of the input was canceled, or it was successful and the interactive entity should be canceled.
+    /// The handling of the input was successful and the interactive entity should be canceled.
     /// </summary>
     Canceled
 }

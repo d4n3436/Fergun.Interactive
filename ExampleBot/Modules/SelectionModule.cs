@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Discord;
-using Discord.Commands;
+using Discord.Interactions;
 using ExampleBot.Extensions;
 using Fergun.Interactive;
 using Fergun.Interactive.Extensions;
@@ -11,8 +11,8 @@ using Fergun.Interactive.Selection;
 
 namespace ExampleBot.Modules;
 
-[Group("select")]
-public class SelectionModule : ModuleBase
+[Group("selection", "Selection commands.")]
+public class SelectionModule : InteractionModuleBase
 {
     private readonly InteractiveService _interactive;
 
@@ -21,10 +21,7 @@ public class SelectionModule : ModuleBase
         _interactive = interactive;
     }
 
-    // Sends a message that contains selection of options which the user can select one.
-    // Here the selection is received via messages.
-    // Important: Commands using methods from InteractiveService should always have RunMode.Async
-    [Command("simple", RunMode = RunMode.Async)]
+    [SlashCommand("simple", "Sends a message that contains selection of options which the user can select one.")]
     public async Task SelectAsync()
     {
         string[] options = ["C", "C++", "C#", "Java", "Python", "JavaScript", "PHP"];
@@ -42,8 +39,8 @@ public class SelectionModule : ModuleBase
             .WithDeletion(DeletionOptions.None) // By default, the selections delete valid inputs (messages, reactions) but you can change this behaviour.
             .Build(); // Build the SelectionBuilder.
 
-        // Send the selection to the source channel and wait until it times out
-        var result = await _interactive.SendSelectionAsync(selection, Context.Channel, TimeSpan.FromMinutes(1));
+        // Respond to the interaction with the selection and wait until the user selects an option, or until it times out
+        var result = await _interactive.SendSelectionAsync(selection, Context.Interaction, TimeSpan.FromMinutes(1));
 
         // Get the selected option. This may be null/default if the selection times out or gets cancelled.
         string selected = result.Value!;
@@ -59,10 +56,9 @@ public class SelectionModule : ModuleBase
         await ReplyAsync(embed: builder.Build());
     }
 
-    // Sends an emote selection. An emote selection is built using an EmoteSelectionBuilder.
     // This variant of SelectionBuilder just exists for convenience,
     // but makes creating selections using reactions or buttons much easier.
-    [Command("emote", RunMode = RunMode.Async)]
+    [SlashCommand("emote", "Sends an emote selection. An emote selection is built using an EmoteSelectionBuilder.")]
     public async Task EmoteAsync()
     {
         var emotes = new[]
@@ -87,7 +83,7 @@ public class SelectionModule : ModuleBase
             //.WithInputType(InputType.Reactions)
             .Build();
 
-        var result = await _interactive.SendSelectionAsync(selection, Context.Channel, TimeSpan.FromMinutes(1));
+        var result = await _interactive.SendSelectionAsync(selection, Context.Interaction, TimeSpan.FromMinutes(1));
 
         var builder = new EmbedBuilder()
             .WithDescription(result.IsSuccess ? $"You selected: {result.Value}" : "Timeout!")
@@ -96,8 +92,7 @@ public class SelectionModule : ModuleBase
         await ReplyAsync(embed: builder.Build());
     }
 
-    // Sends an emote selection, where each emote represents a specific value.
-    [Command("emote2", RunMode = RunMode.Async)]
+    [SlashCommand("emote2", "Sends an emote selection, where each emote represents a specific value.")]
     public async Task Emote2Async()
     {
         var emotes = new Dictionary<IEmote, string>
@@ -119,7 +114,7 @@ public class SelectionModule : ModuleBase
             .WithSelectionPage(pageBuilder)
             .Build();
 
-        var result = await _interactive.SendSelectionAsync(selection, Context.Channel, TimeSpan.FromMinutes(1));
+        var result = await _interactive.SendSelectionAsync(selection, Context.Interaction, TimeSpan.FromMinutes(1));
 
         // In this case the result's value will be a KeyValuePair<IEmote, int>
         var emote = result.Value.Key; // Selected emote
@@ -132,8 +127,7 @@ public class SelectionModule : ModuleBase
         await ReplyAsync(embed: builder.Build());
     }
 
-    // Sends a selection uses a select menu and allows selecting multiple options
-    [Command("multi", RunMode = RunMode.Async)]
+    [SlashCommand("multi", "Sends a selection that uses a select menu and allows selecting multiple options.")]
     public async Task MultiAsync()
     {
         var colors = new Item[]
@@ -163,7 +157,7 @@ public class SelectionModule : ModuleBase
             .WithPlaceholder("Select a color") // Set the placeholder text for the select menu
             .Build();
 
-        var result = await _interactive.SendSelectionAsync(selection, Context.Channel, TimeSpan.FromMinutes(1));
+        var result = await _interactive.SendSelectionAsync(selection, Context.Interaction, TimeSpan.FromMinutes(1));
 
         if (result.IsSuccess)
         {
@@ -180,7 +174,7 @@ public class SelectionModule : ModuleBase
 
     // Sends a selection that can be canceled, disables/deletes its input (reactions/buttons) after selecting an option,
     // modifies itself to a specific page after ending, and deletes itself after cancelling it.
-    [Command("extra", RunMode = RunMode.Async)]
+    [SlashCommand("extra", "Sends a selection that displays the customization options.")]
     public async Task ExtraAsync()
     {
         var items = new Item[]
@@ -225,11 +219,10 @@ public class SelectionModule : ModuleBase
             .WithInputType(InputType.Reactions | InputType.Messages | InputType.Buttons | InputType.SelectMenus) // Since we have set both string and emote converters, we can use all 4 input types.
             .Build();
 
-        await _interactive.SendSelectionAsync(selection, Context.Channel, TimeSpan.FromMinutes(1));
+        await _interactive.SendSelectionAsync(selection, Context.Interaction, TimeSpan.FromMinutes(1));
     }
 
-    // A menu of options that uses (and reuses) a selection message.
-    [Command("menu", RunMode = RunMode.Async)]
+    [SlashCommand("menu", "Sends a menu of options that reuses a selection message.")]
     public async Task MenuAsync()
     {
         string[] options =
@@ -250,12 +243,12 @@ public class SelectionModule : ModuleBase
 
         // Dynamically create the number emotes
         var emotes = Enumerable.Range(1, options.Length)
-            .ToDictionary(x => new Emoji($"{x}\ufe0f\u20e3") as IEmote, y => y);
+            .ToDictionary(x => new Emoji($"{x}\ufe0f\u20e3"), y => y);
 
         // Add the cancel emote at the end of the dictionary
         emotes.Add(new Emoji("❌"), -1);
 
-        var selection = new MenuSelectionBuilder<KeyValuePair<IEmote, int>>()
+        var selection = new MenuSelectionBuilder<KeyValuePair<Emoji, int>>()
             .AddUser(Context.User)
             .WithSelectionPage(GeneratePage())
             .WithInputHandler(HandleResult) // We use a method that handles the result and returns a page.
@@ -266,7 +259,7 @@ public class SelectionModule : ModuleBase
             .WithActionOnTimeout(ActionOnStop.DisableInput)
             .Build();
 
-        await _interactive.SendSelectionAsync(selection, Context.Channel, TimeSpan.FromMinutes(10));
+        await _interactive.SendSelectionAsync(selection, Context.Interaction, TimeSpan.FromMinutes(10));
 
         PageBuilder GeneratePage()
             => new PageBuilder()
@@ -276,7 +269,7 @@ public class SelectionModule : ModuleBase
                 .AddField("Value", string.Join('\n', values), true)
                 .WithColor(Color.Blue);
 
-        Page HandleResult(KeyValuePair<IEmote, int> input)
+        Page HandleResult(KeyValuePair<Emoji, int> input)
         {
             int selected = input.Value;
             // Invert the value of the selected option
@@ -287,5 +280,5 @@ public class SelectionModule : ModuleBase
         }
     }
 
-    private sealed record Item(string Name, IEmote Emote);
+    private sealed record Item(string Name, Emoji Emote);
 }

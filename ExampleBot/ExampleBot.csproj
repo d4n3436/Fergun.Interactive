@@ -5,16 +5,16 @@
     <TargetFramework>net8.0</TargetFramework>
     <LangVersion>latest</LangVersion>
     <Nullable>enable</Nullable>
-	<RestoreAdditionalProjectSources>https://baget.discordnet.dev/v3/index.json</RestoreAdditionalProjectSources>
+    <RestoreAdditionalProjectSources>https://baget.discordnet.dev/v3/index.json</RestoreAdditionalProjectSources>
   </PropertyGroup>
 
-	<ItemGroup>
-    <PackageReference Include="Discord.Net.Commands" Version="3.18.0-beta.1" />
-    <PackageReference Include="Discord.Net.WebSocket" Version="3.18.0-beta.1" />
+    <ItemGroup>
+    <PackageReference Include="Discord.Net.Interactions" Version="3.18.0-nightly.20250516.531" />
+    <PackageReference Include="Discord.Net.WebSocket" Version="3.18.0-nightly.20250516.531" />
     <PackageReference Include="GScraper" Version="1.1.3" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="9.0.4" />
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="9.0.4" />
-    <PackageReference Include="System.Text.Json" Version="9.0.4" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="9.0.5" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="9.0.5" />
+    <PackageReference Include="System.Text.Json" Version="9.0.5" />
     <ProjectReference Include="..\src\Fergun.Interactive.csproj" />
   </ItemGroup>
 

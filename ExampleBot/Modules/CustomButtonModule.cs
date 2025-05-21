@@ -1,18 +1,17 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Discord;
-using Discord.Commands;
+using Discord.Interactions;
 using ExampleBot.Extensions;
 using Fergun.Interactive;
 using Fergun.Interactive.Selection;
 
 namespace ExampleBot.Modules;
 
-[Group("custom")]
-public partial class CustomModule : ModuleBase
+[Group("custom", "Module demonstrating the customizability paginators and selection.")]
+public partial class CustomModule : InteractionModuleBase
 {
-    // Sends a selection of buttons, where each option has its own button style/color.
-    [Command("button", RunMode = RunMode.Async)]
+    [SlashCommand("button", "Sends a selection of buttons, where each option has its own button style/color.")]
     public async Task CustomButtonSelectionAsync()
     {
         // To be able to create buttons with custom colors, we need to create a custom selection and a builder for that new selection.
@@ -38,7 +37,7 @@ public partial class CustomModule : ModuleBase
             .AddUser(Context.User)
             .Build();
 
-        await _interactive.SendSelectionAsync(buttonSelection, Context.Channel);
+        await _interactive.SendSelectionAsync(buttonSelection, Context.Interaction);
     }
 
     // Custom selection builder for ButtonSelections

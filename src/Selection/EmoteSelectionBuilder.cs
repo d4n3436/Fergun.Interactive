@@ -85,14 +85,9 @@ public sealed class EmoteSelectionBuilder : BaseSelectionBuilder<Selection<IEmot
 internal sealed class EmoteComparer<TValue> : IEqualityComparer<KeyValuePair<IEmote, TValue>>
 {
     public bool Equals(KeyValuePair<IEmote, TValue> x, KeyValuePair<IEmote, TValue> y)
-    {
-        return x.Key.ToString() == y.Key.ToString() && Equals(x.Value, y.Value);
-    }
+        => x.Key.ToString() == y.Key.ToString() && Equals(x.Value, y.Value);
 
-    public int GetHashCode(KeyValuePair<IEmote, TValue> pair)
-    {
-        return pair.GetHashCode();
-    }
+    public int GetHashCode(KeyValuePair<IEmote, TValue> pair) => pair.GetHashCode();
 }
 
 internal sealed class EmoteComparer : IEqualityComparer<IEmote>

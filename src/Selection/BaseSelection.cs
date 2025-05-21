@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Discord;
 using Discord.WebSocket;
 using Fergun.Interactive.Extensions;
+using System.Collections.ObjectModel;
 
 namespace Fergun.Interactive.Selection;
 
@@ -41,13 +42,13 @@ public abstract class BaseSelection<TOption> : IInteractiveElement<TOption>
         EmoteConverter = properties.EmoteConverter;
         EqualityComparer = properties.EqualityComparer;
         SelectionPage = properties.SelectionPage.Build();
-        AllowCancel = properties is { AllowCancel: true, Options.Count: > 1 };
-        CancelOption = AllowCancel ? properties.Options.Last() : default;
+        Options =  new ReadOnlyCollection<TOption>(properties.Options.ToArray());
+        AllowCancel = properties.AllowCancel && Options.Count > 1;
+        CancelOption = AllowCancel ? Options.Last() : default;
         MinValues = properties.MinValues;
         MaxValues = properties.MaxValues;
         Placeholder = properties.Placeholder;
-        Users = properties.Users.ToArray();
-        Options = properties.Options.ToArray();
+        Users = new ReadOnlyCollection<IUser>(properties.Users.ToArray());
         CanceledPage = properties.CanceledPage?.Build();
         TimeoutPage = properties.TimeoutPage?.Build();
         RestrictedPage = properties.RestrictedPageFactory?.Invoke(Users);
@@ -61,7 +62,15 @@ public abstract class BaseSelection<TOption> : IInteractiveElement<TOption>
 
         if (StringConverter is null && (!InputType.HasFlag(InputType.Buttons) || EmoteConverter is null))
         {
-            StringConverter = x => x?.ToString()!;
+            StringConverter = x =>
+            {
+                if (x is null)
+                {
+                    throw new ArgumentNullException(nameof(x), $"Value of {nameof(TOption)} cannot be null.");
+                }
+
+                return x.ToString()!;
+            };
         }
     }
 
@@ -335,12 +344,7 @@ public abstract class BaseSelection<TOption> : IInteractiveElement<TOption>
         InteractiveGuards.NotNull(input);
         InteractiveGuards.NotNull(message);
 
-        if (!InputType.HasFlag(InputType.Buttons) && !InputType.HasFlag(InputType.SelectMenus))
-        {
-            return InteractiveInputStatus.Ignored;
-        }
-
-        if (input.Message.Id != message.Id)
+        if ((!InputType.HasFlag(InputType.Buttons) && !InputType.HasFlag(InputType.SelectMenus)) || input.Message.Id != message.Id)
         {
             return InteractiveInputStatus.Ignored;
         }

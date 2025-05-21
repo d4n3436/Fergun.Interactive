@@ -1,6 +1,4 @@
 using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 using Discord;
 using Fergun.Interactive.Pagination;
@@ -22,6 +20,9 @@ internal static class InteractiveExtensions
     public static TimeSpan GetElapsedTime(this PaginatorCallback callback, InteractiveStatus status)
         => status.GetElapsedTime(callback.StartTime, callback.TimeoutTaskSource.Delay);
 
+    public static TimeSpan GetElapsedTime(this ComponentPaginatorCallback callback, InteractiveStatus status)
+        => status.GetElapsedTime(callback.StartTime, callback.TimeoutTaskSource.Delay);
+
     public static TimeSpan GetElapsedTime<TOption>(this SelectionCallback<TOption> callback, InteractiveStatus status)
         => status.GetElapsedTime(callback.StartTime, callback.TimeoutTaskSource.Delay);
 
@@ -34,9 +35,4 @@ internal static class InteractiveExtensions
     // Using just startTime.GetElapsedTime() would return a slightly incorrect elapsed time if the status is Timeout
     public static TimeSpan GetElapsedTime(this InteractiveStatus status, DateTimeOffset startTime, TimeSpan timeoutDelay)
         => status == InteractiveStatus.Timeout ? timeoutDelay : startTime.GetElapsedTime();
-
-#if !NET7_0_OR_GREATER
-    public static IReadOnlyDictionary<TKey, TValue> AsReadOnly<TKey, TValue>(this IDictionary<TKey, TValue> dictionary)
-        => new ReadOnlyDictionary<TKey, TValue>(dictionary);
-#endif
 }

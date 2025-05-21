@@ -1,30 +1,37 @@
-﻿using System;
-using System.Linq;
-using System.Threading.Tasks;
-using Discord;
-using Discord.Commands;
+﻿using Discord;
+using Discord.Interactions;
 using ExampleBot.Extensions;
 using Fergun.Interactive;
 using Fergun.Interactive.Extensions;
 using Fergun.Interactive.Pagination;
+using GScraper;
+using GScraper.DuckDuckGo;
 using GScraper.Google;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace ExampleBot.Modules;
 
-[Group("paginator")]
-public class PaginatorModule : ModuleBase
+[Group("paginator", "Paginator commands.")]
+public class PaginatorModule : InteractionModuleBase
 {
-    private static readonly GoogleScraper Scraper = new();
-    private readonly InteractiveService _interactive;
+    private const string SelectOptionId = "select_option";
 
-    public PaginatorModule(InteractiveService interactive)
+    private readonly InteractiveService _interactive;
+    private readonly GoogleScraper _googleScraper;
+    private readonly DuckDuckGoScraper _duckDuckGoScraper;
+
+    public PaginatorModule(InteractiveService interactive, GoogleScraper googleScraper, DuckDuckGoScraper duckDuckGoScraper)
     {
         _interactive = interactive;
+        _googleScraper = googleScraper;
+        _duckDuckGoScraper = duckDuckGoScraper;
     }
 
-    // Sends a message that contains a static paginator with pages that can be changed with reactions or buttons.
-    [Command("static", RunMode = RunMode.Async)]
-    public async Task PaginatorAsync()
+    [SlashCommand("static", "Sends a message with a static paginator. The paginator has pages that can be changed using buttons.")]
+    public async Task StaticAsync()
     {
         IPageBuilder[] pages =
         [
@@ -46,8 +53,8 @@ public class PaginatorModule : ModuleBase
             .WithPages(pages) // Set the pages the paginator will use. This is the only required component.
             .Build();
 
-        // Send the paginator to the source channel and wait until it times out after 10 minutes.
-        await _interactive.SendPaginatorAsync(paginator, Context.Channel, TimeSpan.FromMinutes(10));
+        // Respond to the interaction with the paginator and wait until it times out after 10 minutes.
+        await _interactive.SendPaginatorAsync(paginator, Context.Interaction, TimeSpan.FromMinutes(10));
 
         // By default, SendPaginatorAsync sends the paginator and waits for a timeout or a cancellation.
         // If you want the method to return after sending the paginator, you can set the
@@ -63,9 +70,8 @@ public class PaginatorModule : ModuleBase
         */
     }
 
-    // Sends a lazy paginator. The pages are generated using a page factory.
-    [Command("lazy", RunMode = RunMode.Async)]
-    public async Task LazyPaginatorAsync()
+    [SlashCommand("lazy", "Sends a lazy-loaded paginator. The pages are generated using a page factory.")]
+    public async Task LazyAsync()
     {
         var paginator = new LazyPaginatorBuilder()
             .AddUser(Context.User)
@@ -74,7 +80,7 @@ public class PaginatorModule : ModuleBase
             .WithMaxPageIndex(9) // You must specify the max. index the page factory can go. max. index 9 = 10 pages
             .Build();
 
-        await _interactive.SendPaginatorAsync(paginator, Context.Channel, TimeSpan.FromMinutes(10));
+        await _interactive.SendPaginatorAsync(paginator, Context.Interaction, TimeSpan.FromMinutes(10));
 
         static PageBuilder GeneratePage(int index)
             => new PageBuilder()
@@ -82,12 +88,11 @@ public class PaginatorModule : ModuleBase
                 .WithRandomColor();
     }
 
-    // Sends a lazy paginator that displays images and uses more complex buttons.
-    [Command("img", RunMode = RunMode.Async)]
-    public async Task ImgAsync(string query = "discord")
+    [SlashCommand("img", "Sends a lazy paginator that displays images and uses more complex buttons.")]
+    public async Task ImgAsync([Summary(description: "The search query.")] string query = "discord")
     {
         // Get images from Google Images.
-        var images = (await Scraper.GetImagesAsync(query)).ToList();
+        var images = (await _googleScraper.GetImagesAsync(query)).ToList();
 
         var paginator = new LazyPaginatorBuilder()
             .AddUser(Context.User)
@@ -103,13 +108,13 @@ public class PaginatorModule : ModuleBase
             .AddOption(new Emoji("❌"), PaginatorAction.Exit, ButtonStyle.Secondary)
             .AddOption(new Emoji("▶"), PaginatorAction.Forward, ButtonStyle.Secondary)
             .AddOption(new Emoji("🔢"), PaginatorAction.Jump, ButtonStyle.Secondary) // Use the jump feature
-            .WithCacheLoadedPages(false) // The lazy paginator caches generated pages by default but it's possible to disable this.
+            .WithCacheLoadedPages(false) // The lazy paginator caches generated pages by default, but it's possible to disable this.
             .WithActionOnCancellation(ActionOnStop.DeleteMessage) // Delete the message after pressing the stop emoji.
             .WithActionOnTimeout(ActionOnStop.DisableInput) // Disable the input (buttons) after a timeout.
             .WithFooter(PaginatorFooter.None) // Do not override the page footer. This allows us to write our own page footer in the page factory.
             .Build();
 
-        await _interactive.SendPaginatorAsync(paginator, Context.Channel, TimeSpan.FromMinutes(10));
+        await _interactive.SendPaginatorAsync(paginator, Context.Interaction, TimeSpan.FromMinutes(10));
 
         PageBuilder GeneratePage(int index)
             => new PageBuilder()
@@ -119,5 +124,133 @@ public class PaginatorModule : ModuleBase
                 .WithDescription("Image paginator example")
                 .WithImageUrl(images[index].Url)
                 .WithRandomColor();
+    }
+
+    [SlashCommand("component", "Sends a component paginator (new paginator type) containing images from Google & DuckDuckGo.")]
+    public async Task ComponentAsync([Summary(description: "The search query.")] string query = "discord")
+    {
+        await DeferAsync();
+
+        var googleTask = _googleScraper.GetImagesAsync(query);
+        var ddgTask = _duckDuckGoScraper.GetImagesAsync(query);
+
+        try
+        {
+            await Task.WhenAll(googleTask, ddgTask);
+        }
+        catch (Exception ex)
+        {
+            await FollowupAsync(ex.Message);
+            return;
+        }
+
+        var googleImages = googleTask.Result.ToList();
+        var ddgImages = ddgTask.Result.ToList();
+
+        if (googleImages.Count == 0 || ddgImages.Count == 0)
+        {
+            await FollowupAsync("No images found.");
+            return;
+        }
+
+        var info = new PaginatorInfo
+        {
+            SelectedOption = "Google",
+            Options =
+            {
+                ["Google"] = new PaginatorOption(googleImages),
+                ["DuckDuckGo"] = new PaginatorOption(ddgImages)
+            }
+        };
+
+        // ComponentPaginator is a new type of paginator written from scratch with customization and flexibility in mind
+        // Now the components are decoupled from the paginator, and the paginator loosely owns the navigation buttons
+
+        var paginator = new ComponentPaginatorBuilder()
+            .AddUser(Context.User)
+            .WithPageFactory(GeneratePage)
+            .WithUserState(info) // Now it's possible to store arbitrary state in the paginator. This is useful for storing data that needs to be retrieved elsewhere
+            .WithActionOnCancellation(ActionOnStop.DeleteMessage)
+            .WithActionOnTimeout(ActionOnStop.DisableInput)
+            .WithPageCount(info.Options[info.SelectedOption].Images.Count) // Component paginators have a page count instead of a max. page index
+            .Build();
+
+        await _interactive.SendPaginatorAsync(paginator, Context.Interaction, TimeSpan.FromMinutes(20), InteractionResponseType.DeferredChannelMessageWithSource);
+
+        IPage GeneratePage(IComponentPaginator p)
+        {
+            var selected = info.Options[info.SelectedOption];
+            var imageResult = selected.Images[p.CurrentPageIndex];
+
+            // Create the select menu options from the dictionary keys
+            var options = info.Options.Keys
+                .Select(x => new SelectMenuOptionBuilder(x, x, isDefault: x == info.SelectedOption))
+                .ToList();
+
+            var components = new ComponentBuilderV2()
+                .WithContainer(new ContainerBuilder()
+                    .WithTextDisplay($"### {imageResult.Title}\n{info.SelectedOption} Images")
+                    .WithMediaGallery(new MediaGalleryBuilder()
+                        .WithItems([new MediaGalleryItemProperties(imageResult.Url)]))
+                    .WithTextDisplay($"Page {p.CurrentPageIndex + 1} of {p.PageCount}")
+                    .WithSeparator()
+                    .WithActionRow(new ActionRowBuilder() // The navigation buttons need to added manually; extension methods were added to make this easier
+                        .AddPreviousButton(p, style: ButtonStyle.Secondary)
+                        .AddNextButton(p, style: ButtonStyle.Secondary)
+                        .AddJumpButton(p, style: ButtonStyle.Secondary)
+                        .AddStopButton(p))
+                    .WithActionRow(new ActionRowBuilder()
+                        .WithSelectMenu(SelectOptionId, options, disabled: p.ShouldDisable())) // Interactions targeting this select menu will be handled on SelectOptionAsync
+                    .WithAccentColor(Color.Blue))
+                .Build();
+
+            return new PageBuilder()
+                .WithComponents(components) // Using components V2 requires not setting the page text, stickers, or any embed property
+                .Build();
+        }
+    }
+
+    [ComponentInteraction(SelectOptionId, ignoreGroupNames: true)]
+    public async Task SelectOptionAsync(string option)
+    {
+        var interaction = (IComponentInteraction)Context.Interaction;
+
+        if (!_interactive.TryGetComponentPaginator(interaction.Message, out var paginator) || !paginator.CanInteract(interaction.User))
+        {
+            await DeferAsync();
+            return;
+        }
+
+        var info = paginator.GetUserState<PaginatorInfo>(); // Extension method that gets the user state from the paginator as PaginatorInfo
+
+        info.Options[info.SelectedOption].PageIndex = paginator.CurrentPageIndex; // Save the current page index of the current paginator
+        info.SelectedOption = option; // Set the new option
+
+        var selected = info.Options[option];
+
+        // Set the new page count and page index
+        paginator.PageCount = selected.Images.Count; 
+        paginator.SetPage(selected.PageIndex);
+
+        await paginator.RenderPageAsync(interaction); // Render the current page of the paginator, this will call the GeneratePage method
+    }
+
+    private sealed class PaginatorInfo
+    {
+        public string SelectedOption { get; set; } = string.Empty;
+
+        public Dictionary<string, PaginatorOption> Options { get; } = [];
+    }
+
+    private sealed class PaginatorOption
+    {
+        public PaginatorOption(IReadOnlyList<IImageResult> images)
+        {
+            Images = images;
+        }
+
+        public IReadOnlyList<IImageResult> Images { get; }
+
+        public int PageIndex { get; set; }
     }
 }

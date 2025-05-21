@@ -42,7 +42,7 @@ public interface IPaginatorButton
     /// <summary>
     /// Gets the custom ID.
     /// </summary>
-    public string? CustomId { get; }
+    string? CustomId { get; }
 
     /// <summary>
     /// Gets a value indicating whether to hide the button.
