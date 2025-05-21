@@ -696,7 +696,7 @@ public abstract class Paginator : IInteractiveElement<KeyValuePair<IEmote, Pagin
     {
         var page = RestrictedPage ?? throw new InvalidOperationException($"Expected {nameof(RestrictedPage)} to be non-null.");
         var attachments = page.AttachmentsFactory is null ? null : await page.AttachmentsFactory().ConfigureAwait(false);
-        await input.RespondWithFilesAsync(attachments ?? [], page.Text, page.GetEmbedArray(), page.IsTTS, true, page.AllowedMentions, flags: page.MessageFlags).ConfigureAwait(false);
+        await input.RespondWithFilesAsync(attachments ?? [], page.Text, page.GetEmbedArray(), page.IsTTS, true, page.AllowedMentions, flags: page.MessageFlags ?? MessageFlags.None).ConfigureAwait(false);
 
         return InteractiveInputStatus.Success;
     }
