@@ -64,7 +64,7 @@ public class MultiEmbedPageBuilder : IPageBuilder<MultiEmbedPage>, IPageBuilder
     /// <summary>
     /// Gets or sets the message flags.
     /// </summary>
-    public MessageFlags MessageFlags { get; set; } = MessageFlags.None;
+    public MessageFlags? MessageFlags { get; set; }
 
     /// <summary>
     /// Builds this builder into a <see cref="MultiEmbedPage"/>.
@@ -273,7 +273,7 @@ public class MultiEmbedPageBuilder : IPageBuilder<MultiEmbedPage>, IPageBuilder
     /// </summary>
     /// <param name="flags">The message flags.</param>
     /// <returns>The current builder.</returns>
-    public MultiEmbedPageBuilder WithMessageFlags(MessageFlags flags)
+    public MultiEmbedPageBuilder WithMessageFlags(MessageFlags? flags)
     {
         MessageFlags = flags;
         return this;

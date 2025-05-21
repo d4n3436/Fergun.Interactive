@@ -60,7 +60,7 @@ public class MultiEmbedPage : IPage
     public MessageComponent? Components { get; }
 
     /// <inheritdoc/>
-    public MessageFlags MessageFlags { get; }
+    public MessageFlags? MessageFlags { get; }
 
     /// <summary>
     /// Converts this <see cref="MultiEmbedPage"/> into a <see cref="MultiEmbedPageBuilder"/>.

@@ -1139,7 +1139,7 @@ public class InteractiveService
         else if (channel is not null)
         {
             message = await channel.SendFilesAsync(attachments ?? [], page.Text, page.IsTTS, null, null,
-                page.AllowedMentions, page.MessageReference, component, page.Stickers.ToArray(), page.GetEmbedArray(), flags: page.MessageFlags).ConfigureAwait(false);
+                page.AllowedMentions, page.MessageReference, component, page.Stickers.ToArray(), page.GetEmbedArray(), flags: page.MessageFlags ?? MessageFlags.None).ConfigureAwait(false);
         }
         else
         {
@@ -1168,12 +1168,12 @@ public class InteractiveService
         {
             case InteractionResponseType.ChannelMessageWithSource:
                 await interaction.RespondWithFilesAsync(attachments ?? [],
-                    page.Text, embeds, page.IsTTS, ephemeral, page.AllowedMentions, component, flags: page.MessageFlags).ConfigureAwait(false);
+                    page.Text, embeds, page.IsTTS, ephemeral, page.AllowedMentions, component, flags: page.MessageFlags ?? MessageFlags.None).ConfigureAwait(false);
                 return await interaction.GetOriginalResponseAsync().ConfigureAwait(false);
 
             case InteractionResponseType.DeferredChannelMessageWithSource:
                 return await interaction.FollowupWithFilesAsync(attachments ?? [],
-                    page.Text, embeds, page.IsTTS, ephemeral, page.AllowedMentions, component, flags: page.MessageFlags).ConfigureAwait(false);
+                    page.Text, embeds, page.IsTTS, ephemeral, page.AllowedMentions, component, flags: page.MessageFlags ?? MessageFlags.None).ConfigureAwait(false);
 
             case InteractionResponseType.DeferredUpdateMessage:
                 return await interaction.ModifyOriginalResponseAsync(UpdateMessage).ConfigureAwait(false);

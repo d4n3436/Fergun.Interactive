@@ -80,7 +80,7 @@ public class PageBuilder : IPageBuilder<Page>, IPageBuilder
     /// <summary>
     /// Gets or sets the message flags.
     /// </summary>
-    public MessageFlags MessageFlags { get; set; } = MessageFlags.None;
+    public MessageFlags? MessageFlags { get; set; }
 
     /// <summary>
     /// Gets or sets the title of the <see cref="Page"/>.
@@ -572,7 +572,7 @@ public class PageBuilder : IPageBuilder<Page>, IPageBuilder
     /// </summary>
     /// <param name="flags">The message flags.</param>
     /// <returns>The current builder.</returns>
-    public PageBuilder WithMessageFlags(MessageFlags flags)
+    public PageBuilder WithMessageFlags(MessageFlags? flags)
     {
         MessageFlags = flags;
         return this;

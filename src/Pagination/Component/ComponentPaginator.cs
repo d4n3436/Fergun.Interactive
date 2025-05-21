@@ -257,13 +257,13 @@ public class ComponentPaginator : IComponentPaginator
         {
             case InteractionResponseType.ChannelMessageWithSource:
                 await interaction.RespondWithFilesAsync(attachments, page.Text, page.GetEmbedArray(), page.IsTTS,
-                    isEphemeral, page.AllowedMentions, page.Components, null, null, null, page.MessageFlags).ConfigureAwait(false);
+                    isEphemeral, page.AllowedMentions, page.Components, null, null, null, page.MessageFlags ?? MessageFlags.None).ConfigureAwait(false);
 
                 return await interaction.GetOriginalResponseAsync().ConfigureAwait(false);
 
             case InteractionResponseType.DeferredChannelMessageWithSource:
                 return await interaction.FollowupWithFilesAsync(attachments ?? [],
-                    page.Text, page.GetEmbedArray(), page.IsTTS, isEphemeral, page.AllowedMentions, page.Components, flags: page.MessageFlags).ConfigureAwait(false);
+                    page.Text, page.GetEmbedArray(), page.IsTTS, isEphemeral, page.AllowedMentions, page.Components, flags: page.MessageFlags ?? MessageFlags.None).ConfigureAwait(false);
 
             case InteractionResponseType.DeferredUpdateMessage:
                 return await interaction.ModifyOriginalResponseAsync(UpdateMessage).ConfigureAwait(false);
@@ -318,7 +318,7 @@ public class ComponentPaginator : IComponentPaginator
         var attachments = page.AttachmentsFactory is null ? [] : await page.AttachmentsFactory().ConfigureAwait(false);
 
         return await channel.SendFilesAsync(attachments, page.Text, page.IsTTS, null, null, page.AllowedMentions, page.MessageReference,
-            page.Components, page.Stickers.ToArray(), page.GetEmbedArray(), page.MessageFlags).ConfigureAwait(false);
+            page.Components, page.Stickers.ToArray(), page.GetEmbedArray(), page.MessageFlags ?? MessageFlags.None).ConfigureAwait(false);
     }
 
     /// <inheritdoc/>
@@ -486,7 +486,7 @@ public class ComponentPaginator : IComponentPaginator
         var page = RestrictedPage ?? throw new InvalidOperationException($"Expected {nameof(RestrictedPage)} to be non-null.");
         var attachments = page.AttachmentsFactory is null ? null : await page.AttachmentsFactory().ConfigureAwait(false);
 
-        await interaction.RespondWithFilesAsync(attachments ?? [], page.Text, page.GetEmbedArray(), page.IsTTS, true, page.AllowedMentions, flags: page.MessageFlags).ConfigureAwait(false);
+        await interaction.RespondWithFilesAsync(attachments ?? [], page.Text, page.GetEmbedArray(), page.IsTTS, true, page.AllowedMentions, flags: page.MessageFlags ?? MessageFlags.None).ConfigureAwait(false);
         return InteractiveInputStatus.Success;
     }
 

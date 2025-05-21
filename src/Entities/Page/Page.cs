@@ -74,7 +74,7 @@ public class Page : IPage
     public MessageComponent? Components { get; }
 
     /// <inheritdoc/>
-    public MessageFlags MessageFlags { get; }
+    public MessageFlags? MessageFlags { get; }
 
     /// <summary>
     /// Gets the embed of this page.

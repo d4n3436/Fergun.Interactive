@@ -49,7 +49,7 @@ public interface IPage<out TEmbed> where TEmbed : IEmbed
     /// <summary>
     /// Gets the message flags.
     /// </summary>
-    MessageFlags MessageFlags { get; }
+    MessageFlags? MessageFlags { get; }
 
     /// <summary>
     /// Gets the components of this page.
