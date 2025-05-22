@@ -421,22 +421,42 @@ public class ComponentPaginator : IComponentPaginator
 
         if (action.HasFlag(ActionOnStop.DeleteMessage))
         {
-            try
+            if (message.Flags?.HasFlag(MessageFlags.Ephemeral) != true)
+            {
+                try
+                {
+                    await message.DeleteAsync().ConfigureAwait(false);
+                }
+                catch (HttpException e) when (e.DiscordCode == DiscordErrorCode.UnknownMessage)
+                {
+                    // Ignored, message was already deleted
+                }
+            }
+            else
             {
                 if (stopInteraction is not null)
                 {
+                    await stopInteraction.DeferAsync().ConfigureAwait(false);
                     await stopInteraction.DeleteOriginalResponseAsync().ConfigureAwait(false);
                 }
                 else
                 {
-                    await message.DeleteAsync().ConfigureAwait(false);
+                    try
+                    {
+                        await (message switch
+                        {
+                            RestInteractionMessage im => im.DeleteAsync().ConfigureAwait(false),
+                            RestFollowupMessage fm => fm.DeleteAsync().ConfigureAwait(false),
+                            _ => Task.CompletedTask.ConfigureAwait(false)
+                        });
+                    }
+                    catch (HttpException e) when (e.DiscordCode == DiscordErrorCode.InvalidWebhookToken)
+                    {
+                        // Ignored, token expired
+                    }
                 }
             }
-            catch (HttpException e) when (e.DiscordCode == DiscordErrorCode.UnknownMessage)
-            {
-                // Ignored, message was already deleted
-            }
-
+            
             return;
         }
 
