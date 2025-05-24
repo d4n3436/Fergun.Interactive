@@ -1,4 +1,4 @@
-# Fergun.Interactive
+﻿# Fergun.Interactive
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE) [![NuGet](https://img.shields.io/nuget/vpre/Fergun.Interactive)](https://www.nuget.org/packages/Fergun.Interactive) [![Discord](https://discord.com/api/guilds/460627183501574144/widget.png)](https://discord.gg/V3TgaZRUPX)
 
 **Fergun.Interactive** is an addon that provides interactive functionality to Discord commands.
@@ -9,7 +9,7 @@ This is a fork of [Discord.InteractivityAddon](https://github.com/Playwo/Discord
 
 - Methods for sending and deleting a message after a timeout
 - Methods for receiving incoming messages, reactions, or interactions
-- Fully customizable paginator:
+- Customizable paginator:
   - Uses pages that can be navigated through reactions or buttons
   - Supports button customization (emote, label, style, etc.)
   - Includes two types of paginators: static and lazy-loaded
@@ -21,7 +21,11 @@ This is a fork of [Discord.InteractivityAddon](https://github.com/Playwo/Discord
   - Supports custom paginators, inheriting from the `Paginator` and `PaginatorBuilder` classes
   - Allows jumping (skipping) to a specific page using message input or modals (more info [here](https://github.com/d4n3436/Fergun.Interactive/releases/tag/v1.5))
 
-- Fully customizable selection:
+- 🆕 Component paginator:
+  - A new type of paginator separate from the regular ones, written from scratch with customization and flexibility in mind, with support for components V2
+  - Information about its usage can be found [here](../../wiki/Using-component-paginators).
+
+- Customizable selection:
   - Uses a list of options for users to select from
   - Supports messages, reactions, buttons, and select menus
   - Supports restricting usage to specific users
@@ -49,26 +53,14 @@ var provider = new ServiceCollection()
 
 ## Examples
 
-The [Example Bot](ExampleBot) contains multiple examples with comments. The default prefix is `!`.
+The [Example Bot](ExampleBot) contains multiple examples with comments. The modules are registered as slash commands.
 
 Example modules:
-- Waiting for socket entities (messages, reactions, etc.)
-  - [Wait for a message](ExampleBot/Modules/WaitModule.cs#L20) (`!next message`)
-  - [Wait for a reaction](ExampleBot/Modules/WaitModule.cs#L31) (`!next reaction`)
-  - [Wait for an interaction](ExampleBot/Modules/WaitModule.cs#L47) (`!next interaction`)
+- [Wait for socket entities](ExampleBot/Modules/WaitModule.cs) (messages, reactions, etc.)
 
-- Selection
-  - [Simple selection](ExampleBot/Modules/SelectionModule.cs#L28) (`!select simple`)
-  - [Emote selection](ExampleBot/Modules/SelectionModule.cs#L66) (`!select emote`) (for selections using reactions/buttons as input)
-  - [Emote selection 2](ExampleBot/Modules/SelectionModule.cs#L101) (`!select emote2`)
-  - [Selection that allows choosing multiple options](ExampleBot/Modules/SelectionModule.cs#L137) (`!select multi`)
-  - [Selection with extra features](ExampleBot/Modules/SelectionModule.cs#L184) (`!select extra`)
-  - [Menu](ExampleBot/Modules/SelectionModule.cs#L233) (`!select menu`) (How to reuse a selection message)
+- [Selection](ExampleBot/Modules/SelectionModule.cs)
 
-- Pagination
-  - [Static paginator](ExampleBot/Modules/PaginatorModule.cs#L27) (`!paginator static`)
-  - [Lazy paginator](ExampleBot/Modules/PaginatorModule.cs#L68) (`!paginator lazy`)
-  - [Image paginator](ExampleBot/Modules/PaginatorModule.cs#L87) (`!paginator img [query]`)
+- [Pagination](ExampleBot/Modules/PaginatorModule.cs)
 
 - Customization
   - [Selection with custom button colors](ExampleBot/Modules/CustomButtonModule.cs#L16) (`!custom button`)
@@ -93,32 +85,15 @@ A: The bot doesn't have the `ManageMessages` permission in the channel you're us
 ### Q: When responding an interaction with a paginator/selection, Why does the response message have no components even if I specified to use buttons or select menus?
 
   - A: Your paginator only has one page. The library doesn't include components in this case.
-  - A: You're not passing the correct response type. The default value is `ChannelMessageWithSource`, but if you're deferring the interaction explicitly or implicitly (via `AlwaysAcknowledgeInteractions` in the client config), you'll have to use either `DeferredChannelMessageWithSource` (send a message) or `DeferredUpdateMessage` (update a message).
+  - A: You're not passing the correct response type. The default value is `ChannelMessageWithSource`, but if you've deferred the interaction, you'll have to use either `DeferredChannelMessageWithSource` (send a message) or `DeferredUpdateMessage` (update a message).
 
-### Q: Why can't I use reactions in ephemeral messages?
+### Q: How can I get the last interaction of a paginator/selection to use it elsewhere, eg. send a modal?
 
-A: Discord doesn't support support reactions in ephemeral messages. Why would you do that anyways?
-
-### Q: When sending ephemeral messages, the cancellation/timeout/success action is not executed. Why?
-
-~~A: Currently these actions are not supported with ephemeral messages. More info [here](https://github.com/d4n3436/Fergun.Interactive/issues/1).~~
-
-A: Ephemeral messages now support the cancellation/timeout/success actions with some limitations.
-There's more info about the limitations in the description of the `ephemeral` parameter, in `SendPaginatorAsync()` and `SendSelectionAsync()`.
-
-### Q: Can I use reactions and buttons simultaneously in a paginator/selection?
-
-~~A: Currently no, but I'm planning to add support for multiple input types.~~
-
-A: Yes, update to the latest version.
-
-### Q: How can I get the last interaction of a paginator/selection to use it somewhere else, eg. send a modal?
-
-A: You can get the interaction that stopped the paginator/selection through the `StopInteraction` property, in `InteractiveMessageResult`.
+A: You can get the interaction that stopped the paginator/selection through the `StopInteraction` property in `InteractiveMessageResult`.
 
 Note that this interaction will already be deferred by default (if nothing else has already been done to the interaction before, like update the message).
 
-You can prevent the library from doing this, use the following options in `InteractiveService`s' config:
+You can prevent the library from doing this by setting the following options in `InteractiveConfig` to `false`:
 
 ```cs
 var collection = new ServiceCollection()
@@ -132,7 +107,7 @@ var collection = new ServiceCollection()
     ...
 ```
 
-## Additions/Changes from Discord.InteractivityAddon
+## Additions/Changes from Discord.InteractivityAddon (outdated)
 
  - Paginators now support buttons.
  - Selections now support buttons and select menus.
