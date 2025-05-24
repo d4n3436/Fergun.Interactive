@@ -70,6 +70,6 @@ public interface IComponentPaginatorBuilder
     /// <summary>
     /// Gets or sets the factory of the <see cref="IPage"/> that will be displayed ephemerally to a user when they are not allowed to interact with the paginator.
     /// </summary>
-    /// <remarks>The first argument of the factory is a read-only collection of users who are allowed to interact with the paginator.</remarks>
-    Func<IReadOnlyCollection<IUser>, IPage>? RestrictedPageFactory { get; set; }
+    /// <remarks>The first argument is the current paginator.</remarks>
+    Func<IComponentPaginator, IPage>? RestrictedPageFactory { get; set; }
 }

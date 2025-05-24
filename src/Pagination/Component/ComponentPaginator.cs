@@ -88,7 +88,7 @@ public class ComponentPaginator : IComponentPaginator
         CanceledPage = builder.CanceledPage;
         TimeoutPage = builder.TimeoutPage;
         JumpModalFactory = builder.JumpModalFactory;
-        RestrictedPage = builder.RestrictedPageFactory?.Invoke(Users);
+        RestrictedPageFactory = builder.RestrictedPageFactory;
     }
 
     /// <inheritdoc />
@@ -128,7 +128,7 @@ public class ComponentPaginator : IComponentPaginator
     public Func<IComponentPaginator, ModalBuilder>? JumpModalFactory { get; }
 
     /// <inheritdoc />
-    public IPage? RestrictedPage { get; }
+    public Func<IComponentPaginator, IPage>? RestrictedPageFactory { get; }
 
     /// <summary>
     /// Increments the <see cref="CurrentPageIndex"/>, so it points to the next page if possible.
@@ -203,8 +203,8 @@ public class ComponentPaginator : IComponentPaginator
         {
             return RestrictedInputBehavior switch
             {
-                RestrictedInputBehavior.Ignore or RestrictedInputBehavior.Auto when RestrictedPage is null => InteractiveInputStatus.Ignored,
-                RestrictedInputBehavior.SendMessage or RestrictedInputBehavior.Auto when RestrictedPage is not null => await SendRestrictedPageAsync(interaction).ConfigureAwait(false),
+                RestrictedInputBehavior.Ignore or RestrictedInputBehavior.Auto when RestrictedPageFactory is null => InteractiveInputStatus.Ignored,
+                RestrictedInputBehavior.SendMessage or RestrictedInputBehavior.Auto when RestrictedPageFactory is not null => await SendRestrictedPageAsync(interaction).ConfigureAwait(false),
                 RestrictedInputBehavior.Defer => await DeferInteractionAsync(interaction).ConfigureAwait(false),
                 _ => InteractiveInputStatus.Ignored
             };
@@ -379,8 +379,8 @@ public class ComponentPaginator : IComponentPaginator
         {
             return RestrictedInputBehavior switch
             {
-                RestrictedInputBehavior.Ignore or RestrictedInputBehavior.Auto when RestrictedPage is null => InteractiveInputStatus.Ignored,
-                RestrictedInputBehavior.SendMessage or RestrictedInputBehavior.Auto when RestrictedPage is not null => await SendRestrictedPageAsync(interaction).ConfigureAwait(false),
+                RestrictedInputBehavior.Ignore or RestrictedInputBehavior.Auto when RestrictedPageFactory is null => InteractiveInputStatus.Ignored,
+                RestrictedInputBehavior.SendMessage or RestrictedInputBehavior.Auto when RestrictedPageFactory is not null => await SendRestrictedPageAsync(interaction).ConfigureAwait(false),
                 RestrictedInputBehavior.Defer => await DeferInteractionAsync(interaction).ConfigureAwait(false),
                 _ => InteractiveInputStatus.Ignored
             };
@@ -503,7 +503,7 @@ public class ComponentPaginator : IComponentPaginator
 
     private async Task<InteractiveInputStatus> SendRestrictedPageAsync(IDiscordInteraction interaction)
     {
-        var page = RestrictedPage ?? throw new InvalidOperationException($"Expected {nameof(RestrictedPage)} to be non-null.");
+        var page = RestrictedPageFactory?.Invoke(this) ?? throw new InvalidOperationException($"Expected result of {nameof(RestrictedPageFactory)} to be non-null.");
         var attachments = page.AttachmentsFactory is null ? null : await page.AttachmentsFactory().ConfigureAwait(false);
 
         await interaction.RespondWithFilesAsync(attachments ?? [], page.Text, page.GetEmbedArray(), page.IsTTS, true, page.AllowedMentions, flags: page.MessageFlags ?? MessageFlags.None).ConfigureAwait(false);

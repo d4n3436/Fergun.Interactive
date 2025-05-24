@@ -53,7 +53,7 @@ public class ComponentPaginatorBuilder : IComponentPaginatorBuilder
     public Func<IComponentPaginator, ModalBuilder>? JumpModalFactory { get; set; }
 
     /// <inheritdoc />
-    public Func<IReadOnlyCollection<IUser>, IPage>? RestrictedPageFactory { get; set; }
+    public Func<IComponentPaginator, IPage>? RestrictedPageFactory { get; set; }
 
     /// <summary>
     /// Builds this builder into a <see cref="ComponentPaginator"/>.

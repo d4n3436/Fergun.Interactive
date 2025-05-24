@@ -73,9 +73,9 @@ public interface IComponentPaginator
     Func<IComponentPaginator, ModalBuilder>? JumpModalFactory { get; }
 
     /// <summary>
-    /// Gets the <see cref="IPage"/> that will be displayed ephemerally to a user when they are not allowed to interact with this paginator.
+    /// Gets the factory of the <see cref="IPage"/> that will be displayed ephemerally to a user when they are not allowed to interact with the paginator.
     /// </summary>
-    IPage? RestrictedPage { get; }
+    Func<IComponentPaginator, IPage>? RestrictedPageFactory { get; }
 
     /// <summary>
     /// Sets the <see cref="CurrentPageIndex"/> to the specified page index, if it is valid.

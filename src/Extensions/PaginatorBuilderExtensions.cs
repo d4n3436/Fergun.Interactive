@@ -247,12 +247,12 @@ public static class PaginatorBuilderExtensions
     /// <summary>
     /// Sets the factory of the <see cref="IPage"/> that will be displayed ephemerally to a user when they are not allowed to interact with the paginator.
     /// </summary>
-    /// <remarks>The first argument of the factory is a read-only collection of users who are allowed to interact with the paginator.</remarks>
+    /// <remarks>The first argument of the factory is the current paginator. <see cref="IComponentPaginator.Users"/> can be used to display what users are allowed to interact with the paginator.</remarks>
     /// <typeparam name="TBuilder">The type of the component paginator builder.</typeparam>
     /// <param name="builder">A paginator builder that implements <see cref="IComponentPaginatorBuilder"/>.</param>
-    /// <param name="pageFactory">The restricted page factory. The first argument is a read-only collection of users who are allowed to interact with the paginator.</param>
+    /// <param name="pageFactory">The restricted page factory. The first argument is the current paginator. <see cref="IComponentPaginator.Users"/> can be used to display what users are allowed to interact with the paginator.</param>
     /// <returns>This builder.</returns>
-    public static TBuilder WithRestrictedPageFactory<TBuilder>(this TBuilder builder, Func<IReadOnlyCollection<IUser>, IPage> pageFactory)
+    public static TBuilder WithRestrictedPageFactory<TBuilder>(this TBuilder builder, Func<IComponentPaginator, IPage> pageFactory)
         where TBuilder : class, IComponentPaginatorBuilder
     {
         InteractiveGuards.NotNull(builder);
@@ -271,11 +271,11 @@ public static class PaginatorBuilderExtensions
         where TBuilder : class, IComponentPaginatorBuilder
     {
         InteractiveGuards.NotNull(builder);
-        return builder.WithRestrictedPageFactory(users =>
+        return builder.WithRestrictedPageFactory(paginator =>
         {
             return new PageBuilder()
                 .WithColor(Color.Orange)
-                .WithDescription($"🚫 Only {string.Join(", ", users.Select(x => x.Mention))} can respond to this interaction.")
+                .WithDescription($"🚫 Only {string.Join(", ", paginator.Users.Select(x => x.Mention))} can respond to this interaction.")
                 .Build();
         });
     }

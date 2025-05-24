@@ -23,7 +23,7 @@ public enum RestrictedInputBehavior
     Defer,
 
     /// <summary>
-    /// Send a message (from <see cref="IInteractiveElement{TOption}.RestrictedPage"/> or <see cref="IComponentPaginator.RestrictedPage"/>) to the user.
+    /// Send a message (from <see cref="IInteractiveElement{TOption}.RestrictedPage"/> or <see cref="IComponentPaginator.RestrictedPageFactory"/>) to the user.
     /// </summary>
     /// <remarks>This requires the factory for the restricted page to be set.</remarks>
     SendMessage
