@@ -23,7 +23,7 @@ This is a fork of [Discord.InteractivityAddon](https://github.com/Playwo/Discord
 
 - 🆕 Component paginator:
   - A new type of paginator separate from the regular ones, written from scratch with customization and flexibility in mind, with support for components V2
-  - Information about its usage can be found [here](../../wiki/Using-component-paginators).
+  - Information about its usage can be found [here](../../wiki/Component-paginators).
 
 - Customizable selection:
   - Uses a list of options for users to select from
