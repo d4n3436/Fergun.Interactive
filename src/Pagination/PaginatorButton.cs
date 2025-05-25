@@ -29,7 +29,7 @@ public class PaginatorButton : IPaginatorButton
     /// <param name="emote">The emote.</param>
     /// <param name="style">The button style.</param>
     public PaginatorButton(IEmote emote, PaginatorAction action, ButtonStyle? style = null)
-        : this(action, emote, null, style, null)
+        : this(action, emote, text: null, style, isDisabled: null)
     {
     }
 
@@ -40,7 +40,7 @@ public class PaginatorButton : IPaginatorButton
     /// <param name="action">The action.</param>
     /// <param name="style">The button style.</param>
     public PaginatorButton(string text, PaginatorAction action, ButtonStyle? style = null)
-        : this(action, null, text, style, null)
+        : this(action, emote: null, text, style, isDisabled: null)
     {
     }
 
@@ -74,7 +74,7 @@ public class PaginatorButton : IPaginatorButton
     {
         if (emote is null && string.IsNullOrEmpty(text))
         {
-            throw new ArgumentException($"Either {nameof(emote)} or {nameof(text)} must have a valid value.");
+            throw new InvalidOperationException($"Either {nameof(emote)} or {nameof(text)} must have a valid value.");
         }
 
         Style = style;
@@ -92,7 +92,7 @@ public class PaginatorButton : IPaginatorButton
     /// <summary>
     /// Returns a hidden button.
     /// </summary>
-    public static PaginatorButton Hidden { get; } = new(true);
+    public static PaginatorButton Hidden { get; } = new(isHidden: true);
 
     /// <inheritdoc/>
     public ButtonStyle? Style { get; }

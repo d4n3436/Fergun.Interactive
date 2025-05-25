@@ -24,7 +24,7 @@ public abstract class BaseSelection<TOption> : IInteractiveElement<TOption>
     protected BaseSelection(IBaseSelectionBuilderProperties<TOption> properties)
     {
         InteractiveGuards.NotNull(properties);
-        InteractiveGuards.SupportedInputType(properties.InputType, false);
+        InteractiveGuards.SupportedInputType(properties.InputType, ephemeral: false);
         InteractiveGuards.RequiredEmoteConverter(properties.InputType, properties.EmoteConverter);
         InteractiveGuards.NotNull(properties.EqualityComparer);
         InteractiveGuards.NotNull(properties.SelectionPage);
@@ -179,7 +179,7 @@ public abstract class BaseSelection<TOption> : IInteractiveElement<TOption>
     {
         if (!(InputType.HasFlag(InputType.Buttons) || InputType.HasFlag(InputType.SelectMenus)))
         {
-            throw new InvalidOperationException($"{nameof(InputType)} must have either {InputType.Buttons} or {InputType.SelectMenus}.");
+            throw new InvalidOperationException($"{nameof(InputType)} must have either {nameof(InputType.Buttons)} or {nameof(InputType.SelectMenus)}.");
         }
 
         builder ??= new ComponentBuilder();
@@ -445,7 +445,8 @@ public abstract class BaseSelection<TOption> : IInteractiveElement<TOption>
     {
         var page = RestrictedPage ?? throw new InvalidOperationException($"Expected {nameof(RestrictedPage)} to be non-null.");
         var attachments = page.AttachmentsFactory is null ? null : await page.AttachmentsFactory().ConfigureAwait(false);
-        await input.RespondWithFilesAsync(attachments ?? [], page.Text, page.GetEmbedArray(), page.IsTTS, true, page.AllowedMentions, flags: page.MessageFlags ?? MessageFlags.None).ConfigureAwait(false);
+        await input.RespondWithFilesAsync(attachments ?? [], page.Text, page.GetEmbedArray(), page.IsTTS,
+            ephemeral: true, page.AllowedMentions, flags: page.MessageFlags ?? MessageFlags.None).ConfigureAwait(false);
 
         return InteractiveInputStatus.Ignored;
     }

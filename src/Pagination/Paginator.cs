@@ -8,6 +8,7 @@ using Discord;
 using Discord.Net;
 using Discord.WebSocket;
 using Fergun.Interactive.Extensions;
+using System.Globalization;
 
 namespace Fergun.Interactive.Pagination;
 
@@ -34,7 +35,7 @@ public abstract class Paginator : IInteractiveElement<KeyValuePair<IEmote, Pagin
         InteractiveGuards.NotNull(properties.ButtonFactories);
         InteractiveGuards.NotNull(properties.SelectMenuFactories);
         InteractiveGuards.NotEmpty(properties.ButtonFactories);
-        InteractiveGuards.SupportedInputType(properties.InputType, false);
+        InteractiveGuards.SupportedInputType(properties.InputType, ephemeral: false);
 
         if (properties.InputType.HasFlag(InputType.Reactions))
         {
@@ -202,7 +203,7 @@ public abstract class Paginator : IInteractiveElement<KeyValuePair<IEmote, Pagin
     /// Sets the <see cref="CurrentPageIndex"/> of this paginator.
     /// </summary>
     /// <param name="pageIndex">The index of the page to set.</param>
-    /// <returns>A task representing the asynchronous operation. The result contains whether the operation succeeded.</returns>
+    /// <returns>A task representing the asynchronous operation. The task result contains whether the operation succeeded.</returns>
     public virtual async ValueTask<bool> SetPageAsync(int pageIndex)
     {
         if (pageIndex < 0 || CurrentPageIndex == pageIndex || pageIndex > MaxPageIndex)
@@ -248,7 +249,7 @@ public abstract class Paginator : IInteractiveElement<KeyValuePair<IEmote, Pagin
             PaginatorAction.Forward => SetPageAsync(CurrentPageIndex + 1),
             PaginatorAction.SkipToStart => SetPageAsync(0),
             PaginatorAction.SkipToEnd => SetPageAsync(MaxPageIndex),
-            _ => new ValueTask<bool>(false)
+            _ => new ValueTask<bool>(result: false)
         };
 
     /// <summary>
@@ -307,7 +308,7 @@ public abstract class Paginator : IInteractiveElement<KeyValuePair<IEmote, Pagin
             return false;
 
         string? rawInput = message.Content;
-        if (rawInput is null || !int.TryParse(rawInput, out int pageNumber) || !await SetPageAsync(pageNumber - 1).ConfigureAwait(false))
+        if (rawInput is null || !int.TryParse(rawInput, NumberStyles.Integer, CultureInfo.InvariantCulture, out int pageNumber) || !await SetPageAsync(pageNumber - 1).ConfigureAwait(false))
         {
             if (!string.IsNullOrEmpty(InvalidJumpInputMessage))
             {
@@ -386,7 +387,7 @@ public abstract class Paginator : IInteractiveElement<KeyValuePair<IEmote, Pagin
             return false;
 
         string? rawInput = res.Data.Components.FirstOrDefault(x => x.CustomId == "text_input")?.Value;
-        if (rawInput is null || !int.TryParse(rawInput, out int pageNumber) || !await SetPageAsync(pageNumber - 1).ConfigureAwait(false))
+        if (rawInput is null || !int.TryParse(rawInput, NumberStyles.Integer, CultureInfo.InvariantCulture, out int pageNumber) || !await SetPageAsync(pageNumber - 1).ConfigureAwait(false))
         {
             if (!string.IsNullOrEmpty(InvalidJumpInputMessage))
             {
@@ -513,7 +514,7 @@ public abstract class Paginator : IInteractiveElement<KeyValuePair<IEmote, Pagin
 
         if ((action == PaginatorAction.Jump && await JumpToPageAsync(input).ConfigureAwait(false)) || await ApplyActionAsync(action).ConfigureAwait(false))
         {
-            await TryUpdateMessageAsync(message.ModifyAsync, previousPageIndex, false).ConfigureAwait(false);
+            await TryUpdateMessageAsync(message.ModifyAsync, previousPageIndex, includeComponents: false).ConfigureAwait(false);
         }
 
         return InteractiveInputStatus.Success;
@@ -671,7 +672,7 @@ public abstract class Paginator : IInteractiveElement<KeyValuePair<IEmote, Pagin
     {
         var currentPage = await GetOrLoadCurrentPageAsync().ConfigureAwait(false);
         var attachments = currentPage.AttachmentsFactory is null ? null : await currentPage.AttachmentsFactory().ConfigureAwait(false);
-        var components = GetOrAddComponents(false).Build();
+        var components = GetOrAddComponents(disableAll: false).Build();
 
         try
         {
@@ -683,7 +684,7 @@ public abstract class Paginator : IInteractiveElement<KeyValuePair<IEmote, Pagin
                 x.AllowedMentions = currentPage.AllowedMentions;
                 x.Attachments = attachments is null ? new Optional<IEnumerable<FileAttachment>>() : new Optional<IEnumerable<FileAttachment>>(attachments);
                 x.Flags = currentPage.MessageFlags;
-            }, null).ConfigureAwait(false);
+            }, arg2: null).ConfigureAwait(false);
         }
         catch
         {
@@ -696,7 +697,8 @@ public abstract class Paginator : IInteractiveElement<KeyValuePair<IEmote, Pagin
     {
         var page = RestrictedPage ?? throw new InvalidOperationException($"Expected {nameof(RestrictedPage)} to be non-null.");
         var attachments = page.AttachmentsFactory is null ? null : await page.AttachmentsFactory().ConfigureAwait(false);
-        await input.RespondWithFilesAsync(attachments ?? [], page.Text, page.GetEmbedArray(), page.IsTTS, true, page.AllowedMentions, flags: page.MessageFlags ?? MessageFlags.None).ConfigureAwait(false);
+        await input.RespondWithFilesAsync(attachments ?? [], page.Text, page.GetEmbedArray(), page.IsTTS,
+            ephemeral: true, page.AllowedMentions, flags: page.MessageFlags ?? MessageFlags.None).ConfigureAwait(false);
 
         return InteractiveInputStatus.Success;
     }

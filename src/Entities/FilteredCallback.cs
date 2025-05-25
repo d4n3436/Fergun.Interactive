@@ -95,7 +95,7 @@ internal sealed class FilteredCallback<TInput> : IFilteredCallback, IInteractive
     public bool TriggersFilter<T>(T obj) => obj is TInput input && Filter(input);
 
     /// <inheritdoc/>
-    public void Dispose() => Dispose(true);
+    public void Dispose() => Dispose(disposing: true);
 
     private void Dispose(bool disposing)
     {

@@ -62,7 +62,7 @@ public abstract class BaseLazyPaginatorBuilder<TPaginator, TBuilder>
     }
 
     /// <summary>
-    /// Sets whether to cache loaded pages.
+    /// Sets a value indicating whether to cache loaded pages.
     /// </summary>
     /// <param name="cacheLoadedPages">Whether to cache loaded pages.</param>
     /// <returns>This builder.</returns>

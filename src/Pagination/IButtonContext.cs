@@ -16,6 +16,6 @@ public interface IButtonContext : IComponentContext
     /// - It's unnecessary to have the button enabled (e.g., a button with action <see cref="PaginatorAction.SkipToStart"/> and the current page index is 0).
     /// </summary>
     /// <param name="action">The paginator action.</param>
-    /// <returns>A value indicating whether the button should be disabled.</returns>
+    /// <returns><see langword="true"/> if the button should be disabled; otherwise, <see langword="false"/>.</returns>
     bool ShouldDisable(PaginatorAction action);
 }

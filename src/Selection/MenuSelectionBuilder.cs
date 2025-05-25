@@ -18,7 +18,7 @@ public sealed class MenuSelectionBuilder<TOption> : BaseSelectionBuilder<MenuSel
     }
 
     /// <summary>
-    /// Gets or sets a value that indicates whether to set the default values on select menus. The values will be the last selected options.
+    /// Gets or sets a value indicating whether to set the default values on select menus. The values will be the last selected options.
     /// </summary>
     public bool SetDefaultValues { get; set; }
 
@@ -38,7 +38,7 @@ public sealed class MenuSelectionBuilder<TOption> : BaseSelectionBuilder<MenuSel
     public override MenuSelection<TOption> Build() => new(this);
 
     /// <summary>
-    /// Sets a value that indicates whether to set the default values on select menus. The values will be the last selected options.
+    /// Sets a value indicating whether to set the default values on select menus. The values will be the last selected options.
     /// </summary>
     /// <param name="setDefaultValues">Whether to set the default values.</param>
     /// <returns>This builder.</returns>

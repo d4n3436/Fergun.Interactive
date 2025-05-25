@@ -256,7 +256,7 @@ public abstract class PaginatorBuilder<TPaginator, TBuilder>
 
         // If the value of Options is changed, add the option into ButtonFactories through the new overloads
         if (Options is not OptionsWrapper)
-            return AddOption(action, emote, null);
+            return AddOption(action, emote, text: null);
 
         return (TBuilder)this;
     }
@@ -269,7 +269,7 @@ public abstract class PaginatorBuilder<TPaginator, TBuilder>
     /// <param name="style">The button style. If the value is null, the library will decide the style of the button.</param>
     /// <returns>This builder.</returns>
     public virtual TBuilder AddOption(string text, PaginatorAction action, ButtonStyle? style)
-        => AddOption(action, null, text, style);
+        => AddOption(action, emote: null, text, style);
 
     /// <summary>
     /// Adds a paginator button with the specified emote, action and style.
@@ -279,7 +279,7 @@ public abstract class PaginatorBuilder<TPaginator, TBuilder>
     /// <param name="style">The button style. If the value is null, the library will decide the style of the button.</param>
     /// <returns>This builder.</returns>
     public virtual TBuilder AddOption(IEmote emote, PaginatorAction action, ButtonStyle? style)
-        => AddOption(action, emote, null, style);
+        => AddOption(action, emote, text: null, style);
 
     /// <summary>
     /// Adds a link-style paginator button with the specified properties.
@@ -295,7 +295,7 @@ public abstract class PaginatorBuilder<TPaginator, TBuilder>
             throw new ArgumentException("Url cannot be null or empty.", nameof(url));
 
         if (emote is null && string.IsNullOrEmpty(text))
-            throw new ArgumentException($"Either {nameof(emote)} or {nameof(text)} must have a valid value.");
+            throw new InvalidOperationException($"Either {nameof(emote)} or {nameof(text)} must have a valid value.");
 
         return AddOption(new PaginatorButton(url, emote, text, isDisabled));
     }
@@ -316,7 +316,7 @@ public abstract class PaginatorBuilder<TPaginator, TBuilder>
             throw new ArgumentException("CustomId cannot be null or empty.", nameof(customId));
 
         if (emote is null && string.IsNullOrEmpty(text))
-            throw new ArgumentException($"Either {nameof(emote)} or {nameof(text)} must have a valid value.");
+            throw new InvalidOperationException($"Either {nameof(emote)} or {nameof(text)} must have a valid value.");
 
         return AddOption(new PaginatorButton(customId, emote, text, style, isDisabled));
     }
@@ -333,7 +333,7 @@ public abstract class PaginatorBuilder<TPaginator, TBuilder>
     public virtual TBuilder AddOption(PaginatorAction action, IEmote? emote, string? text, ButtonStyle? style = null, bool? isDisabled = null)
     {
         if (emote is null && string.IsNullOrEmpty(text))
-            throw new ArgumentException($"Either {nameof(emote)} or {nameof(text)} must have a valid value.");
+            throw new InvalidOperationException($"Either {nameof(emote)} or {nameof(text)} must have a valid value.");
 
         return AddOption(new PaginatorButton(action, emote, text, style, isDisabled));
     }
@@ -582,7 +582,7 @@ public abstract class PaginatorBuilder<TPaginator, TBuilder>
     }
 
     /// <summary>
-    /// Gets or sets the "jump to page" text label that is displayed in the modal.
+    /// Sets the "jump to page" text label that is displayed in the modal.
     /// </summary>
     /// <param name="jumpInputTextLabel">The text label.</param>
     /// <returns>This builder.</returns>

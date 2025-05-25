@@ -5,6 +5,7 @@ using Fergun.Interactive.Extensions;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -72,8 +73,8 @@ public class ComponentPaginator : IComponentPaginator
             InteractiveGuards.NotNull(builder.RestrictedPageFactory);
         }
 
-        InteractiveGuards.ValidActionOnStop(builder.ActionOnCancellation, true);
-        InteractiveGuards.ValidActionOnStop(builder.ActionOnTimeout, true);
+        InteractiveGuards.ValidActionOnStop(builder.ActionOnCancellation, isComponentPaginator: true);
+        InteractiveGuards.ValidActionOnStop(builder.ActionOnTimeout, isComponentPaginator: true);
         InteractiveGuards.LessThan(builder.PageCount, 1);
         InteractiveGuards.ValueInRange(0, builder.PageCount, builder.InitialPageIndex);
 
@@ -133,25 +134,25 @@ public class ComponentPaginator : IComponentPaginator
     /// <summary>
     /// Increments the <see cref="CurrentPageIndex"/>, so it points to the next page if possible.
     /// </summary>
-    /// <returns><see langword="true"/> if <see cref="CurrentPageIndex"/> was updated; otherwise, <see langword="false"/>. It returns <see langword="false"/> if it's already the last page.</returns>
+    /// <returns><see langword="true"/> if <see cref="CurrentPageIndex"/> is lower than <see cref="PageCount"/> minus 1; otherwise, <see langword="false"/>.</returns>
     public virtual bool NextPage() => SetPage(CurrentPageIndex + 1);
 
     /// <summary>
     /// Decrements the <see cref="CurrentPageIndex"/>, so it points to the previous page if possible.
     /// </summary>
-    /// <returns><see langword="true"/> if <see cref="CurrentPageIndex"/> was updated; otherwise, <see langword="false"/>. It returns <see langword="false"/> if it's already the first page.</returns>
+    /// <returns><see langword="true"/> if <see cref="CurrentPageIndex"/> higher than 0; otherwise, <see langword="false"/>.</returns>
     public virtual bool PreviousPage() => SetPage(CurrentPageIndex - 1);
 
     /// <summary>
     /// Sets the <see cref="CurrentPageIndex"/> to 0, so it points to the first page if possible.
     /// </summary>
-    /// <returns><see langword="true"/> if <see cref="CurrentPageIndex"/> was updated; otherwise, <see langword="false"/>. It returns <see langword="false"/> if it's already the first page.</returns>
+    /// <returns><see langword="true"/> if <see cref="CurrentPageIndex"/> is not 0; otherwise, <see langword="false"/>.</returns>
     public virtual bool FirstPage() => SetPage(0);
 
     /// <summary>
     /// Sets the <see cref="CurrentPageIndex"/> to <see cref="PageCount"/> minus 1, so it points to the last page if possible.
     /// </summary>
-    /// <returns><see langword="true"/> if <see cref="CurrentPageIndex"/> was updated; otherwise, <see langword="false"/>. It returns <see langword="false"/> if it's already the last page.</returns>
+    /// <returns><see langword="true"/> if <see cref="CurrentPageIndex"/> is not <see cref="PageCount"/> minus 1; otherwise, <see langword="false"/>.</returns>
     public virtual bool LastPage() => SetPage(PageCount - 1);
 
     ///<inheritdoc />
@@ -188,17 +189,11 @@ public class ComponentPaginator : IComponentPaginator
         };
     }
 
-    /// <summary>
-    /// Creates a standard <see cref="PaginatorAction.Forward"/> button component.
-    /// </summary>
-    /// <returns></returns>
-    public ButtonComponent CreatePreviousButton()
-        => new ButtonBuilder(null, PreviousPageId, ButtonStyle.Primary, null, Emoji.Parse("◀"), ShouldDisable(PaginatorAction.Backward))
-            .Build();
-
     /// <inheritdoc/>
     public virtual async ValueTask<InteractiveInputStatus> HandleInteractionAsync(IComponentInteraction interaction)
     {
+        InteractiveGuards.NotNull(interaction);
+
         if (!this.CanInteract(interaction.User))
         {
             return RestrictedInputBehavior switch
@@ -250,6 +245,8 @@ public class ComponentPaginator : IComponentPaginator
     /// <inheritdoc/>
     public virtual async Task<IUserMessage> RenderPageAsync(IDiscordInteraction interaction, InteractionResponseType responseType, bool isEphemeral, IPage? page = null)
     {
+        InteractiveGuards.NotNull(interaction);
+
         page ??= await PageFactory(this).ConfigureAwait(false);
         var attachments = page.AttachmentsFactory is null ? [] : await page.AttachmentsFactory().ConfigureAwait(false);
 
@@ -257,7 +254,7 @@ public class ComponentPaginator : IComponentPaginator
         {
             case InteractionResponseType.ChannelMessageWithSource:
                 await interaction.RespondWithFilesAsync(attachments, page.Text, page.GetEmbedArray(), page.IsTTS,
-                    isEphemeral, page.AllowedMentions, page.Components, null, null, null, page.MessageFlags ?? MessageFlags.None).ConfigureAwait(false);
+                    isEphemeral, page.AllowedMentions, page.Components, embed: null, options: null, poll: null, page.MessageFlags ?? MessageFlags.None).ConfigureAwait(false);
 
                 return await interaction.GetOriginalResponseAsync().ConfigureAwait(false);
 
@@ -297,6 +294,8 @@ public class ComponentPaginator : IComponentPaginator
     /// <inheritdoc/>
     public virtual async Task RenderPageAsync(IComponentInteraction interaction, IPage? page = null)
     {
+        InteractiveGuards.NotNull(interaction);
+
         page ??= await PageFactory(this).ConfigureAwait(false);
         var attachments = page.AttachmentsFactory is null ? [] : await page.AttachmentsFactory().ConfigureAwait(false);
 
@@ -314,16 +313,20 @@ public class ComponentPaginator : IComponentPaginator
     /// <inheritdoc/>
     public virtual async Task<IUserMessage> RenderPageAsync(IMessageChannel channel, IPage? page = null)
     {
+        InteractiveGuards.NotNull(channel);
+
         page ??= await PageFactory(this).ConfigureAwait(false);
         var attachments = page.AttachmentsFactory is null ? [] : await page.AttachmentsFactory().ConfigureAwait(false);
 
-        return await channel.SendFilesAsync(attachments, page.Text, page.IsTTS, null, null, page.AllowedMentions, page.MessageReference,
+        return await channel.SendFilesAsync(attachments, page.Text, page.IsTTS, embed: null, options: null, page.AllowedMentions, page.MessageReference,
             page.Components, page.Stickers.ToArray(), page.GetEmbedArray(), page.MessageFlags ?? MessageFlags.None).ConfigureAwait(false);
     }
 
     /// <inheritdoc/>
     public virtual async Task RenderPageAsync(IUserMessage message, IPage? page = null)
     {
+        InteractiveGuards.NotNull(message);
+
         page ??= await PageFactory(this).ConfigureAwait(false);
         var attachments = page.AttachmentsFactory is null ? [] : await page.AttachmentsFactory().ConfigureAwait(false);
 
@@ -362,6 +365,8 @@ public class ComponentPaginator : IComponentPaginator
     /// <inheritdoc/>
     public virtual async Task SendJumpPromptAsync(IComponentInteraction interaction)
     {
+        InteractiveGuards.NotNull(interaction);
+
         var builder = JumpModalFactory?
             .Invoke(this)?
             .WithCustomId(JumpModalId) ?? new ModalBuilder()
@@ -375,6 +380,8 @@ public class ComponentPaginator : IComponentPaginator
     /// <inheritdoc/>
     public virtual async ValueTask<InteractiveInputStatus> HandleModalInteractionAsync(IModalInteraction interaction)
     {
+        InteractiveGuards.NotNull(interaction);
+
         if (!this.CanInteract(interaction.User))
         {
             return RestrictedInputBehavior switch
@@ -390,18 +397,20 @@ public class ComponentPaginator : IComponentPaginator
             return InteractiveInputStatus.Ignored;
 
         string? rawInput = interaction.Data.Components.FirstOrDefault(x => x.Type == ComponentType.TextInput)?.Value;
-        if (rawInput is null || !int.TryParse(rawInput, out int pageNumber) || !SetPage(pageNumber - 1))
+        if (rawInput is null || !int.TryParse(rawInput, NumberStyles.Integer, CultureInfo.InvariantCulture, out int pageNumber) || !SetPage(pageNumber - 1))
         {
             return await DeferInteractionAsync(interaction).ConfigureAwait(false);
         }
 
-        await RenderPageAsync(interaction, InteractionResponseType.UpdateMessage, false).ConfigureAwait(false);
+        await RenderPageAsync(interaction, InteractionResponseType.UpdateMessage, isEphemeral: false).ConfigureAwait(false);
         return InteractiveInputStatus.Success;
     }
 
     /// <inheritdoc/>
     public virtual async ValueTask ApplyActionOnStopAsync(IUserMessage message, IComponentInteraction? stopInteraction, bool deferInteraction)
     {
+        InteractiveGuards.NotNull(message);
+
         var action = Status switch
         {
             PaginatorStatus.Canceled => ActionOnCancellation,
@@ -474,7 +483,7 @@ public class ComponentPaginator : IComponentPaginator
             {
                 if (stopInteraction is not null && deferInteraction)
                 {
-                    await stopInteraction.DeferAsync();
+                    await stopInteraction.DeferAsync().ConfigureAwait(false);
                 }
 
                 return;
@@ -506,7 +515,9 @@ public class ComponentPaginator : IComponentPaginator
         var page = RestrictedPageFactory?.Invoke(this) ?? throw new InvalidOperationException($"Expected result of {nameof(RestrictedPageFactory)} to be non-null.");
         var attachments = page.AttachmentsFactory is null ? null : await page.AttachmentsFactory().ConfigureAwait(false);
 
-        await interaction.RespondWithFilesAsync(attachments ?? [], page.Text, page.GetEmbedArray(), page.IsTTS, true, page.AllowedMentions, flags: page.MessageFlags ?? MessageFlags.None).ConfigureAwait(false);
+        await interaction.RespondWithFilesAsync(attachments ?? [], page.Text, page.GetEmbedArray(), page.IsTTS,
+            ephemeral: true, page.AllowedMentions, flags: page.MessageFlags ?? MessageFlags.None).ConfigureAwait(false);
+
         return InteractiveInputStatus.Success;
     }
 

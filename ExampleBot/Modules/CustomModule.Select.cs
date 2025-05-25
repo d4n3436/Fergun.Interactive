@@ -83,7 +83,7 @@ public partial class CustomModule
                 .Build();
 
             var responseType = interaction is IComponentInteraction ? InteractionResponseType.DeferredUpdateMessage : InteractionResponseType.ChannelMessageWithSource;
-            result = await _interactive.SendSelectionAsync(multiSelection, interaction, TimeSpan.FromMinutes(2), responseType, false, null, cts.Token);
+            result = await _interactive.SendSelectionAsync(multiSelection, interaction, TimeSpan.FromMinutes(2), responseType, ephemeral: false, messageAction: null, cts.Token);
 
             interaction = result.StopInteraction!;
 

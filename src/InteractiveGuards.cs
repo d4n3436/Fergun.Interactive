@@ -122,12 +122,12 @@ internal static class InteractiveGuards
 
         if (action.HasFlag(ActionOnStop.DeleteInput | ActionOnStop.DisableInput))
         {
-            throw new ArgumentException($"{ActionOnStop.DeleteInput} and {ActionOnStop.DisableInput} are mutually exclusive.", parameterName);
+            throw new ArgumentException($"{nameof(ActionOnStop.DeleteInput)} and {nameof(ActionOnStop.DisableInput)} are mutually exclusive.", parameterName);
         }
 
         if (isComponentPaginator && action.HasFlag(ActionOnStop.ModifyMessage) && !Enum.IsDefined(typeof(ActionOnStop), action))
         {
-            throw new ArgumentException($"{ActionOnStop.ModifyMessage} is mutually exclusive with all other options on component paginators.");
+            throw new ArgumentException($"{nameof(ActionOnStop.ModifyMessage)} is mutually exclusive with all other options on component paginators.", parameterName);
         }
     }
 

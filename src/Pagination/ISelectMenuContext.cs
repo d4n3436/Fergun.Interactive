@@ -13,6 +13,6 @@ public interface ISelectMenuContext : IComponentContext
     /// <summary>
     /// Returns a value indicating whether the select menu should be disabled. This value is <see langword="true"/> if the paginator is stopping and the action on stop is <see cref="ActionOnStop.DisableInput"/>.
     /// </summary>
-    /// <returns>A value indicating whether the select menu should be disabled.</returns>
+    /// <returns><see langword="true"/> the select menu should be disabled; otherwise, <see langword="false"/>.</returns>
     bool ShouldDisable();
 }

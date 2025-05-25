@@ -32,7 +32,7 @@ public class TimeoutTaskCompletionSource<TResult> : IDisposable
         CancelResult = cancelResult;
         _canReset = canReset;
         _taskSource = new TaskCompletionSource<TResult>(TaskCreationOptions.RunContinuationsAsynchronously);
-        _timer = new Timer(OnTimerFired, null, delay, Timeout.InfiniteTimeSpan);
+        _timer = new Timer(OnTimerFired, state: null, delay, Timeout.InfiniteTimeSpan);
         _tokenRegistration = cancellationToken.Register(() => TryCancel());
     }
 
@@ -90,7 +90,7 @@ public class TimeoutTaskCompletionSource<TResult> : IDisposable
     /// </summary>
     public void Dispose()
     {
-        Dispose(true);
+        Dispose(disposing: true);
         GC.SuppressFinalize(this);
     }
 

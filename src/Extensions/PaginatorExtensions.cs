@@ -32,7 +32,7 @@ public static class PaginatorExtensions
     }
 
     /// <summary>
-    /// Gets a value that indicates whether the specified user can interact with this paginator.
+    /// Returns a value indicating whether the specified user can interact with this paginator.
     /// </summary>
     /// <param name="paginator">The paginator.</param>
     /// <param name="user">The user.</param>
@@ -46,7 +46,7 @@ public static class PaginatorExtensions
     }
 
     /// <summary>
-    /// Gets a value that indicates whether the specified user ID can interact with this paginator.
+    /// Returns a value indicating whether the specified user ID can interact with this paginator.
     /// </summary>
     /// <param name="paginator">The paginator.</param>
     /// <param name="userId">The user ID.</param>

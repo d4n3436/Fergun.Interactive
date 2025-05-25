@@ -145,7 +145,7 @@ public class PageBuilder : IPageBuilder<Page>, IPageBuilder
     /// <summary>
     /// Gets or sets the timestamp of the <see cref="Page"/>.
     /// </summary>
-    /// <returns>The timestamp of the page, or <c>null</c> if none is set.</returns>
+    /// <returns>The timestamp of the page, or <see langword="null"/> if none is set.</returns>
     public DateTimeOffset? Timestamp
     {
         get => _builder.Timestamp;
@@ -155,7 +155,7 @@ public class PageBuilder : IPageBuilder<Page>, IPageBuilder
     /// <summary>
     /// Gets or sets the sidebar color of the <see cref="Page"/>.
     /// </summary>
-    /// <returns>The color of the page, or <c>null</c> if none is set.</returns>
+    /// <returns>The color of the page, or <see langword="null"/> if none is set.</returns>
     public Color? Color
     {
         get => _builder.Color;
@@ -165,7 +165,7 @@ public class PageBuilder : IPageBuilder<Page>, IPageBuilder
     /// <summary>
     /// Gets or sets the <see cref="EmbedAuthorBuilder"/> of the <see cref="Page"/>.
     /// </summary>
-    /// <returns>The author field builder of the page, or <c>null</c> if none is set.</returns>
+    /// <returns>The author field builder of the page, or <see langword="null"/> if none is set.</returns>
     public EmbedAuthorBuilder Author
     {
         get => _builder.Author;
@@ -175,7 +175,7 @@ public class PageBuilder : IPageBuilder<Page>, IPageBuilder
     /// <summary>
     /// Gets or sets the <see cref="EmbedFooterBuilder"/> of the <see cref="Page"/>.
     /// </summary>
-    /// <returns>The footer field builder of the page, or <c>null</c> if none is set.</returns>
+    /// <returns>The footer field builder of the page, or <see langword="null"/> if none is set.</returns>
     public EmbedFooterBuilder Footer
     {
         get => _builder.Footer;

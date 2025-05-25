@@ -139,7 +139,7 @@ public class MultiEmbedPageBuilder : IPageBuilder<MultiEmbedPage>, IPageBuilder
     public MultiEmbedPageBuilder AddBuilder(EmbedBuilder builder)
     {
         InteractiveGuards.NotNull(builder);
-        InteractiveGuards.EmbedCountInRange(Builders, true);
+        InteractiveGuards.EmbedCountInRange(Builders, ensureMaxCapacity: true);
         Builders.Add(builder);
         return this;
     }

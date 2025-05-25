@@ -101,8 +101,8 @@ public class PaginatorModule : InteractionModuleBase
             .AddOption(context =>
             {
                 // Factory method that creates a disabled blurple button with text "Page x / y"
-                return new PaginatorButton(PaginatorAction.Backward, null,
-                    $"Page {context.CurrentPageIndex + 1} / {context.MaxPageIndex + 1}", ButtonStyle.Primary, true);
+                return new PaginatorButton(PaginatorAction.Backward, emote: null,
+                    $"Page {context.CurrentPageIndex + 1} / {context.MaxPageIndex + 1}", ButtonStyle.Primary, isDisabled: true);
             })
             .AddOption(new Emoji("◀"), PaginatorAction.Backward, ButtonStyle.Secondary) // Gray buttons
             .AddOption(new Emoji("❌"), PaginatorAction.Exit, ButtonStyle.Secondary)
@@ -144,8 +144,8 @@ public class PaginatorModule : InteractionModuleBase
             return;
         }
 
-        var googleImages = googleTask.Result.ToList();
-        var ddgImages = ddgTask.Result.ToList();
+        var googleImages = (await googleTask).ToList();
+        var ddgImages = (await ddgTask).ToList();
 
         if (googleImages.Count == 0 || ddgImages.Count == 0)
         {

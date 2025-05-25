@@ -141,7 +141,7 @@ internal sealed class PaginatorCallback : IInteractiveCallback
     }
 
     /// <inheritdoc/>
-    public void Dispose() => Dispose(true);
+    public void Dispose() => Dispose(disposing: true);
 
     private void Dispose(bool disposing)
     {

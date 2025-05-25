@@ -12,12 +12,12 @@ namespace Fergun.Interactive.Extensions;
 public static class InteractiveElementExtensions
 {
     /// <summary>
-    /// Gets whether the specified user can interact with this element.
+    /// Returns a value indicating whether the specified user can interact with this element.
     /// </summary>
     /// <typeparam name="TOption">The type of the options.</typeparam>
     /// <param name="element">The interactive element.</param>
     /// <param name="user">The user.</param>
-    /// <returns>Whether the user can interact with this element.</returns>
+    /// <returns><see langword="true"/> the user can interact with this element; otherwise, <see langword="false"/>.</returns>
     public static bool CanInteract<TOption>(this IInteractiveElement<TOption> element, IUser user)
     {
         InteractiveGuards.NotNull(element);
@@ -27,12 +27,12 @@ public static class InteractiveElementExtensions
     }
 
     /// <summary>
-    /// Gets whether the specified user ID can interact with this element.
+    /// Returns a value indicating whether the specified user ID can interact with this element.
     /// </summary>
     /// <typeparam name="TOption">The type of the options.</typeparam>
     /// <param name="element">The interactive element.</param>
     /// <param name="userId">The user ID.</param>
-    /// <returns>Whether the user ID can interact with this element.</returns>
+    /// <returns><see langword="true"/> the user ID can interact with this element; otherwise, <see langword="false"/>.</returns>
     public static bool CanInteract<TOption>(this IInteractiveElement<TOption> element, ulong userId)
     {
         InteractiveGuards.NotNull(element);

@@ -88,7 +88,7 @@ public interface IComponentPaginator
     bool SetPage(int pageIndex);
 
     /// <summary>
-    /// Gets a value that indicates whether a button or select menu should be disabled based on the status of the paginator, and optionally an <paramref name="action"/>.
+    /// Returns a value indicating whether a button or select menu should be disabled based on the status of the paginator, and optionally an <paramref name="action"/>.
     /// </summary>
     /// <param name="action">The paginator action that the button or select menu represents.</param>
     /// <returns><see langword="true"/> if the component should be disabled; otherwise, <see langword="false"/>.</returns>

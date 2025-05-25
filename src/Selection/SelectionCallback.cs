@@ -140,7 +140,7 @@ internal sealed class SelectionCallback<TOption> : IInteractiveCallback
     }
 
     /// <inheritdoc/>
-    public void Dispose() => Dispose(true);
+    public void Dispose() => Dispose(disposing: true);
 
     private void Dispose(bool disposing)
     {

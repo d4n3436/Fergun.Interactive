@@ -30,7 +30,7 @@ public class PaginatorSelectMenu : IPaginatorSelectMenu
     /// <summary>
     /// Returns a hidden select menu.
     /// </summary>
-    public static PaginatorSelectMenu Hidden { get; } = new(true);
+    public static PaginatorSelectMenu Hidden { get; } = new(isHidden: true);
 
     /// <inheritdoc />
     public string CustomId => _builder.CustomId;

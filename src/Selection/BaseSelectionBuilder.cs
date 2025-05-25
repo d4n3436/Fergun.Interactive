@@ -144,7 +144,7 @@ public abstract class BaseSelectionBuilder<TSelection, TOption, TBuilder>
     }
 
     /// <summary>
-    /// Sets whether the <typeparamref name="TSelection"/> allows for cancellation.
+    /// Sets a value indicating whether the <typeparamref name="TSelection"/> allows for cancellation.
     /// </summary>
     /// <param name="allowCancel">Whether this selection allows for cancellation.</param>
     /// <remarks>When this value is <see langword="true"/>, the last element in <see cref="Options"/>
@@ -361,7 +361,7 @@ public abstract class BaseSelectionBuilder<TSelection, TOption, TBuilder>
     }
 
     /// <summary>
-    /// Gets or sets the placeholder text of the selection.
+    /// Sets the placeholder text of the selection.
     /// </summary>
     /// <remarks>Only applicable to selections using select menus.</remarks>
     /// <param name="placeholder">The placeholder text.</param>

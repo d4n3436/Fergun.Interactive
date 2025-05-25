@@ -265,8 +265,8 @@ public class SelectionModule : InteractionModuleBase
             => new PageBuilder()
                 .WithTitle("Bot Control Panel")
                 .WithDescription("Use the reactions/buttons to enable or disable an option.")
-                .AddField("Option", string.Join('\n', options.Select((x, i) => $"**{i + 1}**. {x}")), true)
-                .AddField("Value", string.Join('\n', values), true)
+                .AddField("Option", string.Join('\n', options.Select((x, i) => $"**{i + 1}**. {x}")), inline: true)
+                .AddField("Value", string.Join('\n', values), inline: true)
                 .WithColor(Color.Blue);
 
         Page HandleResult(KeyValuePair<Emoji, int> input)

@@ -39,7 +39,7 @@ public interface IPaginatorSelectMenu
     List<SelectMenuOptionBuilder>? Options { get; }
 
     /// <summary>
-    /// Gets whether the select menu is disabled.
+    /// Gets a value indicating whether the select menu is disabled.
     /// </summary>
     /// <remarks>If the value is left as null, the library will use the result from <see cref="ISelectMenuContext.ShouldDisable"/>.</remarks>
     bool? IsDisabled { get; }

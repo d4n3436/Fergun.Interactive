@@ -24,7 +24,7 @@ public sealed class MenuSelection<TOption> : BaseSelection<TOption>
     }
 
     /// <summary>
-    /// Gets a value that indicates whether to set the default values on select menus. The values are the last selected options.
+    /// Gets a value indicating whether to set the default values on select menus. The values are the last selected options.
     /// </summary>
     public bool SetDefaultValues { get; }
 
@@ -38,7 +38,7 @@ public sealed class MenuSelection<TOption> : BaseSelection<TOption>
     {
         if (!(InputType.HasFlag(InputType.Buttons) || InputType.HasFlag(InputType.SelectMenus)))
         {
-            throw new InvalidOperationException($"{nameof(InputType)} must have either {InputType.Buttons} or {InputType.SelectMenus}.");
+            throw new InvalidOperationException($"{nameof(InputType)} must have either {nameof(InputType.Buttons)} or {nameof(InputType.SelectMenus)}.");
         }
 
         builder ??= new ComponentBuilder();
@@ -164,12 +164,12 @@ public sealed class MenuSelection<TOption> : BaseSelection<TOption>
             {
                 x.Content = page.Text ?? new Optional<string>();
                 x.Embeds = page.GetEmbedArray();
-                x.Components = GetOrAddComponents(false).Build();
+                x.Components = GetOrAddComponents(disableAll: false).Build();
             }).ConfigureAwait(false);
         }
         else
         {
-            await input.DeferAsync();
+            await input.DeferAsync().ConfigureAwait(false);
         }
 
         return new InteractiveInputResult<TOption>(InteractiveInputStatus.Ignored, result.SelectedOptions);
