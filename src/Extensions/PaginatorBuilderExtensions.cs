@@ -24,6 +24,7 @@ public static class PaginatorBuilderExtensions
         where TBuilder : class, IComponentPaginatorBuilder
     {
         InteractiveGuards.NotNull(builder);
+
         builder.PageCount = pageCount;
         return builder;
     }
@@ -40,6 +41,7 @@ public static class PaginatorBuilderExtensions
         where TBuilder : class, IComponentPaginatorBuilder
     {
         InteractiveGuards.NotNull(builder);
+
         builder.InitialPageIndex = initialPageIndex;
         return builder;
     }
@@ -58,6 +60,7 @@ public static class PaginatorBuilderExtensions
     {
         InteractiveGuards.NotNull(builder);
         InteractiveGuards.NotNull(pageFactory);
+
         return WithPageFactory(builder, paginator => new ValueTask<IPage>(pageFactory(paginator)));
     }
 
@@ -77,6 +80,7 @@ public static class PaginatorBuilderExtensions
     {
         InteractiveGuards.NotNull(builder);
         InteractiveGuards.NotNull(pageFactory);
+
         builder.PageFactory = pageFactory as Func<IComponentPaginator, ValueTask<IPage>> ?? (async index => await pageFactory(index).ConfigureAwait(false));
         return builder;
     }
@@ -108,6 +112,7 @@ public static class PaginatorBuilderExtensions
         where TBuilder : class, IComponentPaginatorBuilder
     {
         InteractiveGuards.NotNull(builder);
+
         builder.Users = users?.ToList() ?? throw new ArgumentNullException(nameof(users));
         return builder;
     }
@@ -124,6 +129,7 @@ public static class PaginatorBuilderExtensions
         where TBuilder : class, IComponentPaginatorBuilder
     {
         InteractiveGuards.NotNull(builder);
+
         builder.Users = users?.ToList() ?? throw new ArgumentNullException(nameof(users));
         return builder;
     }
@@ -141,6 +147,7 @@ public static class PaginatorBuilderExtensions
     {
         InteractiveGuards.NotNull(builder);
         InteractiveGuards.NotNull(user);
+
         builder.Users.Add(user);
         return builder;
     }
@@ -157,6 +164,7 @@ public static class PaginatorBuilderExtensions
         where TBuilder : class, IComponentPaginatorBuilder
     {
         InteractiveGuards.NotNull(builder);
+
         builder.ActionOnCancellation = action;
         return builder;
     }
@@ -173,6 +181,7 @@ public static class PaginatorBuilderExtensions
         where TBuilder : class, IComponentPaginatorBuilder
     {
         InteractiveGuards.NotNull(builder);
+
         builder.ActionOnTimeout = action;
         return builder;
     }
@@ -180,33 +189,39 @@ public static class PaginatorBuilderExtensions
     /// <summary>
     /// Sets the <see cref="IPage"/> which the paginator gets modified to after a cancellation.
     /// </summary>
+    /// <remarks>This will set <see cref="IComponentPaginatorBuilder.ActionOnCancellation"/> to <see cref="ActionOnStop.ModifyMessage"/>.</remarks>
     /// <typeparam name="TBuilder">The type of the component paginator builder.</typeparam>
     /// <param name="builder">A paginator builder that implements <see cref="IComponentPaginatorBuilder"/>.</param>
     /// <param name="page">The page.</param>
     /// <returns>This builder.</returns>
-    /// <exception cref="ArgumentNullException">Thrown when <paramref name="builder"/> is <see langword="null"/>.</exception>
-    public static TBuilder WithCanceledPage<TBuilder>(this TBuilder builder, IPage? page)
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="builder"/> or <paramref name="page"/> are <see langword="null"/>.</exception>
+    public static TBuilder WithCanceledPage<TBuilder>(this TBuilder builder, IPage page)
         where TBuilder : class, IComponentPaginatorBuilder
     {
         InteractiveGuards.NotNull(builder);
+        InteractiveGuards.NotNull(page);
+
         builder.CanceledPage = page;
-        return builder;
+        return builder.WithActionOnCancellation(ActionOnStop.ModifyMessage);
     }
 
     /// <summary>
     /// Sets the <see cref="IPage"/> which the paginator gets modified to after a timeout.
     /// </summary>
+    /// <remarks>This will set <see cref="IComponentPaginatorBuilder.ActionOnCancellation"/> to <see cref="ActionOnStop.ModifyMessage"/>.</remarks>
     /// <typeparam name="TBuilder">The type of the component paginator builder.</typeparam>
     /// <param name="builder">A paginator builder that implements <see cref="IComponentPaginatorBuilder"/>.</param>
     /// <param name="page">The page.</param>
     /// <returns>This builder.</returns>
-    /// <exception cref="ArgumentNullException">Thrown when <paramref name="builder"/> is <see langword="null"/>.</exception>
-    public static TBuilder WithTimeoutPage<TBuilder>(this TBuilder builder, IPage? page)
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="builder"/> or <paramref name="page"/> are <see langword="null"/>.</exception>
+    public static TBuilder WithTimeoutPage<TBuilder>(this TBuilder builder, IPage page)
         where TBuilder : class, IComponentPaginatorBuilder
     {
         InteractiveGuards.NotNull(builder);
+        InteractiveGuards.NotNull(page);
+
         builder.TimeoutPage = page;
-        return builder;
+        return builder.WithActionOnTimeout(ActionOnStop.ModifyMessage);
     }
 
     /// <summary>
@@ -221,6 +236,7 @@ public static class PaginatorBuilderExtensions
         where TBuilder : class, IComponentPaginatorBuilder
     {
         InteractiveGuards.NotNull(builder);
+
         builder.RestrictedInputBehavior = behavior;
         return builder;
     }
@@ -239,6 +255,7 @@ public static class PaginatorBuilderExtensions
     {
         InteractiveGuards.NotNull(builder);
         InteractiveGuards.NotNull(modalFactory);
+
         builder.JumpModalFactory = modalFactory;
         return builder;
     }
@@ -256,6 +273,7 @@ public static class PaginatorBuilderExtensions
     {
         InteractiveGuards.NotNull(builder);
         InteractiveGuards.NotNull(page);
+
         return WithRestrictedPageFactory(builder, _ => page);
     }
 
@@ -273,6 +291,7 @@ public static class PaginatorBuilderExtensions
     {
         InteractiveGuards.NotNull(builder);
         InteractiveGuards.NotNull(pageFactory);
+
         builder.RestrictedPageFactory = pageFactory;
         return builder;
     }
@@ -288,6 +307,7 @@ public static class PaginatorBuilderExtensions
         where TBuilder : class, IComponentPaginatorBuilder
     {
         InteractiveGuards.NotNull(builder);
+
         return builder.WithRestrictedPageFactory(paginator =>
         {
             return new PageBuilder()

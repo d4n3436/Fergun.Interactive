@@ -49,8 +49,8 @@ public class ComponentPaginator : IComponentPaginator
             InteractiveGuards.NotNull(builder.RestrictedPageFactory);
         }
 
-        InteractiveGuards.ValidActionOnStop(builder.ActionOnCancellation, isComponentPaginator: true);
-        InteractiveGuards.ValidActionOnStop(builder.ActionOnTimeout, isComponentPaginator: true);
+        InteractiveGuards.ValidActionOnStop(builder.ActionOnCancellation);
+        InteractiveGuards.ValidActionOnStop(builder.ActionOnTimeout);
         InteractiveGuards.LessThan(builder.PageCount, 1);
         InteractiveGuards.ValueInRange(0, builder.PageCount - 1, builder.InitialPageIndex);
 
@@ -114,13 +114,9 @@ public class ComponentPaginator : IComponentPaginator
     ///<inheritdoc />
     public virtual bool SetPage(int pageIndex)
     {
-        if (pageIndex >= 0 && pageIndex < PageCount)
-        {
-            CurrentPageIndex = pageIndex;
-            return true;
-        }
-
-        return false;
+        if (pageIndex < 0 || pageIndex >= PageCount) return false;
+        CurrentPageIndex = pageIndex;
+        return true;
     }
 
     /// <inheritdoc />
@@ -155,8 +151,7 @@ public class ComponentPaginator : IComponentPaginator
 
     /// <inheritdoc/>
     public virtual string GetCustomId(PaginatorAction action)
-    {
-        return action switch
+        => action switch
         {
             PaginatorAction.Backward => PreviousPageId,
             PaginatorAction.Forward => NextPageId,
@@ -166,7 +161,6 @@ public class ComponentPaginator : IComponentPaginator
             PaginatorAction.Jump => JumpId,
             _ => throw new ArgumentOutOfRangeException(nameof(action))
         };
-    }
 
     /// <inheritdoc/>
     public virtual async ValueTask<InteractiveInputStatus> HandleInteractionAsync(IComponentInteraction interaction)
@@ -185,7 +179,6 @@ public class ComponentPaginator : IComponentPaginator
         }
 
         bool pageChanged;
-
         switch (interaction.Data.CustomId)
         {
             case NextPageId:
@@ -448,26 +441,12 @@ public class ComponentPaginator : IComponentPaginator
             return;
         }
 
-        IPage? page = null;
-        if (action.HasFlag(ActionOnStop.ModifyMessage))
+        var page = !action.HasFlag(ActionOnStop.ModifyMessage) ? null : Status switch
         {
-            page = Status switch
-            {
-                PaginatorStatus.Canceled => CanceledPage,
-                PaginatorStatus.TimedOut => TimeoutPage,
-                _ => null
-            };
-
-            if (page is null)
-            {
-                if (stopInteraction is not null && deferInteraction)
-                {
-                    await stopInteraction.DeferAsync().ConfigureAwait(false);
-                }
-
-                return;
-            }
-        }
+            PaginatorStatus.Canceled => CanceledPage,
+            PaginatorStatus.TimedOut => TimeoutPage,
+            _ => null
+        };
 
         if (action.HasFlag(ActionOnStop.ModifyMessage) || action.HasFlag(ActionOnStop.DisableInput))
         {

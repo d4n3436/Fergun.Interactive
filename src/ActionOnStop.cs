@@ -17,7 +17,8 @@ public enum ActionOnStop
     /// <summary>
     /// Modify the message to contain the timeout or canceled page.
     /// </summary>
-    /// <remarks>This action is mutually exclusive with <see cref="DeleteMessage"/>. On component paginators, it's mutually exclusive with all other options.</remarks>
+    /// <remarks>This action is mutually exclusive with <see cref="DeleteMessage"/>.<br/>
+    /// For component paginators, this option can also be used to force a page render, provided there are no canceled or timed-out pages.</remarks>
     ModifyMessage = 1 << 0,
 
     /// <summary>

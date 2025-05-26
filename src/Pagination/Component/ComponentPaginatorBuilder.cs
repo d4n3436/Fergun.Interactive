@@ -33,12 +33,12 @@ public class ComponentPaginatorBuilder : IComponentPaginatorBuilder
     public virtual ICollection<IUser> Users { get; set; } = [];
 
     /// <inheritdoc />
-    /// <remarks>The default value is <see cref="ActionOnStop.ModifyMessage"/>.</remarks>
-    public virtual ActionOnStop ActionOnCancellation { get; set; } = ActionOnStop.ModifyMessage;
+    /// <remarks>The default value is <see cref="ActionOnStop.None"/>.</remarks>
+    public virtual ActionOnStop ActionOnCancellation { get; set; } = ActionOnStop.None;
 
     /// <inheritdoc />
-    /// <remarks>The default value is <see cref="ActionOnStop.ModifyMessage"/>.</remarks>
-    public virtual ActionOnStop ActionOnTimeout { get; set; } = ActionOnStop.ModifyMessage;
+    /// <remarks>The default value is <see cref="ActionOnStop.None"/>.</remarks>
+    public virtual ActionOnStop ActionOnTimeout { get; set; } = ActionOnStop.None;
 
     /// <inheritdoc />
     public virtual RestrictedInputBehavior RestrictedInputBehavior { get; set; }

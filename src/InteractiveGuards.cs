@@ -113,7 +113,7 @@ internal static class InteractiveGuards
         }
     }
 
-    public static void ValidActionOnStop(ActionOnStop action, bool isComponentPaginator = false, [CallerArgumentExpression(nameof(action))] string? parameterName = null)
+    public static void ValidActionOnStop(ActionOnStop action, [CallerArgumentExpression(nameof(action))] string? parameterName = null)
     {
         if (action.HasFlag(ActionOnStop.DeleteMessage))
         {
@@ -123,11 +123,6 @@ internal static class InteractiveGuards
         if (action.HasFlag(ActionOnStop.DeleteInput | ActionOnStop.DisableInput))
         {
             throw new ArgumentException($"{nameof(ActionOnStop.DeleteInput)} and {nameof(ActionOnStop.DisableInput)} are mutually exclusive.", parameterName);
-        }
-
-        if (isComponentPaginator && action.HasFlag(ActionOnStop.ModifyMessage) && !Enum.IsDefined(typeof(ActionOnStop), action))
-        {
-            throw new ArgumentException($"{nameof(ActionOnStop.ModifyMessage)} is mutually exclusive with all other options on component paginators.", parameterName);
         }
     }
 
