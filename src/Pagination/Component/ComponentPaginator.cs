@@ -131,30 +131,6 @@ public class ComponentPaginator : IComponentPaginator
     /// <inheritdoc />
     public Func<IComponentPaginator, IPage>? RestrictedPageFactory { get; }
 
-    /// <summary>
-    /// Increments the <see cref="CurrentPageIndex"/>, so it points to the next page if possible.
-    /// </summary>
-    /// <returns><see langword="true"/> if <see cref="CurrentPageIndex"/> is lower than <see cref="PageCount"/> minus 1; otherwise, <see langword="false"/>.</returns>
-    public virtual bool NextPage() => SetPage(CurrentPageIndex + 1);
-
-    /// <summary>
-    /// Decrements the <see cref="CurrentPageIndex"/>, so it points to the previous page if possible.
-    /// </summary>
-    /// <returns><see langword="true"/> if <see cref="CurrentPageIndex"/> higher than 0; otherwise, <see langword="false"/>.</returns>
-    public virtual bool PreviousPage() => SetPage(CurrentPageIndex - 1);
-
-    /// <summary>
-    /// Sets the <see cref="CurrentPageIndex"/> to 0, so it points to the first page if possible.
-    /// </summary>
-    /// <returns><see langword="true"/> if <see cref="CurrentPageIndex"/> is not 0; otherwise, <see langword="false"/>.</returns>
-    public virtual bool FirstPage() => SetPage(0);
-
-    /// <summary>
-    /// Sets the <see cref="CurrentPageIndex"/> to <see cref="PageCount"/> minus 1, so it points to the last page if possible.
-    /// </summary>
-    /// <returns><see langword="true"/> if <see cref="CurrentPageIndex"/> is not <see cref="PageCount"/> minus 1; otherwise, <see langword="false"/>.</returns>
-    public virtual bool LastPage() => SetPage(PageCount - 1);
-
     ///<inheritdoc />
     public virtual bool SetPage(int pageIndex)
     {
@@ -233,16 +209,16 @@ public class ComponentPaginator : IComponentPaginator
         switch (interaction.Data.CustomId)
         {
             case NextPageId:
-                pageChanged = NextPage();
+                pageChanged = this.NextPage();
                 break;
             case PreviousPageId:
-                pageChanged = PreviousPage();
+                pageChanged = this.PreviousPage();
                 break;
             case FirstPageId:
-                pageChanged = FirstPage();
+                pageChanged = this.FirstPage();
                 break;
             case LastPageId:
-                pageChanged = LastPage();
+                pageChanged = this.LastPage();
                 break;
             case StopId:
                 return InteractiveInputStatus.Canceled;
