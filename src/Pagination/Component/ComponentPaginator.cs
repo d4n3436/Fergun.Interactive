@@ -16,45 +16,21 @@ namespace Fergun.Interactive.Pagination;
 /// </summary>
 public class ComponentPaginator : IComponentPaginator
 {
-    /// <summary>
-    /// Returns the prefix used on the custom ID of components owned by <see cref="ComponentPaginator"/>.
-    /// </summary>
-    public const string IdPrefix = "component_paginator_";
+    private const string IdPrefix = "component_paginator_";
 
-    /// <summary>
-    /// Returns the custom ID for the <see cref="PaginatorAction.Forward"/> component.
-    /// </summary>
-    public const string NextPageId = $"{IdPrefix}next";
+    private const string NextPageId = $"{IdPrefix}next";
 
-    /// <summary>
-    /// Represents the custom ID for the <see cref="PaginatorAction.Backward"/> component.
-    /// </summary>
-    public const string PreviousPageId = $"{IdPrefix}previous";
+    private const string PreviousPageId = $"{IdPrefix}previous";
 
-    /// <summary>
-    /// Returns the custom ID for the <see cref="PaginatorAction.SkipToStart"/> component.
-    /// </summary>
-    public const string FirstPageId = $"{IdPrefix}first";
+    private const string FirstPageId = $"{IdPrefix}first";
 
-    /// <summary>
-    /// Returns the custom ID for the <see cref="PaginatorAction.SkipToEnd"/> component.
-    /// </summary>
-    public const string LastPageId = $"{IdPrefix}last";
+    private const string LastPageId = $"{IdPrefix}last";
 
-    /// <summary>
-    /// Returns the custom ID for the <see cref="PaginatorAction.Exit"/> component.
-    /// </summary>
-    public const string StopId = $"{IdPrefix}stop";
+    private const string StopId = $"{IdPrefix}stop";
 
-    /// <summary>
-    /// Returns the custom ID for the <see cref="PaginatorAction.Jump"/> to page component.
-    /// </summary>
-    public const string JumpId = $"{IdPrefix}jump";
+    private const string JumpId = $"{IdPrefix}jump";
 
-    /// <summary>
-    /// Returns the custom ID for the <see cref="PaginatorAction.Jump"/> modal component.
-    /// </summary>
-    public const string JumpModalId = $"{IdPrefix}jump_modal";
+    private const string JumpModalId = $"{IdPrefix}jump_modal";
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ComponentPaginator"/> class, copying the properties from the specified builder.
