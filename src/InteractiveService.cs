@@ -1065,7 +1065,7 @@ public class InteractiveService
             {
                 InteractiveStatus.Canceled => PaginatorStatus.Canceled,
                 InteractiveStatus.Timeout => PaginatorStatus.TimedOut,
-                _ => throw new InvalidOperationException("Invalid paginator status.")
+                _ => throw new InvalidOperationException($"Invalid {nameof(InteractiveStatus)} {result.Status}.")
             };
 
             await callback.Paginator.ApplyActionOnStopAsync(result.Message, result.StopInteraction, _config.DeferStopPaginatorInteractions).ConfigureAwait(false);
