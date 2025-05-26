@@ -372,7 +372,7 @@ public class ComponentPaginator : IComponentPaginator
             return InteractiveInputStatus.Ignored;
 
         string? rawInput = interaction.Data.Components.FirstOrDefault(x => x.Type == ComponentType.TextInput)?.Value;
-        if (rawInput is null || !int.TryParse(rawInput, NumberStyles.Integer, CultureInfo.InvariantCulture, out int pageNumber) || !SetPage(pageNumber - 1))
+        if (rawInput is null || !int.TryParse(rawInput, NumberStyles.Integer, CultureInfo.InvariantCulture, out int pageNumber) || !SetPage(Clamp(pageNumber - 1, 0, PageCount - 1)))
         {
             return await DeferInteractionAsync(interaction).ConfigureAwait(false);
         }
@@ -500,5 +500,20 @@ public class ComponentPaginator : IComponentPaginator
     {
         await interaction.DeferAsync().ConfigureAwait(false);
         return InteractiveInputStatus.Success;
+    }
+
+    private static int Clamp(int value, int min, int max)
+    {
+        if (min > max)
+        {
+            throw new ArgumentException($"'{min}' cannot be greater than {max}.");
+        }
+
+        if (value < min)
+        {
+            return min;
+        }
+
+        return value > max ? max : value;
     }
 }
