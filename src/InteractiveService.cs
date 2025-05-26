@@ -728,10 +728,10 @@ public class InteractiveService
     }
 
     /// <summary>
-    /// Returns a value indicating whether the <paramref name="interaction"/> targets a message that is managed by an active paginator or selection, either through a component interaction or a modal.
+    /// Returns a value indicating whether the <paramref name="interaction"/> targets a message that is managed by an active paginator or selection, or targets a component or modal it owns.
     /// </summary>
     /// <param name="interaction">The incoming interaction.</param>
-    /// <returns><see langword="true"/> if the interaction targets a message that is managed by an active paginator or selection; otherwise, <see langword="false"/>.</returns>
+    /// <returns><see langword="true"/> if the interaction targets a message that is managed by an active paginator or selection, or targets a component or modal it owns; otherwise, <see langword="false"/>.</returns>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="interaction"/> is <see langword="null"/>.</exception>
     public bool IsManaged(SocketInteraction interaction)
     {
