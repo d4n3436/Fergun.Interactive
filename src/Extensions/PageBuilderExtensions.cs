@@ -1,7 +1,6 @@
-﻿using Fergun.Interactive.Pagination;
-using System;
+﻿using System;
 
-namespace Fergun.Interactive.Extensions;
+namespace Fergun.Interactive.Pagination;
 
 /// <summary>
 /// Provides extension methods for <see cref="PageBuilder"/>.

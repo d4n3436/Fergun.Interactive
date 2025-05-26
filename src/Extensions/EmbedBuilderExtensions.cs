@@ -1,9 +1,8 @@
 ﻿using Discord;
-using Fergun.Interactive.Pagination;
 using System;
 using System.Linq;
 
-namespace Fergun.Interactive.Extensions;
+namespace Fergun.Interactive.Pagination;
 
 /// <summary>
 /// Provides extension methods for <see cref="EmbedBuilder"/>.

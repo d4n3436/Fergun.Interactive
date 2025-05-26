@@ -1,10 +1,9 @@
 ﻿using Discord;
-using Fergun.Interactive.Pagination;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 
-namespace Fergun.Interactive.Extensions;
+namespace Fergun.Interactive.Pagination;
 
 /// <summary>
 /// Provides extension methods for paginators.

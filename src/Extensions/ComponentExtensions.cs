@@ -1,8 +1,7 @@
 ﻿using Discord;
-using Fergun.Interactive.Pagination;
 using System;
 
-namespace Fergun.Interactive.Extensions;
+namespace Fergun.Interactive.Pagination;
 
 /// <summary>
 /// Provides extension methods for component builders to add <see cref="IComponentPaginator"/> buttons.

@@ -1,11 +1,10 @@
 ﻿using Discord;
-using Fergun.Interactive.Pagination;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Fergun.Interactive.Extensions;
+namespace Fergun.Interactive.Pagination;
 
 /// <summary>
 /// Provides extension methods for <see cref="IComponentPaginatorBuilder"/>.
