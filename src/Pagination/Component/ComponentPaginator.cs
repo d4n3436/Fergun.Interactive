@@ -72,7 +72,11 @@ public class ComponentPaginator : IComponentPaginator
     public int CurrentPageIndex { get; private set; }
 
     /// <inheritdoc />
-    public int PageCount { get; set; }
+    public int PageCount
+    {
+        get;
+        set => field = value >= 1 ? value : throw new ArgumentOutOfRangeException(nameof(value), "Page count must be at least 1.");
+    }
 
     /// <inheritdoc />
     public PaginatorStatus Status { get; set; } = PaginatorStatus.Active;

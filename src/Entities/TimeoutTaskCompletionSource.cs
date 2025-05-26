@@ -11,7 +11,6 @@ namespace Fergun.Interactive;
 public class TimeoutTaskCompletionSource<TResult> : IDisposable
 {
     private readonly Timer _timer;
-    private readonly bool _canReset;
     private TaskCompletionSource<TResult> _taskSource;
     private bool _disposed;
     private readonly CancellationTokenRegistration _tokenRegistration;
@@ -30,7 +29,7 @@ public class TimeoutTaskCompletionSource<TResult> : IDisposable
         Delay = delay;
         TimeoutResult = timeoutResult;
         CancelResult = cancelResult;
-        _canReset = canReset;
+        CanReset = canReset;
         _taskSource = new TaskCompletionSource<TResult>(TaskCreationOptions.RunContinuationsAsynchronously);
         _timer = new Timer(OnTimerFired, state: null, delay, Timeout.InfiniteTimeSpan);
         _tokenRegistration = cancellationToken.Register(() => TryCancel());
@@ -44,7 +43,7 @@ public class TimeoutTaskCompletionSource<TResult> : IDisposable
     /// <summary>
     /// Gets a value indicating whether the internal <see cref="Timer"/> can be reset.
     /// </summary>
-    public bool CanReset => !_disposed && _canReset;
+    public bool CanReset => !_disposed && field;
 
     /// <summary>
     /// Gets the timeout result.
