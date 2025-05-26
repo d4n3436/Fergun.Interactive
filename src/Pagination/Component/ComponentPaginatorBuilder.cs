@@ -18,46 +18,46 @@ public class ComponentPaginatorBuilder : IComponentPaginatorBuilder
     }
 
     /// <inheritdoc />
-    public int PageCount { get; set; }
+    public virtual int PageCount { get; set; }
 
     /// <inheritdoc />
-    public int InitialPageIndex { get; set; }
+    public virtual int InitialPageIndex { get; set; }
 
     /// <inheritdoc />
-    public Func<IComponentPaginator, ValueTask<IPage>> PageFactory { get; set; } = null!;
+    public virtual Func<IComponentPaginator, ValueTask<IPage>> PageFactory { get; set; } = null!;
 
     /// <inheritdoc />
-    public object? UserState { get; set; }
+    public virtual object? UserState { get; set; }
 
     /// <inheritdoc />
-    public ICollection<IUser> Users { get; set; } = [];
-
-    /// <inheritdoc />
-    /// <remarks>The default value is <see cref="ActionOnStop.ModifyMessage"/>.</remarks>
-    public ActionOnStop ActionOnCancellation { get; set; } = ActionOnStop.ModifyMessage;
+    public virtual ICollection<IUser> Users { get; set; } = [];
 
     /// <inheritdoc />
     /// <remarks>The default value is <see cref="ActionOnStop.ModifyMessage"/>.</remarks>
-    public ActionOnStop ActionOnTimeout { get; set; } = ActionOnStop.ModifyMessage;
+    public virtual ActionOnStop ActionOnCancellation { get; set; } = ActionOnStop.ModifyMessage;
 
     /// <inheritdoc />
-    public RestrictedInputBehavior RestrictedInputBehavior { get; set; }
+    /// <remarks>The default value is <see cref="ActionOnStop.ModifyMessage"/>.</remarks>
+    public virtual ActionOnStop ActionOnTimeout { get; set; } = ActionOnStop.ModifyMessage;
 
     /// <inheritdoc />
-    public IPage? CanceledPage { get; set; }
+    public virtual RestrictedInputBehavior RestrictedInputBehavior { get; set; }
 
     /// <inheritdoc />
-    public IPage? TimeoutPage { get; set; }
+    public virtual IPage? CanceledPage { get; set; }
 
     /// <inheritdoc />
-    public Func<IComponentPaginator, ModalBuilder>? JumpModalFactory { get; set; }
+    public virtual IPage? TimeoutPage { get; set; }
 
     /// <inheritdoc />
-    public Func<IComponentPaginator, IPage>? RestrictedPageFactory { get; set; }
+    public virtual Func<IComponentPaginator, ModalBuilder>? JumpModalFactory { get; set; }
+
+    /// <inheritdoc />
+    public virtual Func<IComponentPaginator, IPage>? RestrictedPageFactory { get; set; }
 
     /// <summary>
     /// Builds this builder into a <see cref="ComponentPaginator"/>.
     /// </summary>
     /// <returns>A <see cref="ComponentPaginator"/>.</returns>
-    public ComponentPaginator Build() => new(this);
+    public virtual ComponentPaginator Build() => new(this);
 }

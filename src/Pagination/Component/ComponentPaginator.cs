@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 namespace Fergun.Interactive.Pagination;
 
 /// <summary>
-/// Represents a component-based paginator that can be used to paginate messages with buttons or select menus.
+/// Represents a component-based paginator. This is a new type of paginator that offers more flexibility than <see cref="Paginator"/> and supports components V2.
 /// </summary>
 public class ComponentPaginator : IComponentPaginator
 {
@@ -63,7 +63,7 @@ public class ComponentPaginator : IComponentPaginator
     /// <exception cref="ArgumentException">Thrown when <see cref="IComponentPaginatorBuilder.ActionOnCancellation"/> or <see cref="IComponentPaginatorBuilder.ActionOnTimeout"/> have invalid values.</exception>
     /// <exception cref="ArgumentNullException">Thrown when a required property is <see langword="null"/>.</exception>
     /// <exception cref="ArgumentOutOfRangeException">Thrown when the value of a property is outside the valid range.</exception>
-    internal ComponentPaginator(IComponentPaginatorBuilder builder)
+    protected internal ComponentPaginator(IComponentPaginatorBuilder builder)
     {
         InteractiveGuards.NotNull(builder);
         InteractiveGuards.NotNull(builder.PageFactory);
