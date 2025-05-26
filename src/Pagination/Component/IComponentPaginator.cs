@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 namespace Fergun.Interactive.Pagination;
 
 /// <summary>
-/// Represents a component-based paginator that can be used to paginate messages with buttons or select menus.
+/// Represents a component-based paginator. This is a new type of paginator that offers more flexibility than <see cref="Paginator"/> and supports components V2.
 /// </summary>
 public interface IComponentPaginator
 {
@@ -82,8 +82,7 @@ public interface IComponentPaginator
     /// </summary>
     /// <param name="pageIndex">The page index.</param>
     /// <returns>
-    /// <see langword="true"/> if <see cref="CurrentPageIndex"/> was updated; otherwise, <see langword="false"/>.
-    /// It returns <see langword="false"/> if <paramref name="pageIndex"/> is already <see cref="CurrentPageIndex"/>, it's less than 0, or if the index is equal or higher than <see cref="PageCount"/>.
+    /// <see langword="true"/> if <paramref name="pageIndex"/> is not <see cref="CurrentPageIndex"/>, it's equal or higher than 0, or if it's lower than <see cref="PageCount"/>; otherwise, <see langword="false"/>.
     /// </returns>
     bool SetPage(int pageIndex);
 
@@ -95,10 +94,28 @@ public interface IComponentPaginator
     bool ShouldDisable(PaginatorAction? action = null);
 
     /// <summary>
+    /// Returns a value indicating whether this paginator owns the component (button, select menu or modal) with the specified custom ID.
+    /// </summary>
+    /// <param name="customId">The custom ID of the component.</param>
+    /// <returns><see langword="true"/> if this paginator owns the component with the specified <paramref name="customId"/>; otherwise, <see langword="false"/>.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="customId"/> is <see langword="null"/>.</exception>
+    bool OwnsComponent(string customId);
+
+    /// <summary>
+    /// Gets the custom ID for the specified <see cref="PaginatorAction"/>.
+    /// </summary>
+    /// <remarks>The custom ID is used to mark components as owned by this paginator.</remarks>
+    /// <param name="action">The paginator action.</param>
+    /// <returns>The custom ID.</returns>
+    /// <exception cref="ArgumentOutOfRangeException">Thrown when <paramref name="action"/> is invalid.</exception>
+    string GetCustomId(PaginatorAction action);
+
+    /// <summary>
     /// Handles an incoming interaction and applies an action on the message of the interaction.
     /// </summary>
     /// <param name="interaction">The interaction.</param>
     /// <returns>A <see cref="ValueTask{TResult}"/> representing the operation. The result contains the status of the input.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="interaction"/> is <see langword="null"/>.</exception>
     ValueTask<InteractiveInputStatus> HandleInteractionAsync(IComponentInteraction interaction);
 
     /// <summary>
@@ -129,6 +146,8 @@ public interface IComponentPaginator
     /// <param name="isEphemeral">Whether the response message should be ephemeral. Ignored if responding to a non-ephemeral interaction.</param>
     /// <param name="page">A specific page to render.</param>
     /// <returns>A <see cref="Task{TResult}"/> representing the operation. The result contains an <see cref="IUserMessage"/> object with the current page.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="interaction"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentException">Thrown when the value of <paramref name="responseType"/> is not supported.</exception>
     Task<IUserMessage> RenderPageAsync(IDiscordInteraction interaction, InteractionResponseType responseType, bool isEphemeral, IPage? page = null);
 
     /// <summary>
@@ -137,6 +156,7 @@ public interface IComponentPaginator
     /// <param name="interaction">The interaction whose message will be updated.</param>
     /// <param name="page">A specific page to render.</param>
     /// <returns>A <see cref="Task"/> representing the operation.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="interaction"/> is <see langword="null"/>.</exception>
     Task RenderPageAsync(IComponentInteraction interaction, IPage? page = null);
 
     /// <summary>
@@ -145,6 +165,7 @@ public interface IComponentPaginator
     /// <param name="channel">The channel where the new message will be sent.</param>
     /// <param name="page">A specific page to render.</param>
     /// <returns>A <see cref="Task{TResult}"/> representing the operation. The result contains an <see cref="IUserMessage"/> object with the current page.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="channel"/> is <see langword="null"/>.</exception>
     Task<IUserMessage> RenderPageAsync(IMessageChannel channel, IPage? page = null);
 
     /// <summary>
@@ -153,6 +174,7 @@ public interface IComponentPaginator
     /// <param name="message">The message to modify.</param>
     /// <param name="page">A specific page to render.</param>
     /// <returns>A <see cref="Task"/> representing the operation.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="message"/> is <see langword="null"/>.</exception>
     Task RenderPageAsync(IUserMessage message, IPage? page = null);
 
     /// <summary>
@@ -160,6 +182,7 @@ public interface IComponentPaginator
     /// </summary>
     /// <param name="interaction">The interaction that triggered the prompt.</param>
     /// <returns>A <see cref="Task"/> representing the operation.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="interaction"/> is <see langword="null"/>.</exception>
     Task SendJumpPromptAsync(IComponentInteraction interaction);
 
     /// <summary>
@@ -168,6 +191,7 @@ public interface IComponentPaginator
     /// <remarks>This is mainly used to receive jump-to-page requests.</remarks>
     /// <param name="interaction">The interaction.to respond to.</param>
     /// <returns>A <see cref="ValueTask{TResult}"/> representing the operation. The result contains the status of the input.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="interaction"/> is <see langword="null"/>.</exception>
     ValueTask<InteractiveInputStatus> HandleModalInteractionAsync(IModalInteraction interaction);
 
     /// <summary>
@@ -177,5 +201,6 @@ public interface IComponentPaginator
     /// <param name="stopInteraction">The interaction that was used to stop the paginator, if available.</param>
     /// <param name="deferInteraction">Whether to defer the interaction if the message isn't getting modified.</param>
     /// <returns>A <see cref="ValueTask"/> representing the operation.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="message"/> is <see langword="null"/>.</exception>
     ValueTask ApplyActionOnStopAsync(IUserMessage message, IComponentInteraction? stopInteraction, bool deferInteraction);
 }

@@ -19,6 +19,7 @@ public static class PaginatorBuilderExtensions
     /// <param name="builder">A paginator builder that implements <see cref="IComponentPaginatorBuilder"/>.</param>
     /// <param name="pageCount">The page count.</param>
     /// <returns>This builder.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="builder"/> is <see langword="null"/>.</exception>
     public static TBuilder WithPageCount<TBuilder>(this TBuilder builder, int pageCount)
         where TBuilder : class, IComponentPaginatorBuilder
     {
@@ -34,6 +35,7 @@ public static class PaginatorBuilderExtensions
     /// <param name="builder">A paginator builder that implements <see cref="IComponentPaginatorBuilder"/>.</param>
     /// <param name="initialPageIndex">The initial page index.</param>
     /// <returns>This builder.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="builder"/> is <see langword="null"/>.</exception>
     public static TBuilder WithInitialPageIndex<TBuilder>(this TBuilder builder, int initialPageIndex)
         where TBuilder : class, IComponentPaginatorBuilder
     {
@@ -50,6 +52,7 @@ public static class PaginatorBuilderExtensions
     /// <param name="builder">A paginator builder that implements <see cref="IComponentPaginatorBuilder"/>.</param>
     /// <param name="pageFactory">The page factory. The first argument is the paginator. <see cref="IComponentPaginator.CurrentPageIndex"/> can be used to get the current page index.</param>
     /// <returns>This builder.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="builder"/> or <paramref name="pageFactory"/> are <see langword="null"/>.</exception>
     public static TBuilder WithPageFactory<TBuilder>(this TBuilder builder, Func<IComponentPaginator, IPage> pageFactory)
         where TBuilder : class, IComponentPaginatorBuilder
     {
@@ -67,6 +70,7 @@ public static class PaginatorBuilderExtensions
     /// <param name="builder">A paginator builder that implements <see cref="IComponentPaginatorBuilder"/>.</param>
     /// <param name="pageFactory">The page factory. The first argument is the paginator. <see cref="IComponentPaginator.CurrentPageIndex"/> can be used to get the current page index.</param>
     /// <returns>This builder.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="builder"/> or <paramref name="pageFactory"/> are <see langword="null"/>.</exception>
     public static TBuilder WithPageFactory<TBuilder, TPage>(this TBuilder builder, Func<IComponentPaginator, ValueTask<TPage>> pageFactory)
         where TBuilder : class, IComponentPaginatorBuilder
         where TPage : IPage
@@ -84,6 +88,7 @@ public static class PaginatorBuilderExtensions
     /// <param name="builder">A paginator builder that implements <see cref="IComponentPaginatorBuilder"/>.</param>
     /// <param name="state">The user state.</param>
     /// <returns>This builder.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="builder"/> is <see langword="null"/>.</exception>
     public static TBuilder WithUserState<TBuilder>(this TBuilder builder, object state)
         where TBuilder : IComponentPaginatorBuilder
     {
@@ -98,6 +103,7 @@ public static class PaginatorBuilderExtensions
     /// <param name="builder">A paginator builder that implements <see cref="IComponentPaginatorBuilder"/>.</param>
     /// <param name="users">The users.</param>
     /// <returns>This builder.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="builder"/> or <paramref name="users"/> are <see langword="null"/>.</exception>
     public static TBuilder WithUsers<TBuilder>(this TBuilder builder, params IUser[] users)
         where TBuilder : class, IComponentPaginatorBuilder
     {
@@ -113,6 +119,7 @@ public static class PaginatorBuilderExtensions
     /// <param name="users">The users.</param>
     /// <param name="builder">A paginator builder that implements <see cref="IComponentPaginatorBuilder"/>.</param>
     /// <returns>This builder.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="builder"/> or <paramref name="users"/> are <see langword="null"/>.</exception>
     public static TBuilder WithUsers<TBuilder>(this TBuilder builder, IEnumerable<IUser> users)
         where TBuilder : class, IComponentPaginatorBuilder
     {
@@ -128,6 +135,7 @@ public static class PaginatorBuilderExtensions
     /// <param name="builder">A paginator builder that implements <see cref="IComponentPaginatorBuilder"/>.</param>
     /// <param name="user">The user.</param>
     /// <returns>This builder.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="builder"/> or <paramref name="user"/> are <see langword="null"/>.</exception>
     public static TBuilder AddUser<TBuilder>(this TBuilder builder, IUser user)
         where TBuilder : class, IComponentPaginatorBuilder
     {
@@ -144,6 +152,7 @@ public static class PaginatorBuilderExtensions
     /// <param name="builder">A paginator builder that implements <see cref="IComponentPaginatorBuilder"/>.</param>
     /// <param name="action">The action.</param>
     /// <returns>This builder.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="builder"/> is <see langword="null"/>.</exception>
     public static TBuilder WithActionOnCancellation<TBuilder>(this TBuilder builder, ActionOnStop action)
         where TBuilder : class, IComponentPaginatorBuilder
     {
@@ -159,6 +168,7 @@ public static class PaginatorBuilderExtensions
     /// <param name="builder">A paginator builder that implements <see cref="IComponentPaginatorBuilder"/>.</param>
     /// <param name="action">The action.</param>
     /// <returns>This builder.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="builder"/> is <see langword="null"/>.</exception>
     public static TBuilder WithActionOnTimeout<TBuilder>(this TBuilder builder, ActionOnStop action)
         where TBuilder : class, IComponentPaginatorBuilder
     {
@@ -174,6 +184,7 @@ public static class PaginatorBuilderExtensions
     /// <param name="builder">A paginator builder that implements <see cref="IComponentPaginatorBuilder"/>.</param>
     /// <param name="page">The page.</param>
     /// <returns>This builder.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="builder"/> is <see langword="null"/>.</exception>
     public static TBuilder WithCanceledPage<TBuilder>(this TBuilder builder, IPage? page)
         where TBuilder : class, IComponentPaginatorBuilder
     {
@@ -189,6 +200,7 @@ public static class PaginatorBuilderExtensions
     /// <param name="builder">A paginator builder that implements <see cref="IComponentPaginatorBuilder"/>.</param>
     /// <param name="page">The page.</param>
     /// <returns>This builder.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="builder"/> is <see langword="null"/>.</exception>
     public static TBuilder WithTimeoutPage<TBuilder>(this TBuilder builder, IPage? page)
         where TBuilder : class, IComponentPaginatorBuilder
     {
@@ -204,6 +216,7 @@ public static class PaginatorBuilderExtensions
     /// <param name="builder">A paginator builder that implements <see cref="IComponentPaginatorBuilder"/>.</param>
     /// <param name="behavior">The behavior.</param>
     /// <returns>This builder.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="builder"/> is <see langword="null"/>.</exception>
     public static TBuilder WithRestrictedInputBehavior<TBuilder>(this TBuilder builder, RestrictedInputBehavior behavior)
         where TBuilder : class, IComponentPaginatorBuilder
     {
@@ -220,6 +233,7 @@ public static class PaginatorBuilderExtensions
     /// <param name="builder">A paginator builder that implements <see cref="IComponentPaginatorBuilder"/>.</param>
     /// <param name="modalFactory">The jump modal factory. The first argument is the current paginator.</param>
     /// <returns>This builder.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="builder"/> or <paramref name="modalFactory"/> are <see langword="null"/>.</exception>
     public static TBuilder WithJumpModalFactory<TBuilder>(this TBuilder builder, Func<IComponentPaginator, ModalBuilder> modalFactory)
         where TBuilder : class, IComponentPaginatorBuilder
     {
@@ -236,6 +250,7 @@ public static class PaginatorBuilderExtensions
     /// <param name="builder">A paginator builder that implements <see cref="IComponentPaginatorBuilder"/>.</param>
     /// <param name="page">The page.</param>
     /// <returns>This builder.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="builder"/> or <paramref name="page"/> are <see langword="null"/>.</exception>
     public static TBuilder WithRestrictedPage<TBuilder>(this TBuilder builder, IPage page)
         where TBuilder : class, IComponentPaginatorBuilder
     {
@@ -252,6 +267,7 @@ public static class PaginatorBuilderExtensions
     /// <param name="builder">A paginator builder that implements <see cref="IComponentPaginatorBuilder"/>.</param>
     /// <param name="pageFactory">The restricted page factory. The first argument is the current paginator. <see cref="IComponentPaginator.Users"/> can be used to display what users are allowed to interact with the paginator.</param>
     /// <returns>This builder.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="builder"/> or <paramref name="pageFactory"/> are <see langword="null"/>.</exception>
     public static TBuilder WithRestrictedPageFactory<TBuilder>(this TBuilder builder, Func<IComponentPaginator, IPage> pageFactory)
         where TBuilder : class, IComponentPaginatorBuilder
     {
@@ -267,6 +283,7 @@ public static class PaginatorBuilderExtensions
     /// <typeparam name="TBuilder">The type of the component paginator builder.</typeparam>
     /// <param name="builder">A paginator builder that implements <see cref="IComponentPaginatorBuilder"/>.</param>
     /// <returns>This builder.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="builder"/> is <see langword="null"/>.</exception>
     public static TBuilder WithStandardRestrictedPage<TBuilder>(this TBuilder builder)
         where TBuilder : class, IComponentPaginatorBuilder
     {

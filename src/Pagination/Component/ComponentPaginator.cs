@@ -52,7 +52,7 @@ public class ComponentPaginator : IComponentPaginator
     public const string JumpId = $"{IdPrefix}jump";
 
     /// <summary>
-    /// Returns the custom ID for the <see cref="PaginatorAction.Jump"/> modal.
+    /// Returns the custom ID for the <see cref="PaginatorAction.Jump"/> modal component.
     /// </summary>
     public const string JumpModalId = $"{IdPrefix}jump_modal";
 
@@ -76,7 +76,7 @@ public class ComponentPaginator : IComponentPaginator
         InteractiveGuards.ValidActionOnStop(builder.ActionOnCancellation, isComponentPaginator: true);
         InteractiveGuards.ValidActionOnStop(builder.ActionOnTimeout, isComponentPaginator: true);
         InteractiveGuards.LessThan(builder.PageCount, 1);
-        InteractiveGuards.ValueInRange(0, builder.PageCount, builder.InitialPageIndex);
+        InteractiveGuards.ValueInRange(0, builder.PageCount - 1, builder.InitialPageIndex);
 
         PageCount = builder.PageCount;
         CurrentPageIndex = builder.InitialPageIndex;
@@ -190,6 +190,29 @@ public class ComponentPaginator : IComponentPaginator
     }
 
     /// <inheritdoc/>
+    public virtual bool OwnsComponent(string customId)
+    {
+        InteractiveGuards.NotNull(customId);
+
+        return customId is NextPageId or PreviousPageId or FirstPageId or LastPageId or StopId or JumpId or JumpModalId;
+    }
+
+    /// <inheritdoc/>
+    public virtual string GetCustomId(PaginatorAction action)
+    {
+        return action switch
+        {
+            PaginatorAction.Backward => PreviousPageId,
+            PaginatorAction.Forward => NextPageId,
+            PaginatorAction.SkipToStart => FirstPageId,
+            PaginatorAction.SkipToEnd => LastPageId,
+            PaginatorAction.Exit => StopId,
+            PaginatorAction.Jump => JumpId,
+            _ => throw new ArgumentOutOfRangeException(nameof(action))
+        };
+    }
+
+    /// <inheritdoc/>
     public virtual async ValueTask<InteractiveInputStatus> HandleInteractionAsync(IComponentInteraction interaction)
     {
         InteractiveGuards.NotNull(interaction);
@@ -277,7 +300,7 @@ public class ComponentPaginator : IComponentPaginator
                 return ((IModalInteraction)interaction).Message;
 
             default:
-                throw new ArgumentException("Invalid interaction response type.", nameof(responseType));
+                throw new ArgumentException("Unsupported interaction response type.", nameof(responseType));
         }
 
         void UpdateMessage(MessageProperties props)

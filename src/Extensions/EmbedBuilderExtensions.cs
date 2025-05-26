@@ -1,5 +1,6 @@
 ﻿using Discord;
 using Fergun.Interactive.Pagination;
+using System;
 using System.Linq;
 
 namespace Fergun.Interactive.Extensions;
@@ -16,6 +17,7 @@ public static class EmbedBuilderExtensions
     /// <param name="paginator">The component paginator, used to get the required information.</param>
     /// <param name="style">The footer style.</param>
     /// <returns>This <see cref="EmbedBuilder"/>.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="builder"/> or <paramref name="paginator"/> are <see langword="null"/>.</exception>
     public static EmbedBuilder WithPaginatorFooter(this EmbedBuilder builder, IComponentPaginator paginator, PaginatorFooter style = PaginatorFooter.PageNumber)
     {
         InteractiveGuards.NotNull(builder);

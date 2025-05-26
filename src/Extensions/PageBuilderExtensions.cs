@@ -1,4 +1,5 @@
 ﻿using Fergun.Interactive.Pagination;
+using System;
 
 namespace Fergun.Interactive.Extensions;
 
@@ -14,6 +15,7 @@ public static class PageBuilderExtensions
     /// <param name="paginator">The component paginator, used to get the required information.</param>
     /// <param name="style">The footer style.</param>
     /// <returns>This <see cref="PageBuilder"/>.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="builder"/> or <paramref name="paginator"/> are <see langword="null"/>.</exception>
     public static PageBuilder WithPaginatorFooter(this PageBuilder builder, IComponentPaginator paginator, PaginatorFooter style = PaginatorFooter.PageNumber)
     {
         InteractiveGuards.NotNull(builder);

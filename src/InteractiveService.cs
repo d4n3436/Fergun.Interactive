@@ -744,6 +744,7 @@ public class InteractiveService
     /// </summary>
     /// <param name="interaction">The incoming interaction.</param>
     /// <returns><see langword="true"/> if the interaction targets a message that is managed by an active paginator or selection; otherwise, <see langword="false"/>.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="interaction"/> is <see langword="null"/>.</exception>
     public bool IsManaged(SocketInteraction interaction)
     {
         InteractiveGuards.NotNull(interaction);
@@ -755,7 +756,7 @@ public class InteractiveService
                 return true;
             }
 
-            if (TryGetComponentPaginator(componentInteraction.Message, out _) && componentInteraction.Data.CustomId.StartsWith(ComponentPaginator.IdPrefix, StringComparison.Ordinal))
+            if (TryGetComponentPaginator(componentInteraction.Message, out var componentPaginator) && componentPaginator.OwnsComponent(componentInteraction.Data.CustomId))
             {
                 return true;
             }
@@ -772,6 +773,7 @@ public class InteractiveService
     /// </summary>
     /// <param name="message">The message.</param>
     /// <returns><see langword="true"/> if the message is managed by an active paginator or selection; otherwise, <see langword="false"/>.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="message"/> is <see langword="null"/>.</exception>
     public bool IsManaged(IUserMessage message)
     {
         InteractiveGuards.NotNull(message);
@@ -791,6 +793,7 @@ public class InteractiveService
     /// <param name="message">The message.</param>
     /// <param name="paginator">The paginator, if found.</param>
     /// <returns><see langword="true"/> if the paginator was found; otherwise, <see langword="false"/>.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="message"/> is <see langword="null"/>.</exception>
     public bool TryGetPaginator(IUserMessage message, [MaybeNullWhen(false)] out Paginator paginator)
     {
         InteractiveGuards.NotNull(message);
@@ -819,6 +822,7 @@ public class InteractiveService
     /// <param name="message">The message.</param>
     /// <param name="paginator">The paginator, if found.</param>
     /// <returns><see langword="true"/> if the paginator was found; otherwise, <see langword="false"/>.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="message"/> is <see langword="null"/>.</exception>
     public bool TryGetComponentPaginator(IUserMessage message, [MaybeNullWhen(false)] out IComponentPaginator paginator)
     {
         InteractiveGuards.NotNull(message);
@@ -848,6 +852,7 @@ public class InteractiveService
     /// <param name="message">The message.</param>
     /// <param name="selection">The selection, if found.</param>
     /// <returns><see langword="true"/> if the selection was found; otherwise, <see langword="false"/>.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="message"/> is <see langword="null"/>.</exception>
     public bool TryGetSelection<TOption>(IUserMessage message, [MaybeNullWhen(false)] out BaseSelection<TOption> selection)
     {
         InteractiveGuards.NotNull(message);

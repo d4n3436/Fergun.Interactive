@@ -20,6 +20,8 @@ public static class PaginatorExtensions
     /// <param name="builder">The builder.</param>
     /// <param name="collection">The collection.</param>
     /// <returns>This builder.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="builder"/> or <paramref name="collection"/> are <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentException">Thrown when <paramref name="collection"/> is empty.</exception>
     public static BaseLazyPaginatorBuilder<TPaginator, TBuilder> WithMaxPageIndex<TPaginator, TBuilder, T>(this BaseLazyPaginatorBuilder<TPaginator, TBuilder> builder, IReadOnlyCollection<T> collection)
         where TPaginator : BaseLazyPaginator
         where TBuilder : BaseLazyPaginatorBuilder<TPaginator, TBuilder>
@@ -37,6 +39,7 @@ public static class PaginatorExtensions
     /// <param name="paginator">The paginator.</param>
     /// <param name="user">The user.</param>
     /// <returns><see langword="true"/> if the user can interact with this paginator; otherwise, <see langword="false"/>.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="paginator"/> or <paramref name="user"/> are is <see langword="null"/>.</exception>
     public static bool CanInteract(this IComponentPaginator paginator, IUser user)
     {
         InteractiveGuards.NotNull(paginator);
@@ -51,6 +54,7 @@ public static class PaginatorExtensions
     /// <param name="paginator">The paginator.</param>
     /// <param name="userId">The user ID.</param>
     /// <returns><see langword="true"/> if the user can interact with this paginator; otherwise, <see langword="false"/>.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="paginator"/> is <see langword="null"/>.</exception>
     public static bool CanInteract(this IComponentPaginator paginator, ulong userId)
     {
         InteractiveGuards.NotNull(paginator);
@@ -78,6 +82,7 @@ public static class PaginatorExtensions
     /// <param name="paginator">The paginator.</param>
     /// <param name="userState">The user state if it exists and matches the type.</param>
     /// <returns><see langword="true"/> if the user state exists and is of type <typeparamref name="T"/>; otherwise, <see langword="false"/>.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="paginator"/> is <see langword="null"/>.</exception>
     public static bool TryGetUserState<T>(this IComponentPaginator paginator, [MaybeNullWhen(false)] out T userState)
     {
         InteractiveGuards.NotNull(paginator);
@@ -98,6 +103,7 @@ public static class PaginatorExtensions
     /// <typeparam name="T">The type of the user state.</typeparam>
     /// <param name="paginator">The paginator.</param>
     /// <returns>The user state if it exists and matches the type.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="paginator"/> is <see langword="null"/>.</exception>
     /// <exception cref="InvalidCastException">Thrown when <see cref="IComponentPaginator.UserState"/> is <see langword="null"/>, or is not of type <typeparamref name="T"/>.</exception>
     public static T GetUserState<T>(this IComponentPaginator paginator)
     {
