@@ -561,10 +561,6 @@ public class InteractiveService
     ///     The result contains an <see cref="InteractiveMessageResult"/> with the message used for pagination
     ///     (which may not be valid if the message has been deleted), the elapsed time and the status.
     /// </para>
-    /// <para>
-    ///     If the paginator only contains one page and <see cref="InteractiveConfig.ProcessSinglePagePaginators"/> is set to <see langword="false"/>, the task will return when the message has been sent and the result
-    ///     will contain the message sent and a <see cref="InteractiveStatus.Success"/> status.
-    /// </para>
     /// </returns>
     /// <exception cref="ArgumentNullException">Thrown when a required argument is <see langword="null"/>.</exception>
     /// <exception cref="OperationCanceledException">Thrown when <paramref name="cancellationToken"/> is already cancelled.</exception>
@@ -596,10 +592,6 @@ public class InteractiveService
     ///     The result contains an <see cref="InteractiveMessageResult"/> with the message used for pagination
     ///     (which may not be valid if the message has been deleted), the elapsed time and the status.
     /// </para>
-    /// <para>
-    ///     If the paginator only contains one page and <see cref="InteractiveConfig.ProcessSinglePagePaginators"/> is set to <see langword="false"/>, the task will return when the message has been sent and the result
-    ///     will contain the message sent and a <see cref="InteractiveStatus.Success"/> status.
-    /// </para>
     /// </returns>
     /// <exception cref="ArgumentNullException">Thrown when a required argument is <see langword="null"/>.</exception>
     /// <exception cref="OperationCanceledException">Thrown when <paramref name="cancellationToken"/> is already cancelled.</exception>
@@ -629,10 +621,6 @@ public class InteractiveService
     ///     A <see cref="Task{TResult}"/> that represents the asynchronous operation of sending the paginator and waiting for a timeout or cancellation.<br/>
     ///     The result contains an <see cref="InteractiveMessageResult"/> with the message used for pagination
     ///     (which may not be valid if the message has been deleted), the elapsed time and the status.
-    /// </para>
-    /// <para>
-    ///     If the paginator only contains one page and <see cref="InteractiveConfig.ProcessSinglePagePaginators"/> is set to <see langword="false"/>, the task will return when the message has been sent and the result
-    ///     will contain the message sent and a <see cref="InteractiveStatus.Success"/> status.
     /// </para>
     /// </returns>
     /// <exception cref="ArgumentException">Thrown when <paramref name="message"/> is not owned by the current user.</exception>
@@ -933,13 +921,6 @@ public class InteractiveService
         if (messageAction is not null)
         {
             await messageAction(message).ConfigureAwait(false);
-        }
-
-        if (!_config.ProcessSinglePagePaginators && paginator.PageCount == 0)
-        {
-            return new InteractiveMessageResultBuilder()
-                .WithMessage(message)
-                .Build();
         }
 
         timeout ??= _config.DefaultTimeout;

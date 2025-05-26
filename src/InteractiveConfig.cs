@@ -56,6 +56,9 @@ public class InteractiveConfig
     /// <summary>
     /// Gets or sets a value indicating whether the SendPaginatorAsync() methods should completely process single-page paginators, that is, display their components, handle their inputs and wait for a result.
     /// </summary>
-    /// <remarks>Note that regular buttons will be disabled by default as this option is intended for custom (detached) buttons.</remarks>
+    /// <remarks>
+    /// Note that regular buttons will be disabled by default as this option is intended for custom (detached) buttons.<br/>
+    /// Due to their nature, component paginators with a single page will always be processed, regardless of this setting.
+    /// </remarks>
     public bool ProcessSinglePagePaginators { get; set; }
 }
