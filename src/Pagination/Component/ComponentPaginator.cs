@@ -1,7 +1,6 @@
 ﻿using Discord;
 using Discord.Net;
 using Discord.Rest;
-using Fergun.Interactive.Extensions;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -204,7 +203,7 @@ public class ComponentPaginator : IComponentPaginator
 
         if (pageChanged)
         {
-            await RenderPageAsync(interaction).ConfigureAwait(false);
+            await this.RenderPageAsync(interaction).ConfigureAwait(false);
         }
         else
         {
@@ -261,25 +260,6 @@ public class ComponentPaginator : IComponentPaginator
             props.Attachments = attachments is null ? new Optional<IEnumerable<FileAttachment>>() : new Optional<IEnumerable<FileAttachment>>(attachments);
             props.Flags = page.MessageFlags;
         }
-    }
-
-    /// <inheritdoc/>
-    public virtual async Task RenderPageAsync(IComponentInteraction interaction, IPage? page = null)
-    {
-        InteractiveGuards.NotNull(interaction);
-
-        page ??= await PageFactory(this).ConfigureAwait(false);
-        var attachments = page.AttachmentsFactory is null ? [] : await page.AttachmentsFactory().ConfigureAwait(false);
-
-        await interaction.UpdateAsync(x =>
-        {
-            x.Content = page.Text;
-            x.Embeds = page.GetEmbedArray();
-            x.Components = page.Components;
-            x.AllowedMentions = page.AllowedMentions;
-            x.Attachments = attachments is null ? new Optional<IEnumerable<FileAttachment>>() : new Optional<IEnumerable<FileAttachment>>(attachments);
-            x.Flags = page.MessageFlags;
-        }).ConfigureAwait(false);
     }
 
     /// <inheritdoc/>
@@ -454,7 +434,7 @@ public class ComponentPaginator : IComponentPaginator
             {
                 if (stopInteraction is not null)
                 {
-                    await RenderPageAsync(stopInteraction, page).ConfigureAwait(false);
+                    await this.RenderPageAsync(stopInteraction, page).ConfigureAwait(false);
                 }
                 else
                 {

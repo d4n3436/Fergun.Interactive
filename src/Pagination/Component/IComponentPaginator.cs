@@ -151,15 +151,6 @@ public interface IComponentPaginator
     Task<IUserMessage> RenderPageAsync(IDiscordInteraction interaction, InteractionResponseType responseType, bool isEphemeral, IPage? page = null);
 
     /// <summary>
-    /// Renders the specified <paramref name="page"/> or the current page of the paginator by updating the message where the interaction comes from, using <see cref="IComponentInteraction.UpdateAsync(Action{MessageProperties}, RequestOptions)"/>.
-    /// </summary>
-    /// <param name="interaction">The interaction whose message will be updated.</param>
-    /// <param name="page">A specific page to render.</param>
-    /// <returns>A <see cref="Task"/> representing the operation.</returns>
-    /// <exception cref="ArgumentNullException">Thrown when <paramref name="interaction"/> is <see langword="null"/>.</exception>
-    Task RenderPageAsync(IComponentInteraction interaction, IPage? page = null);
-
-    /// <summary>
     /// Renders the specified <paramref name="page"/> or the current page of the paginator by sending a new message.
     /// </summary>
     /// <param name="channel">The channel where the new message will be sent.</param>

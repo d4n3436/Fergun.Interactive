@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Threading.Tasks;
 
 namespace Fergun.Interactive.Pagination;
 
@@ -120,6 +121,22 @@ public static class PaginatorExtensions
         }
 
         return false;
+    }
+
+    /// <summary>
+    /// Renders the specified <paramref name="page"/> or the current page of the paginator by updating the message where the interaction comes from.
+    /// </summary>
+    /// <param name="paginator">The paginator.</param>
+    /// <param name="interaction">The interaction whose message will be updated.</param>
+    /// <param name="page">A specific page to render.</param>
+    /// <returns>A <see cref="Task"/> representing the operation.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="paginator"/> or <paramref name="interaction"/> are <see langword="null"/>.</exception>
+    public static async Task RenderPageAsync(this IComponentPaginator paginator, IComponentInteraction interaction, IPage? page = null)
+    {
+        InteractiveGuards.NotNull(paginator);
+        InteractiveGuards.NotNull(interaction);
+
+        await paginator.RenderPageAsync(interaction, InteractionResponseType.UpdateMessage, false, page).ConfigureAwait(false);
     }
 
     /// <summary>
