@@ -258,7 +258,7 @@ public class ComponentPaginator : IComponentPaginator
             props.Components = page.Components;
             props.AllowedMentions = page.AllowedMentions;
             props.Attachments = attachments is null ? new Optional<IEnumerable<FileAttachment>>() : new Optional<IEnumerable<FileAttachment>>(attachments);
-            props.Flags = page.MessageFlags;
+            props.Flags = page.MessageFlags ?? new Optional<MessageFlags?>();
         }
     }
 
@@ -310,7 +310,7 @@ public class ComponentPaginator : IComponentPaginator
             props.AllowedMentions = page.AllowedMentions;
             props.Attachments = attachments is null ? new Optional<IEnumerable<FileAttachment>>() : new Optional<IEnumerable<FileAttachment>>(attachments);
             props.Components = page.Components;
-            props.Flags = page.MessageFlags;
+            props.Flags = page.MessageFlags ?? new Optional<MessageFlags?>();
         }
     }
 
