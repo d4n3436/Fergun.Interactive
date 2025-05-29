@@ -818,6 +818,21 @@ public class InteractiveService
     }
 
     /// <summary>
+    /// Attempts to get a component paginator typed as <typeparamref name="TPaginator"/> from the message it is currently managing.
+    /// </summary>
+    /// <typeparam name="TPaginator">The type of the paginator.</typeparam>
+    /// <param name="message">The message.</param>
+    /// <param name="paginator">The paginator, if found.</param>
+    /// <returns><see langword="true"/> if the paginator was found and is of type <typeparamref name="TPaginator"/>; otherwise, <see langword="false"/>.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="message"/> is <see langword="null"/>.</exception>
+    public bool TryGetComponentPaginator<TPaginator>(IUserMessage message, [MaybeNullWhen(false)] out TPaginator paginator)
+        where TPaginator : class, IComponentPaginator
+    {
+        InteractiveGuards.NotNull(message);
+        return TryGetComponentPaginator(message.Id, out paginator);
+    }
+
+    /// <summary>
     /// Attempts to get a component paginator from the ID of the message it is currently managing.
     /// </summary>
     /// <param name="messageId">The ID of the message.</param>
@@ -830,6 +845,24 @@ public class InteractiveService
             return false;
 
         paginator = paginatorCallback.Paginator;
+        return true;
+    }
+
+    /// <summary>
+    /// Attempts to get a component paginator typed as <typeparamref name="TPaginator"/> from the ID of the message it is currently managing.
+    /// </summary>
+    /// <typeparam name="TPaginator">The type of the paginator.</typeparam>
+    /// <param name="messageId">The ID of the message.</param>
+    /// <param name="paginator">The paginator, if found.</param>
+    /// <returns><see langword="true"/> if the paginator was found and is of type <typeparamref name="TPaginator"/>; otherwise, <see langword="false"/>.</returns>
+    public bool TryGetComponentPaginator<TPaginator>(ulong messageId, [MaybeNullWhen(false)] out TPaginator paginator)
+        where TPaginator : class, IComponentPaginator
+    {
+        paginator = null;
+        if (!TryGetComponentPaginator(messageId, out var basePaginator) || basePaginator is not TPaginator temp)
+            return false;
+
+        paginator = temp;
         return true;
     }
 
