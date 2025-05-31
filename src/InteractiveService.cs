@@ -13,6 +13,7 @@ using Discord.WebSocket;
 using Fergun.Interactive.Extensions;
 using Fergun.Interactive.Pagination;
 using Fergun.Interactive.Selection;
+using JetBrains.Annotations;
 
 namespace Fergun.Interactive;
 // Based on Discord.InteractivityAddon
@@ -21,6 +22,7 @@ namespace Fergun.Interactive;
 /// <summary>
 /// Represents a service containing methods for interactivity purposes.
 /// </summary>
+[PublicAPI]
 public class InteractiveService
 {
     private readonly BaseSocketClient _client;
@@ -502,16 +504,16 @@ public class InteractiveService
 
         timeout ??= _config.DefaultTimeout;
 
-        if (_config.ReturnAfterSendingPaginator)
+        if (!_config.ReturnAfterSendingPaginator)
         {
-            _ = WaitForPaginatorResultUsingCallbackAsync().ConfigureAwait(false);
-
-            return new InteractiveMessageResultBuilder()
-                .WithMessage(message)
-                .Build();
+            return await WaitForPaginatorResultUsingCallbackAsync().ConfigureAwait(false);
         }
 
-        return await WaitForPaginatorResultUsingCallbackAsync().ConfigureAwait(false);
+        _ = WaitForPaginatorResultUsingCallbackAsync().ConfigureAwait(false);
+
+        return new InteractiveMessageResultBuilder()
+            .WithMessage(message)
+            .Build();
 
         async Task<InteractiveMessageResult> WaitForPaginatorResultUsingCallbackAsync()
         {
@@ -573,7 +575,7 @@ public class InteractiveService
         cancellationToken.ThrowIfCancellationRequested();
 
         var message = await paginator.RenderPageAsync(interaction, responseType, ephemeral).ConfigureAwait(false);
-        return await SendPaginatorInternalAsync(paginator, message, interaction, timeout, messageAction, resetTimeoutOnInput, cancellationToken).ConfigureAwait(false);
+        return await SendPaginatorInternalAsync(paginator, message, timeout, messageAction, resetTimeoutOnInput, cancellationToken).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -603,7 +605,7 @@ public class InteractiveService
         cancellationToken.ThrowIfCancellationRequested();
 
         var message = await paginator.RenderPageAsync(channel).ConfigureAwait(false);
-        return await SendPaginatorInternalAsync(paginator, message, interaction: null, timeout, messageAction, resetTimeoutOnInput, cancellationToken).ConfigureAwait(false);
+        return await SendPaginatorInternalAsync(paginator, message, timeout, messageAction, resetTimeoutOnInput, cancellationToken).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -635,7 +637,7 @@ public class InteractiveService
         cancellationToken.ThrowIfCancellationRequested();
 
         await paginator.RenderPageAsync(message).ConfigureAwait(false);
-        return await SendPaginatorInternalAsync(paginator, message, interaction: null, timeout, messageAction, resetTimeoutOnInput, cancellationToken).ConfigureAwait(false);
+        return await SendPaginatorInternalAsync(paginator, message, timeout, messageAction, resetTimeoutOnInput, cancellationToken).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -927,16 +929,16 @@ public class InteractiveService
 
         timeout ??= _config.DefaultTimeout;
 
-        if (_config.ReturnAfterSendingPaginator)
+        if (!_config.ReturnAfterSendingPaginator)
         {
-            _ = WaitForPaginatorResultUsingCallbackAsync().ConfigureAwait(false);
-
-            return new InteractiveMessageResultBuilder()
-                .WithMessage(message)
-                .Build();
+            return await WaitForPaginatorResultUsingCallbackAsync().ConfigureAwait(false);
         }
 
-        return await WaitForPaginatorResultUsingCallbackAsync().ConfigureAwait(false);
+        _ = WaitForPaginatorResultUsingCallbackAsync().ConfigureAwait(false);
+
+        return new InteractiveMessageResultBuilder()
+            .WithMessage(message)
+            .Build();
 
         async Task<InteractiveMessageResult> WaitForPaginatorResultUsingCallbackAsync()
         {
@@ -948,8 +950,8 @@ public class InteractiveService
         }
     }
 
-    private async Task<InteractiveMessageResult> SendPaginatorInternalAsync(IComponentPaginator paginator, IUserMessage message, IDiscordInteraction? interaction = null,
-        TimeSpan? timeout = null, Func<IUserMessage, Task>? messageAction = null, bool resetTimeoutOnInput = false, CancellationToken cancellationToken = default)
+    private async Task<InteractiveMessageResult> SendPaginatorInternalAsync(IComponentPaginator paginator, IUserMessage message, TimeSpan? timeout = null,
+        Func<IUserMessage, Task>? messageAction = null, bool resetTimeoutOnInput = false, CancellationToken cancellationToken = default)
     {
         if (messageAction is not null)
         {
@@ -958,22 +960,22 @@ public class InteractiveService
 
         timeout ??= _config.DefaultTimeout;
 
-        if (_config.ReturnAfterSendingPaginator)
+        if (!_config.ReturnAfterSendingPaginator)
         {
-            _ = WaitForPaginatorResultUsingCallbackAsync();
-            return new InteractiveMessageResultBuilder()
-                .WithMessage(message)
-                .Build();
+            return await WaitForPaginatorResultUsingCallbackAsync().ConfigureAwait(false);
         }
 
-        return await WaitForPaginatorResultUsingCallbackAsync().ConfigureAwait(false);
+        _ = WaitForPaginatorResultUsingCallbackAsync();
+        return new InteractiveMessageResultBuilder()
+            .WithMessage(message)
+            .Build();
 
         async Task<InteractiveMessageResult> WaitForPaginatorResultUsingCallbackAsync()
         {
             using var timeoutTaskSource = new TimeoutTaskCompletionSource<InteractiveStatus>(timeout.Value,
                 resetTimeoutOnInput, InteractiveStatus.Timeout, InteractiveStatus.Canceled, cancellationToken);
 
-            using var callback = new ComponentPaginatorCallback(paginator, message, timeoutTaskSource, DateTimeOffset.UtcNow, interaction);
+            using var callback = new ComponentPaginatorCallback(paginator, message, timeoutTaskSource, DateTimeOffset.UtcNow);
             return await WaitForPaginatorResultAsync(callback).ConfigureAwait(false);
         }
     }
@@ -1078,17 +1080,17 @@ public class InteractiveService
 
         var result = InteractiveMessageResultBuilder.FromCallback(callback, status).Build();
 
-        if (_callbacks.TryRemove(callback.Message.Id, out _))
-        {
-            callback.Paginator.Status = result.Status switch
-            {
-                InteractiveStatus.Canceled => PaginatorStatus.Canceled,
-                InteractiveStatus.Timeout => PaginatorStatus.TimedOut,
-                _ => throw new InvalidOperationException($"Invalid {nameof(InteractiveStatus)} {result.Status}.")
-            };
+        if (!_callbacks.TryRemove(callback.Message.Id, out _))
+            return result;
 
-            await callback.Paginator.ApplyActionOnStopAsync(result.Message, result.StopInteraction, _config.DeferStopPaginatorInteractions).ConfigureAwait(false);
-        }
+        callback.Paginator.Status = result.Status switch
+        {
+            InteractiveStatus.Canceled => PaginatorStatus.Canceled,
+            InteractiveStatus.Timeout => PaginatorStatus.TimedOut,
+            _ => throw new InvalidOperationException($"Invalid {nameof(InteractiveStatus)} {result.Status}.")
+        };
+
+        await callback.Paginator.ApplyActionOnStopAsync(result.Message, result.StopInteraction, _config.DeferStopPaginatorInteractions).ConfigureAwait(false);
 
         return result;
     }
@@ -1212,7 +1214,7 @@ public class InteractiveService
             props.Embeds = embeds;
             props.Components = component;
             props.AllowedMentions = page.AllowedMentions;
-            props.Attachments = attachments is null ? new Optional<IEnumerable<FileAttachment>>() : new Optional<IEnumerable<FileAttachment>>(attachments);
+            props.Attachments = attachments.AsOptional();
             props.Flags = page.MessageFlags;
         }
     }
@@ -1227,7 +1229,7 @@ public class InteractiveService
             InteractiveStatus.Timeout => element.ActionOnTimeout,
             InteractiveStatus.Canceled => element.ActionOnCancellation,
             InteractiveStatus.Success when element is BaseSelection<TOption> selection => selection.ActionOnSuccess,
-            _ => throw new ArgumentException("Unknown action.", nameof(result))
+            _ => throw new ArgumentException("Unknown status.", nameof(result))
         };
 
         if (action == ActionOnStop.None)
@@ -1274,7 +1276,7 @@ public class InteractiveService
                 InteractiveStatus.Timeout => element.TimeoutPage,
                 InteractiveStatus.Canceled => element.CanceledPage,
                 InteractiveStatus.Success when element is BaseSelection<TOption> selection => selection.SuccessPage,
-                _ => throw new ArgumentException("Unknown action.", nameof(result))
+                _ => throw new ArgumentException("Unknown status.", nameof(result))
             };
 
             attachments = page?.AttachmentsFactory is null ? null : await page.AttachmentsFactory().ConfigureAwait(false);
@@ -1325,17 +1327,19 @@ public class InteractiveService
             await stopInteraction.DeferAsync().ConfigureAwait(false);
         }
 
-        if (action.HasFlag(ActionOnStop.DeleteInput) && element.InputType.HasFlag(InputType.Reactions))
+        if (!action.HasFlag(ActionOnStop.DeleteInput) || !element.InputType.HasFlag(InputType.Reactions))
+            return;
+
+        Debug.Assert(!ephemeral, "Ephemeral messages cannot have InputType.Reactions");
+
+        bool manageMessages = await result.Message.Channel.CurrentUserHasManageMessagesAsync().ConfigureAwait(false);
+
+        if (manageMessages)
         {
-            Debug.Assert(!ephemeral, "Ephemeral messages cannot have InputType.Reactions");
-
-            bool manageMessages = await result.Message.Channel.CurrentUserHasManageMessagesAsync().ConfigureAwait(false);
-
-            if (manageMessages)
-            {
-                await result.Message.RemoveAllReactionsAsync().ConfigureAwait(false);
-            }
+            await result.Message.RemoveAllReactionsAsync().ConfigureAwait(false);
         }
+
+        return;
 
         void UpdateMessage(MessageProperties props)
         {
@@ -1343,7 +1347,7 @@ public class InteractiveService
             props.Embeds = page?.GetEmbedArray() ?? new Optional<Embed[]>();
             props.Components = components ?? new Optional<MessageComponent>();
             props.AllowedMentions = page?.AllowedMentions ?? new Optional<AllowedMentions>();
-            props.Attachments = attachments is null ? new Optional<IEnumerable<FileAttachment>>() : new Optional<IEnumerable<FileAttachment>>(attachments);
+            props.Attachments = attachments.AsOptional();
         }
     }
 

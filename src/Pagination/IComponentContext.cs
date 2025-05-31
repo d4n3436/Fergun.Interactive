@@ -1,8 +1,11 @@
+using JetBrains.Annotations;
+
 namespace Fergun.Interactive.Pagination;
 
 /// <summary>
 /// Represents the context of a paginator component.
 /// </summary>
+[PublicAPI]
 public interface IComponentContext
 {
     /// <summary>

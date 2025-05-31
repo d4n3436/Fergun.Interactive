@@ -1,11 +1,13 @@
 ﻿using System;
 using Discord;
+using JetBrains.Annotations;
 
 namespace Fergun.Interactive;
 
 /// <summary>
 /// Represents a configuration for <see cref="InteractiveService"/>.
 /// </summary>
+[PublicAPI]
 public class InteractiveConfig
 {
     /// <summary>

@@ -1,4 +1,5 @@
 using System;
+using JetBrains.Annotations;
 
 namespace Fergun.Interactive;
 
@@ -6,6 +7,7 @@ namespace Fergun.Interactive;
 /// Specifies the type of inputs an interactive element should delete.
 /// </summary>
 [Flags]
+[PublicAPI]
 public enum DeletionOptions
 {
     /// <summary>

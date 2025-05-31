@@ -1,11 +1,13 @@
 using System.Threading.Tasks;
 using Discord;
+using JetBrains.Annotations;
 
 namespace Fergun.Interactive;
 
 /// <summary>
 /// Provides methods for handling inputs in interactive entities.
 /// </summary>
+[PublicAPI]
 public interface IInteractiveInputHandler
 {
     /// <summary>

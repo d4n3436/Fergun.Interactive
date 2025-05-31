@@ -1,8 +1,11 @@
+using JetBrains.Annotations;
+
 namespace Fergun.Interactive;
 
 /// <summary>
 /// Specifies the possible status of an <see cref="IInteractiveResult{TStatus}"/> whose status is <see cref="InteractiveStatus"/>.
 /// </summary>
+[PublicAPI]
 public enum InteractiveStatus
 {
     /// <summary>

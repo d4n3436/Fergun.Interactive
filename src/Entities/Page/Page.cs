@@ -2,12 +2,14 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Discord;
+using JetBrains.Annotations;
 
 namespace Fergun.Interactive;
 
 /// <summary>
 /// Represents a message page. A page consists of a <see cref="Text"/>, <see cref="Embed"/> or <see cref="Components"/>.
 /// </summary>
+[PublicAPI]
 public class Page : IPage
 {
     private readonly Lazy<Embed[]> _lazyEmbeds;

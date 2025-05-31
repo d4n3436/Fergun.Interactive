@@ -1,8 +1,11 @@
+using JetBrains.Annotations;
+
 namespace Fergun.Interactive.Pagination;
 
 /// <summary>
 /// Defines the possible actions a paginator can perform.
 /// </summary>
+[PublicAPI]
 public enum PaginatorAction
 {
     /// <summary>

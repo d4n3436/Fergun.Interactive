@@ -1,8 +1,11 @@
-﻿namespace Fergun.Interactive.Pagination;
+﻿using JetBrains.Annotations;
+
+namespace Fergun.Interactive.Pagination;
 
 /// <summary>
 /// Specifies the status of a <see cref="IComponentPaginator"/>.
 /// </summary>
+[PublicAPI]
 public enum PaginatorStatus
 {
     /// <summary>

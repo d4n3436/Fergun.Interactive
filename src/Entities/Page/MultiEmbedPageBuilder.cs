@@ -3,12 +3,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Discord;
+using JetBrains.Annotations;
 
 namespace Fergun.Interactive;
 
 /// <summary>
 /// Represents a builder of pages with multiple embeds.
 /// </summary>
+[PublicAPI]
 public class MultiEmbedPageBuilder : IPageBuilder<MultiEmbedPage>, IPageBuilder
 {
     /// <summary>

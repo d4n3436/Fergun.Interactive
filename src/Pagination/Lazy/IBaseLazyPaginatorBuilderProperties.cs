@@ -1,11 +1,13 @@
 using System;
 using System.Threading.Tasks;
+using JetBrains.Annotations;
 
 namespace Fergun.Interactive.Pagination;
 
 /// <summary>
 /// Represents the properties of a <see cref="BaseLazyPaginatorBuilder{TPaginator, TBuilder}"/>.
 /// </summary>
+[PublicAPI]
 public interface IBaseLazyPaginatorBuilderProperties : IBasePaginatorBuilderProperties
 {
     /// <summary>

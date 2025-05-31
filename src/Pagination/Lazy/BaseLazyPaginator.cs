@@ -2,12 +2,14 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
+using JetBrains.Annotations;
 
 namespace Fergun.Interactive.Pagination;
 
 /// <summary>
 /// Represents a paginator that lazily loads pages using a factory.
 /// </summary>
+[PublicAPI]
 public abstract class BaseLazyPaginator : Paginator
 {
     private readonly Dictionary<int, IPage>? _cachedPages;
@@ -30,6 +32,8 @@ public abstract class BaseLazyPaginator : Paginator
         {
             _cachedPages = [];
         }
+
+        return;
 
         async Task<IPage> AddPaginatorFooterAsync(int page)
         {

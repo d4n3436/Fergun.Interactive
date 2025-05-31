@@ -10,7 +10,7 @@ namespace Fergun.Interactive;
 
 internal static class InteractiveGuards
 {
-    public static void NotNull<T>([NotNull] T? obj, [CallerArgumentExpression(nameof(obj))] string? parameterName = null) where T : class
+    public static void NotNull<T>([NotNull][JetBrains.Annotations.NoEnumeration] T? obj, [CallerArgumentExpression(nameof(obj))] string? parameterName = null) where T : class
     {
         if (obj is null)
         {

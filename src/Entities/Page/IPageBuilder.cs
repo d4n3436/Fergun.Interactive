@@ -1,9 +1,12 @@
-﻿namespace Fergun.Interactive;
+﻿using JetBrains.Annotations;
+
+namespace Fergun.Interactive;
 
 /// <summary>
 /// Represents a builder for pages.
 /// </summary>
 /// <typeparam name="TPage">The type of the built page.</typeparam>
+[PublicAPI]
 public interface IPageBuilder<out TPage> where TPage : IPage
 {
     /// <summary>
@@ -14,4 +17,5 @@ public interface IPageBuilder<out TPage> where TPage : IPage
 }
 
 /// <inheritdoc/>
+[PublicAPI]
 public interface IPageBuilder : IPageBuilder<IPage>;

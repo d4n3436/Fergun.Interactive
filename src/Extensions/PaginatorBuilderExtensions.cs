@@ -1,14 +1,16 @@
-﻿using Discord;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Discord;
+using JetBrains.Annotations;
 
 namespace Fergun.Interactive.Pagination;
 
 /// <summary>
 /// Provides extension methods for <see cref="IComponentPaginatorBuilder"/>.
 /// </summary>
+[PublicAPI]
 public static class PaginatorBuilderExtensions
 {
     /// <summary>
@@ -111,8 +113,9 @@ public static class PaginatorBuilderExtensions
         where TBuilder : class, IComponentPaginatorBuilder
     {
         InteractiveGuards.NotNull(builder);
+        InteractiveGuards.NotNull(users);
 
-        builder.Users = users?.ToList() ?? throw new ArgumentNullException(nameof(users));
+        builder.Users = users.ToList();
         return builder;
     }
 
@@ -128,8 +131,9 @@ public static class PaginatorBuilderExtensions
         where TBuilder : class, IComponentPaginatorBuilder
     {
         InteractiveGuards.NotNull(builder);
+        InteractiveGuards.NotNull(users);
 
-        builder.Users = users?.ToList() ?? throw new ArgumentNullException(nameof(users));
+        builder.Users = users.ToList();
         return builder;
     }
 

@@ -1,4 +1,5 @@
 using System;
+using JetBrains.Annotations;
 
 namespace Fergun.Interactive;
 
@@ -6,6 +7,7 @@ namespace Fergun.Interactive;
 /// Specifies the types of inputs that are used to interact with the interactive elements.
 /// </summary>
 [Flags]
+[PublicAPI]
 public enum InputType
 {
     /// <summary>

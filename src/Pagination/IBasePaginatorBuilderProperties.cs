@@ -1,12 +1,14 @@
 using System;
 using System.Collections.Generic;
 using Discord;
+using JetBrains.Annotations;
 
 namespace Fergun.Interactive.Pagination;
 
 /// <summary>
 /// Represents the properties of a <see cref="PaginatorBuilder{TPaginator, TBuilder}"/>.
 /// </summary>
+[PublicAPI]
 public interface IBasePaginatorBuilderProperties : IInteractiveBuilderProperties<KeyValuePair<IEmote, PaginatorAction>>
 {
     /// <summary>

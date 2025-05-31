@@ -1,5 +1,6 @@
 using Discord;
 using Discord.WebSocket;
+using JetBrains.Annotations;
 
 namespace Fergun.Interactive;
 
@@ -7,6 +8,7 @@ namespace Fergun.Interactive;
 /// Represents a generic result of an interactive action containing a message associated with the action, the user and input that ended the action.
 /// </summary>
 /// <typeparam name="T">The type of the value or values of this result.</typeparam>
+[PublicAPI]
 public class InteractiveMessageResult<T> : InteractiveResult<T>, IInteractiveMessageResult
 {
     internal InteractiveMessageResult(InteractiveMessageResultBuilder<T> builder)
@@ -36,8 +38,9 @@ public class InteractiveMessageResult<T> : InteractiveResult<T>, IInteractiveMes
 }
 
 /// <summary>
-/// Represents a non-generic result of an interactive action containing a message associated with the action.
+/// Represents a result of an interactive action containing a message associated with the action, the user and input that ended the action.
 /// </summary>
+[PublicAPI]
 public class InteractiveMessageResult : InteractiveResult, IInteractiveMessageResult
 {
     internal InteractiveMessageResult(InteractiveMessageResultBuilder builder)

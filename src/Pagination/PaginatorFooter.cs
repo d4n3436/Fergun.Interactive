@@ -1,4 +1,5 @@
 using System;
+using JetBrains.Annotations;
 
 namespace Fergun.Interactive.Pagination;
 
@@ -6,6 +7,7 @@ namespace Fergun.Interactive.Pagination;
 /// Specifies which contents should be displayed in the footer of a paginator using an embed.
 /// </summary>
 [Flags]
+[PublicAPI]
 public enum PaginatorFooter
 {
     /// <summary>

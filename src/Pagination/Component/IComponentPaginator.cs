@@ -1,13 +1,15 @@
-﻿using Discord;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Discord;
+using JetBrains.Annotations;
 
 namespace Fergun.Interactive.Pagination;
 
 /// <summary>
 /// Represents a component-based paginator. This is a new type of paginator that offers more flexibility than <see cref="Paginator"/> and supports components V2.
 /// </summary>
+[PublicAPI]
 public interface IComponentPaginator
 {
     /// <summary>

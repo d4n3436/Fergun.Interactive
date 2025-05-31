@@ -111,6 +111,8 @@ public static class BuilderExtensions
 
     // Extension method that randomizes the specified options and sets them.
     // This works with any type that implements IInteractiveBuilder.
+
+    // ReSharper disable once UnusedMember.Global
     public static TBuilder WithRandomizedOptions<TElement, TOption, TBuilder>(this IInteractiveBuilder<TElement, TOption, TBuilder> builder, IEnumerable<TOption> options)
         where TElement : IInteractiveElement<TOption>
         where TBuilder : IInteractiveBuilder<TElement, TOption, TBuilder>

@@ -1,6 +1,7 @@
-using Discord;
 using System;
 using System.Collections.Generic;
+using Discord;
+using JetBrains.Annotations;
 
 namespace Fergun.Interactive;
 
@@ -8,6 +9,7 @@ namespace Fergun.Interactive;
 /// Contains the properties of an <see cref="IInteractiveBuilder{TElement, TOption, TBuilder}"/>.
 /// </summary>
 /// <typeparam name="TOption">The type of the options.</typeparam>
+[PublicAPI]
 public interface IInteractiveBuilderProperties<TOption>
 {
     /// <summary>

@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using Discord;
+using JetBrains.Annotations;
 
 namespace Fergun.Interactive;
 
@@ -7,6 +8,7 @@ namespace Fergun.Interactive;
 /// Represents an interactive element.
 /// </summary>
 /// <typeparam name="TOption">The type of the options.</typeparam>
+[PublicAPI]
 public interface IInteractiveElement<out TOption> : IInteractiveInputHandler
 {
     /// <summary>

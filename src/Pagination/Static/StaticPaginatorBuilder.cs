@@ -1,6 +1,9 @@
+using JetBrains.Annotations;
+
 namespace Fergun.Interactive.Pagination;
 
 ///<inheritdoc/>
+[PublicAPI]
 public sealed class StaticPaginatorBuilder : BaseStaticPaginatorBuilder<StaticPaginator, StaticPaginatorBuilder>
 {
     /// <summary>

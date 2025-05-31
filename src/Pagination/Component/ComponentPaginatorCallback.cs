@@ -1,7 +1,7 @@
-using Discord;
-using Discord.WebSocket;
 using System;
 using System.Threading.Tasks;
+using Discord;
+using Discord.WebSocket;
 
 namespace Fergun.Interactive.Pagination;
 
@@ -13,14 +13,12 @@ internal sealed class ComponentPaginatorCallback : IInteractiveCallback
     private bool _disposed;
 
     public ComponentPaginatorCallback(IComponentPaginator paginator, IUserMessage message,
-        TimeoutTaskCompletionSource<InteractiveStatus> timeoutTaskSource,
-        DateTimeOffset startTime, IDiscordInteraction? initialInteraction = null)
+        TimeoutTaskCompletionSource<InteractiveStatus> timeoutTaskSource, DateTimeOffset startTime)
     {
         Paginator = paginator;
         Message = message;
         TimeoutTaskSource = timeoutTaskSource;
         StartTime = startTime;
-        LastInteraction = initialInteraction;
     }
 
     /// <summary>
@@ -40,12 +38,6 @@ internal sealed class ComponentPaginatorCallback : IInteractiveCallback
 
     /// <inheritdoc/>
     public DateTimeOffset StartTime { get; }
-
-    /// <summary>
-    /// Gets the last received interaction that is not <see cref="StopInteraction"/>.
-    /// </summary>
-    /// <remarks>This is either the interaction that was received to update a message to a paginator or the interaction received to change the pages.</remarks>
-    public IDiscordInteraction? LastInteraction { get; private set; }
 
     /// <summary>
     /// Gets the interaction that was received to stop the paginator.
@@ -80,7 +72,6 @@ internal sealed class ComponentPaginatorCallback : IInteractiveCallback
         switch (status)
         {
             case InteractiveInputStatus.Success:
-                LastInteraction = component;
                 TimeoutTaskSource.TryReset();
                 break;
 

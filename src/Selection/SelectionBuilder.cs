@@ -1,9 +1,12 @@
+using JetBrains.Annotations;
+
 namespace Fergun.Interactive.Selection;
 
 /// <summary>
 /// Represents a builder class for constructing instances of <see cref="Selection{TOption}"/>.
 /// </summary>
 /// <typeparam name="TOption">The type of the options the selection will have.</typeparam>
+[PublicAPI]
 public class SelectionBuilder<TOption> : BaseSelectionBuilder<Selection<TOption>, TOption, SelectionBuilder<TOption>>
 {
     /// <summary>

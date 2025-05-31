@@ -1,4 +1,8 @@
-﻿using Discord;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using Discord;
 using Discord.Interactions;
 using ExampleBot.Extensions;
 using Fergun.Interactive;
@@ -7,13 +11,11 @@ using Fergun.Interactive.Pagination;
 using GScraper;
 using GScraper.DuckDuckGo;
 using GScraper.Google;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+using JetBrains.Annotations;
 
 namespace ExampleBot.Modules;
 
+[UsedImplicitly(ImplicitUseTargetFlags.WithMembers)]
 [Group("paginator", "Paginator commands.")]
 public class PaginatorModule : InteractionModuleBase
 {
@@ -81,6 +83,7 @@ public class PaginatorModule : InteractionModuleBase
             .Build();
 
         await _interactive.SendPaginatorAsync(paginator, Context.Interaction, TimeSpan.FromMinutes(10));
+        return;
 
         static PageBuilder GeneratePage(int index)
             => new PageBuilder()
@@ -98,12 +101,8 @@ public class PaginatorModule : InteractionModuleBase
             .AddUser(Context.User)
             .WithPageFactory(GeneratePage)
             .WithMaxPageIndex(images) // Convenience extension method that sets the max. page index based on the number of items in a collection.
-            .AddOption(context =>
-            {
-                // Factory method that creates a disabled blurple button with text "Page x / y"
-                return new PaginatorButton(PaginatorAction.Backward, emote: null,
-                    $"Page {context.CurrentPageIndex + 1} / {context.MaxPageIndex + 1}", ButtonStyle.Primary, isDisabled: true);
-            })
+            .AddOption(context => // Factory method that creates a disabled blurple button with text "Page x / y"
+            new PaginatorButton(PaginatorAction.Backward, emote: null, $"Page {context.CurrentPageIndex + 1} / {context.MaxPageIndex + 1}", ButtonStyle.Primary, isDisabled: true))
             .AddOption(new Emoji("◀"), PaginatorAction.Backward, ButtonStyle.Secondary) // Gray buttons
             .AddOption(new Emoji("❌"), PaginatorAction.Exit, ButtonStyle.Secondary)
             .AddOption(new Emoji("▶"), PaginatorAction.Forward, ButtonStyle.Secondary)
@@ -115,6 +114,7 @@ public class PaginatorModule : InteractionModuleBase
             .Build();
 
         await _interactive.SendPaginatorAsync(paginator, Context.Interaction, TimeSpan.FromMinutes(10));
+        return;
 
         PageBuilder GeneratePage(int index)
             => new PageBuilder()
@@ -176,6 +176,7 @@ public class PaginatorModule : InteractionModuleBase
             .Build();
 
         await _interactive.SendPaginatorAsync(paginator, Context.Interaction, TimeSpan.FromMinutes(20), InteractionResponseType.DeferredChannelMessageWithSource);
+        return;
 
         IPage GeneratePage(IComponentPaginator p)
         {

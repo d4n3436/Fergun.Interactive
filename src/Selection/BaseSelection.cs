@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
@@ -7,7 +8,7 @@ using System.Threading.Tasks;
 using Discord;
 using Discord.WebSocket;
 using Fergun.Interactive.Extensions;
-using System.Collections.ObjectModel;
+using JetBrains.Annotations;
 
 namespace Fergun.Interactive.Selection;
 
@@ -15,6 +16,7 @@ namespace Fergun.Interactive.Selection;
 /// Represents a selection of options.
 /// </summary>
 /// <typeparam name="TOption">The type of the options.</typeparam>
+[PublicAPI]
 public abstract class BaseSelection<TOption> : IInteractiveElement<TOption>
 {
     /// <summary>
@@ -42,7 +44,7 @@ public abstract class BaseSelection<TOption> : IInteractiveElement<TOption>
         EmoteConverter = properties.EmoteConverter;
         EqualityComparer = properties.EqualityComparer;
         SelectionPage = properties.SelectionPage.Build();
-        Options =  new ReadOnlyCollection<TOption>(properties.Options.ToArray());
+        Options = new ReadOnlyCollection<TOption>(properties.Options.ToArray());
         AllowCancel = properties.AllowCancel && Options.Count > 1;
         CancelOption = AllowCancel ? Options.Last() : default;
         MinValues = properties.MinValues;
@@ -62,15 +64,9 @@ public abstract class BaseSelection<TOption> : IInteractiveElement<TOption>
 
         if (StringConverter is null && (!InputType.HasFlag(InputType.Buttons) || EmoteConverter is null))
         {
-            StringConverter = x =>
-            {
-                if (x is null)
-                {
-                    throw new ArgumentNullException(nameof(x), $"Value of {nameof(TOption)} cannot be null.");
-                }
-
-                return x.ToString()!;
-            };
+            StringConverter = x => x is null
+                ? throw new ArgumentNullException(nameof(x), $"Value of {nameof(TOption)} cannot be null.")
+                : x.ToString()!;
         }
     }
 
@@ -217,28 +213,28 @@ public abstract class BaseSelection<TOption> : IInteractiveElement<TOption>
             builder.WithSelectMenu(selectMenu);
         }
 
-        if (InputType.HasFlag(InputType.Buttons))
+        if (!InputType.HasFlag(InputType.Buttons))
+            return builder;
+
+        foreach (var selection in Options)
         {
-            foreach (var selection in Options)
+            var emote = EmoteConverter?.Invoke(selection);
+            string? label = StringConverter?.Invoke(selection);
+            if (emote is null && label is null)
             {
-                var emote = EmoteConverter?.Invoke(selection);
-                string? label = StringConverter?.Invoke(selection);
-                if (emote is null && label is null)
-                {
-                    throw new InvalidOperationException($"Neither {nameof(EmoteConverter)} nor {nameof(StringConverter)} returned a valid emote or string.");
-                }
-
-                var button = new ButtonBuilder()
-                    .WithCustomId(emote?.ToString() ?? label)
-                    .WithStyle(ButtonStyle.Primary)
-                    .WithEmote(emote)
-                    .WithDisabled(disableAll);
-
-                if (label is not null)
-                    button.Label = label;
-
-                builder.WithButton(button);
+                throw new InvalidOperationException($"Neither {nameof(EmoteConverter)} nor {nameof(StringConverter)} returned a valid emote or string.");
             }
+
+            var button = new ButtonBuilder()
+                .WithCustomId(emote?.ToString() ?? label)
+                .WithStyle(ButtonStyle.Primary)
+                .WithEmote(emote)
+                .WithDisabled(disableAll);
+
+            if (label is not null)
+                button.Label = label;
+
+            builder.WithButton(button);
         }
 
         return builder;

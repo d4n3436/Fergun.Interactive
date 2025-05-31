@@ -1,11 +1,13 @@
-﻿using Discord;
-using System;
+﻿using System;
+using Discord;
+using JetBrains.Annotations;
 
 namespace Fergun.Interactive.Pagination;
 
 /// <summary>
 /// Provides extension methods for component builders to add <see cref="IComponentPaginator"/> buttons.
 /// </summary>
+[PublicAPI]
 public static class ComponentExtensions
 {
     /// <summary>
@@ -315,7 +317,7 @@ public static class ComponentExtensions
             };
         }
 
-        style ??= action == PaginatorAction.Exit ? ButtonStyle.Danger : ButtonStyle.Primary;    
+        style ??= action == PaginatorAction.Exit ? ButtonStyle.Danger : ButtonStyle.Primary;
 
         return new ButtonBuilder()
             .WithLabel(label)

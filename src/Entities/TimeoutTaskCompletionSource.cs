@@ -1,6 +1,7 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using JetBrains.Annotations;
 
 namespace Fergun.Interactive;
 
@@ -8,6 +9,7 @@ namespace Fergun.Interactive;
 /// Represents a <see cref="TaskCompletionSource{TResult}"/> with a timeout timer which can be reset.
 /// </summary>
 /// <typeparam name="TResult">The type of the result value associated with this <see cref="TimeoutTaskCompletionSource{TResult}"/>.</typeparam>
+[PublicAPI]
 public class TimeoutTaskCompletionSource<TResult> : IDisposable
 {
     private readonly Timer _timer;
@@ -96,13 +98,14 @@ public class TimeoutTaskCompletionSource<TResult> : IDisposable
     /// <inheritdoc cref="Dispose()"/>
     protected virtual void Dispose(bool disposing)
     {
-        if (disposing && !_disposed)
-        {
-            _timer.Dispose();
-            TryCancel();
-            _tokenRegistration.Dispose();
-            _disposed = true;
-        }
+        if (!disposing || _disposed)
+            return;
+
+        _timer.Dispose();
+        TryCancel();
+        // ReSharper disable once PossiblyImpureMethodCallOnReadonlyVariable
+        _tokenRegistration.Dispose();
+        _disposed = true;
     }
 
     private void OnTimerFired(object? state) => TrySetResult(TimeoutResult);

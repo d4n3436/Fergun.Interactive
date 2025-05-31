@@ -1,5 +1,6 @@
 using System;
 using System.Threading.Tasks;
+using JetBrains.Annotations;
 
 namespace Fergun.Interactive.Pagination;
 
@@ -9,6 +10,7 @@ namespace Fergun.Interactive.Pagination;
 /// </summary>
 /// <typeparam name="TPaginator">The type of the paginator.</typeparam>
 /// <typeparam name="TBuilder">The type of the builder.</typeparam>
+[PublicAPI]
 public abstract class BaseLazyPaginatorBuilder<TPaginator, TBuilder>
     : PaginatorBuilder<TPaginator, TBuilder>, IBaseLazyPaginatorBuilderProperties
     where TPaginator : BaseLazyPaginator

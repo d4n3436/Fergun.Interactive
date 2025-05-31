@@ -1,11 +1,13 @@
-﻿using Discord;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using Discord;
+using JetBrains.Annotations;
 
 namespace Fergun.Interactive.Pagination;
 
 /// <summary>
 /// Represents a paginator select menu.
 /// </summary>
+[PublicAPI]
 public interface IPaginatorSelectMenu
 {
     /// <summary>

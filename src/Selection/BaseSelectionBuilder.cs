@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Discord;
+using JetBrains.Annotations;
 
 namespace Fergun.Interactive.Selection;
 
@@ -11,6 +12,7 @@ namespace Fergun.Interactive.Selection;
 /// <typeparam name="TSelection">The type of the built selection.</typeparam>
 /// <typeparam name="TOption">The type of the options the selection will have.</typeparam>
 /// <typeparam name="TBuilder">The type of this builder.</typeparam>
+[PublicAPI]
 public abstract class BaseSelectionBuilder<TSelection, TOption, TBuilder>
     : IInteractiveBuilder<TSelection, TOption, TBuilder>, IBaseSelectionBuilderProperties<TOption>
     where TSelection : BaseSelection<TOption>

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Discord;
+using JetBrains.Annotations;
 
 namespace Fergun.Interactive.Selection;
 
@@ -8,6 +9,7 @@ namespace Fergun.Interactive.Selection;
 /// Represents the properties in a <see cref="BaseSelectionBuilder{TSelection, TOption, TBuilder}"/>.
 /// </summary>
 /// <typeparam name="TOption">The type of the options the selection will have.</typeparam>
+[PublicAPI]
 public interface IBaseSelectionBuilderProperties<TOption> : IInteractiveBuilderProperties<TOption>
 {
     /// <summary>

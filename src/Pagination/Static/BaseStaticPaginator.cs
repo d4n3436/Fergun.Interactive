@@ -1,12 +1,14 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using JetBrains.Annotations;
 
 namespace Fergun.Interactive.Pagination;
 
 /// <summary>
 /// Represents a paginator that holds a fixed, read-only collection of pages.
 /// </summary>
+[PublicAPI]
 public abstract class BaseStaticPaginator : Paginator
 {
     /// <summary>

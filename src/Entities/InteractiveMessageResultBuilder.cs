@@ -1,7 +1,7 @@
+using System.Collections.Generic;
 using Fergun.Interactive.Extensions;
 using Fergun.Interactive.Pagination;
 using Fergun.Interactive.Selection;
-using System.Collections.Generic;
 
 namespace Fergun.Interactive;
 

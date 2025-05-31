@@ -3,12 +3,14 @@ using System.Threading.Tasks;
 using Discord;
 using Fergun.Interactive.Pagination;
 using Fergun.Interactive.Selection;
+using JetBrains.Annotations;
 
 namespace Fergun.Interactive.Extensions;
 
 /// <summary>
 /// Provides extension methods for <see cref="IInteractiveElement{TOption}"/>.
 /// </summary>
+[PublicAPI]
 public static class InteractiveElementExtensions
 {
     /// <summary>

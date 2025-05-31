@@ -1,10 +1,12 @@
 using Discord;
+using JetBrains.Annotations;
 
 namespace Fergun.Interactive.Pagination;
 
 /// <summary>
 /// Represents a paginator button.
 /// </summary>
+[PublicAPI]
 public interface IPaginatorButton
 {
     /// <summary>

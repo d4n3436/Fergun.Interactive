@@ -1,8 +1,11 @@
+using JetBrains.Annotations;
+
 namespace Fergun.Interactive.Pagination;
 
 /// <summary>
 /// Represents the context of a paginator select menu.
 /// </summary>
+[PublicAPI]
 public interface ISelectMenuContext : IComponentContext
 {
     /// <summary>

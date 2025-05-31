@@ -7,9 +7,11 @@ using Discord;
 using Discord.Interactions;
 using Fergun.Interactive;
 using Fergun.Interactive.Selection;
+using JetBrains.Annotations;
 
 namespace ExampleBot.Modules;
 
+[UsedImplicitly(ImplicitUseTargetFlags.WithMembers)]
 public partial class CustomModule
 {
     private readonly InteractionService _commandService;
@@ -168,7 +170,7 @@ public class MultiSelectionOption<T>(T option, int row, bool isDefault = false)
 
     public int Row { get; } = row;
 
-    public bool IsDefault { get; set; } = isDefault;
+    public bool IsDefault { get; } = isDefault;
 
     public override string? ToString() => Option.ToString();
 

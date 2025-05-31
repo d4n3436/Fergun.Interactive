@@ -1,12 +1,14 @@
 ﻿using System;
 using System.Linq;
 using Discord;
+using JetBrains.Annotations;
 
 namespace Fergun.Interactive.Extensions;
 
 /// <summary>
 /// Provides extension methods for <see cref="IInteractiveBuilder{TElement, TOption, TBuilder}"/>.
 /// </summary>
+[PublicAPI]
 public static class InteractiveBuilderExtensions
 {
     /// <summary>

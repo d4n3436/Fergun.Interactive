@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using JetBrains.Annotations;
 
 namespace Fergun.Interactive.Selection;
 
@@ -8,6 +9,7 @@ namespace Fergun.Interactive.Selection;
 /// Represents a builder of <see cref="MenuSelection{TOption}"/>. The menu selection uses <see cref="InputHandler"/> to dynamically change the page it's currently displaying.
 /// </summary>
 /// <typeparam name="TOption">The type of the options.</typeparam>
+[PublicAPI]
 public sealed class MenuSelectionBuilder<TOption> : BaseSelectionBuilder<MenuSelection<TOption>, TOption, MenuSelectionBuilder<TOption>>
 {
     /// <summary>

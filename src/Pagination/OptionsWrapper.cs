@@ -55,6 +55,7 @@ internal sealed class OptionsWrapper : IDictionary<IEmote, PaginatorAction>
         _dictionary.Add(key, value);
         _buttonFactories.Add(Factory);
         _factoryDictionary.Add(key, Factory);
+        return;
 
         IPaginatorButton Factory(IButtonContext _) => new PaginatorButton(key, value);
     }

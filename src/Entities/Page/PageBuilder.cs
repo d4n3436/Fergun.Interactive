@@ -4,12 +4,14 @@ using System.Linq;
 using System.Threading.Tasks;
 using Discord;
 using Fergun.Interactive.Pagination;
+using JetBrains.Annotations;
 
 namespace Fergun.Interactive;
 
 /// <summary>
 /// Represents a <see cref="Page"/> builder.
 /// </summary>
+[PublicAPI]
 public class PageBuilder : IPageBuilder<Page>, IPageBuilder
 {
     private readonly EmbedBuilder _builder;

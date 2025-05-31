@@ -1,6 +1,9 @@
-﻿namespace Fergun.Interactive.Pagination;
+﻿using JetBrains.Annotations;
+
+namespace Fergun.Interactive.Pagination;
 
 /// <inheritdoc cref="ISelectMenuContext"/>
+[PublicAPI]
 public readonly struct SelectMenuContext : ISelectMenuContext
 {
     private readonly bool _disableAll;

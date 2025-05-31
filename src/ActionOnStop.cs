@@ -1,5 +1,6 @@
 using System;
 using Discord;
+using JetBrains.Annotations;
 
 namespace Fergun.Interactive;
 
@@ -7,6 +8,7 @@ namespace Fergun.Interactive;
 /// Specifies the actions that will be applied to a message after a timeout or a cancellation.
 /// </summary>
 [Flags]
+[PublicAPI]
 public enum ActionOnStop
 {
     /// <summary>

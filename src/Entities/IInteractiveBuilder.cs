@@ -1,3 +1,5 @@
+using JetBrains.Annotations;
+
 namespace Fergun.Interactive;
 
 /// <summary>
@@ -6,6 +8,7 @@ namespace Fergun.Interactive;
 /// <typeparam name="TElement">The type of the built element.</typeparam>
 /// <typeparam name="TOption">The type of the options.</typeparam>
 /// <typeparam name="TBuilder">The type of this builder.</typeparam>
+[PublicAPI]
 public interface IInteractiveBuilder<out TElement, TOption, out TBuilder>
     : IInteractiveBuilderProperties<TOption>, IInteractiveBuilderMethods<TElement, TOption, TBuilder>
     where TElement : IInteractiveElement<TOption>

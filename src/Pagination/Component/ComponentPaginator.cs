@@ -1,18 +1,21 @@
-﻿using Discord;
-using Discord.Net;
-using Discord.Rest;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
+using Discord;
+using Discord.Net;
+using Discord.Rest;
+using Fergun.Interactive.Extensions;
+using JetBrains.Annotations;
 
 namespace Fergun.Interactive.Pagination;
 
 /// <summary>
 /// Represents a component-based paginator. This is a new type of paginator that offers more flexibility than <see cref="Paginator"/> and supports components V2.
 /// </summary>
+[PublicAPI]
 public class ComponentPaginator : IComponentPaginator
 {
     private const string IdPrefix = "component_paginator_";
@@ -257,7 +260,7 @@ public class ComponentPaginator : IComponentPaginator
             props.Embeds = page.GetEmbedArray();
             props.Components = page.Components;
             props.AllowedMentions = page.AllowedMentions;
-            props.Attachments = attachments is null ? new Optional<IEnumerable<FileAttachment>>() : new Optional<IEnumerable<FileAttachment>>(attachments);
+            props.Attachments = attachments.AsOptional();
             props.Flags = page.MessageFlags ?? new Optional<MessageFlags?>();
         }
     }
@@ -303,12 +306,14 @@ public class ComponentPaginator : IComponentPaginator
             await message.ModifyAsync(UpdateMessage).ConfigureAwait(false);
         }
 
+        return;
+
         void UpdateMessage(MessageProperties props)
         {
             props.Content = page.Text;
             props.Embeds = page.GetEmbedArray();
             props.AllowedMentions = page.AllowedMentions;
-            props.Attachments = attachments is null ? new Optional<IEnumerable<FileAttachment>>() : new Optional<IEnumerable<FileAttachment>>(attachments);
+            props.Attachments = attachments.AsOptional();
             props.Components = page.Components;
             props.Flags = page.MessageFlags ?? new Optional<MessageFlags?>();
         }

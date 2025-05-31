@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Discord;
+using JetBrains.Annotations;
 
 namespace Fergun.Interactive.Pagination;
 
@@ -10,6 +11,7 @@ namespace Fergun.Interactive.Pagination;
 /// </summary>
 /// <typeparam name="TPaginator">The type of the paginator.</typeparam>
 /// <typeparam name="TBuilder">The type of the builder.</typeparam>
+[PublicAPI]
 public abstract class PaginatorBuilder<TPaginator, TBuilder>
     : IInteractiveBuilder<TPaginator, KeyValuePair<IEmote, PaginatorAction>, TBuilder>, IBasePaginatorBuilderProperties
     where TPaginator : Paginator
@@ -21,7 +23,9 @@ public abstract class PaginatorBuilder<TPaginator, TBuilder>
     protected PaginatorBuilder()
     {
 #pragma warning disable CS0618 // Type or member is obsolete
+        // ReSharper disable VirtualMemberCallInConstructor
         Options = new OptionsWrapper(ButtonFactories);
+        // ReSharper restore VirtualMemberCallInConstructor
 #pragma warning restore CS0618 // Type or member is obsolete
     }
 

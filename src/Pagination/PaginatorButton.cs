@@ -1,9 +1,11 @@
-using Discord;
 using System;
+using Discord;
+using JetBrains.Annotations;
 
 namespace Fergun.Interactive.Pagination;
 
 /// <inheritdoc cref="IPaginatorButton"/>
+[PublicAPI]
 public class PaginatorButton : IPaginatorButton
 {
     /// <summary>

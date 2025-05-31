@@ -1,12 +1,29 @@
 using System;
 using System.Threading.Tasks;
 using Discord.WebSocket;
+using JetBrains.Annotations;
 
 namespace Fergun.Interactive;
 
 /// <summary>
+/// Represents a generic event handler for incoming inputs.
+/// </summary>
+/// <typeparam name="TInput">The type of the input.</typeparam>
+[PublicAPI]
+public interface IInteractiveCallback<in TInput> : IInteractiveCallback
+{
+    /// <summary>
+    /// Executes this event.
+    /// </summary>
+    /// <param name="input">The incoming input.</param>
+    /// <returns>A task that represents the operation.</returns>
+    Task ExecuteAsync(TInput input);
+}
+
+/// <summary>
 /// Represents an event handler for incoming socket events.
 /// </summary>
+[PublicAPI]
 public interface IInteractiveCallback : IDisposable
 {
     /// <summary>
@@ -39,18 +56,4 @@ public interface IInteractiveCallback : IDisposable
     /// <param name="interaction">The incoming interaction.</param>
     /// <returns>A task that represents the operation.</returns>
     Task ExecuteAsync(SocketInteraction interaction);
-}
-
-/// <summary>
-/// Represents a generic event handler for incoming inputs.
-/// </summary>
-/// <typeparam name="TInput">The type of the input.</typeparam>
-public interface IInteractiveCallback<in TInput> : IInteractiveCallback
-{
-    /// <summary>
-    /// Executes this event.
-    /// </summary>
-    /// <param name="input">The incoming input.</param>
-    /// <returns>A task that represents the operation.</returns>
-    Task ExecuteAsync(TInput input);
 }

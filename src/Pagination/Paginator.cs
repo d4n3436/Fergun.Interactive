@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -8,13 +9,14 @@ using Discord;
 using Discord.Net;
 using Discord.WebSocket;
 using Fergun.Interactive.Extensions;
-using System.Globalization;
+using JetBrains.Annotations;
 
 namespace Fergun.Interactive.Pagination;
 
 /// <summary>
 /// Represents an abstract immutable paginator.
 /// </summary>
+[PublicAPI]
 public abstract class Paginator : IInteractiveElement<KeyValuePair<IEmote, PaginatorAction>>
 {
     private readonly Lazy<string> _lazyJumpInputTextLabel;
@@ -347,7 +349,7 @@ public abstract class Paginator : IInteractiveElement<KeyValuePair<IEmote, Pagin
             }
             else
             {
-                // We don't know if the user is viewing the modal or they just dismissed it, the former is assumed
+                // We don't know if the user is viewing the modal, or they just dismissed it, the former is assumed
                 if (!string.IsNullOrEmpty(JumpInputInUseMessage))
                 {
                     await interaction.RespondAsync(JumpInputInUseMessage, ephemeral: true).ConfigureAwait(false);
@@ -526,12 +528,7 @@ public abstract class Paginator : IInteractiveElement<KeyValuePair<IEmote, Pagin
         InteractiveGuards.NotNull(input);
         InteractiveGuards.NotNull(message);
 
-        if (!InputType.HasFlag(InputType.Buttons))
-        {
-            return InteractiveInputStatus.Ignored;
-        }
-
-        if (input.Message.Id != message.Id)
+        if (!InputType.HasFlag(InputType.Buttons) || input.Message.Id != message.Id)
         {
             return InteractiveInputStatus.Ignored;
         }

@@ -1,12 +1,14 @@
-﻿using Discord;
-using System;
+﻿using System;
 using System.Linq;
+using Discord;
+using JetBrains.Annotations;
 
 namespace Fergun.Interactive.Pagination;
 
 /// <summary>
 /// Provides extension methods for <see cref="EmbedBuilder"/>.
 /// </summary>
+[PublicAPI]
 public static class EmbedBuilderExtensions
 {
     /// <summary>

@@ -1,10 +1,12 @@
 ﻿using System;
+using JetBrains.Annotations;
 
 namespace Fergun.Interactive.Pagination;
 
 /// <summary>
 /// Provides extension methods for <see cref="PageBuilder"/>.
 /// </summary>
+[PublicAPI]
 public static class PageBuilderExtensions
 {
     /// <summary>

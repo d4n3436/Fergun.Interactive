@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using JetBrains.Annotations;
 
 namespace Fergun.Interactive;
 
@@ -8,6 +9,7 @@ namespace Fergun.Interactive;
 /// Represents a generic result of an interactive action.
 /// </summary>
 /// <typeparam name="T">The type of the value or values of this result.</typeparam>
+[PublicAPI]
 public class InteractiveResult<T> : InteractiveResult
 {
     internal InteractiveResult(T? value, TimeSpan elapsed, InteractiveStatus status = InteractiveStatus.Success)
@@ -47,8 +49,9 @@ public class InteractiveResult<T> : InteractiveResult
 }
 
 /// <summary>
-/// Represents a non-generic result of an interactive action.
+/// Represents a result of an interactive action.
 /// </summary>
+[PublicAPI]
 public class InteractiveResult : IInteractiveResult<InteractiveStatus>, IElapsed
 {
     internal InteractiveResult(TimeSpan elapsed, InteractiveStatus status = InteractiveStatus.Success)

@@ -8,9 +8,11 @@ using ExampleBot.Extensions;
 using Fergun.Interactive;
 using Fergun.Interactive.Extensions;
 using Fergun.Interactive.Selection;
+using JetBrains.Annotations;
 
 namespace ExampleBot.Modules;
 
+[UsedImplicitly(ImplicitUseTargetFlags.WithMembers)]
 [Group("selection", "Selection commands.")]
 public class SelectionModule : InteractionModuleBase
 {
@@ -260,6 +262,7 @@ public class SelectionModule : InteractionModuleBase
             .Build();
 
         await _interactive.SendSelectionAsync(selection, Context.Interaction, TimeSpan.FromMinutes(10));
+        return;
 
         PageBuilder GeneratePage()
             => new PageBuilder()

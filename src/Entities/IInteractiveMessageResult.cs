@@ -1,12 +1,14 @@
 using System.Threading;
 using Discord;
 using Discord.WebSocket;
+using JetBrains.Annotations;
 
 namespace Fergun.Interactive;
 
 /// <summary>
 /// Represents a result of an interactive action containing a message associated with the action, the user and input that ended the action.
 /// </summary>
+[PublicAPI]
 public interface IInteractiveMessageResult : IInteractiveResult<InteractiveStatus>, IElapsed
 {
     /// <summary>

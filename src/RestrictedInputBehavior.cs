@@ -1,10 +1,12 @@
 using Fergun.Interactive.Pagination;
+using JetBrains.Annotations;
 
 namespace Fergun.Interactive;
 
 /// <summary>
 /// Specifies the behavior an interactive element should exhibit when a user is not allowed to interact with it.
 /// </summary>
+[PublicAPI]
 public enum RestrictedInputBehavior
 {
     /// <summary>

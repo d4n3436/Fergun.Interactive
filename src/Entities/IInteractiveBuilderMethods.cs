@@ -1,6 +1,7 @@
-using Discord;
 using System;
 using System.Collections.Generic;
+using Discord;
+using JetBrains.Annotations;
 
 namespace Fergun.Interactive;
 
@@ -10,6 +11,7 @@ namespace Fergun.Interactive;
 /// <typeparam name="TElement">The type of the built element.</typeparam>
 /// <typeparam name="TOption">The type of the options.</typeparam>
 /// <typeparam name="TBuilder">The type of this builder.</typeparam>
+[PublicAPI]
 public interface IInteractiveBuilderMethods<out TElement, TOption, out TBuilder>
 {
     /// <summary>

@@ -3,9 +3,11 @@ using System.Threading.Tasks;
 using Discord;
 using Discord.Interactions;
 using Fergun.Interactive;
+using JetBrains.Annotations;
 
 namespace ExampleBot.Modules;
 
+[UsedImplicitly(ImplicitUseTargetFlags.WithMembers)]
 [Group("next", "Commands that demonstrate waiting for inputs (messages, reactions, interactions).")]
 public class WaitModule : InteractionModuleBase
 {

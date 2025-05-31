@@ -1,9 +1,10 @@
 using System;
-using Discord;
-using System.Threading.Tasks;
-using Discord.WebSocket;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
+using Discord;
+using Discord.WebSocket;
+using JetBrains.Annotations;
 
 namespace Fergun.Interactive.Selection;
 
@@ -11,6 +12,7 @@ namespace Fergun.Interactive.Selection;
 /// Represents a menu selection. A menu selection is a selection where its options can be selected multiple times and uses <see cref="InputHandler"/> to dynamically change the page it's currently displaying.
 /// </summary>
 /// <typeparam name="TOption">The type of the options.</typeparam>
+[PublicAPI]
 public sealed class MenuSelection<TOption> : BaseSelection<TOption>
 {
     private IReadOnlyList<TOption> _lastSelectedOptions = [];
@@ -77,28 +79,28 @@ public sealed class MenuSelection<TOption> : BaseSelection<TOption>
             builder.WithSelectMenu(selectMenu);
         }
 
-        if (InputType.HasFlag(InputType.Buttons))
+        if (!InputType.HasFlag(InputType.Buttons))
+            return builder;
+
+        foreach (var selection in Options)
         {
-            foreach (var selection in Options)
+            var emote = EmoteConverter?.Invoke(selection);
+            string? label = StringConverter?.Invoke(selection);
+            if (emote is null && label is null)
             {
-                var emote = EmoteConverter?.Invoke(selection);
-                string? label = StringConverter?.Invoke(selection);
-                if (emote is null && label is null)
-                {
-                    throw new InvalidOperationException($"Neither {nameof(EmoteConverter)} nor {nameof(StringConverter)} returned a valid emote or string.");
-                }
-
-                var button = new ButtonBuilder()
-                    .WithCustomId(emote?.ToString() ?? label)
-                    .WithStyle(ButtonStyle.Primary)
-                    .WithEmote(emote)
-                    .WithDisabled(disableAll);
-
-                if (label is not null)
-                    button.Label = label;
-
-                builder.WithButton(button);
+                throw new InvalidOperationException($"Neither {nameof(EmoteConverter)} nor {nameof(StringConverter)} returned a valid emote or string.");
             }
+
+            var button = new ButtonBuilder()
+                .WithCustomId(emote?.ToString() ?? label)
+                .WithStyle(ButtonStyle.Primary)
+                .WithEmote(emote)
+                .WithDisabled(disableAll);
+
+            if (label is not null)
+                button.Label = label;
+
+            builder.WithButton(button);
         }
 
         return builder;

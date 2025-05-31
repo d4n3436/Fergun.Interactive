@@ -1,36 +1,13 @@
 using System.Collections.Generic;
+using JetBrains.Annotations;
 
 namespace Fergun.Interactive;
-
-/// <summary>
-/// Represents the result of an input handler in an interactive element.
-/// </summary>
-public class InteractiveInputResult : IInteractiveResult<InteractiveInputStatus>
-{
-    /// <summary>
-    /// Initializes a new instance of the <see cref="InteractiveInputResult"/> class with the specified status.
-    /// </summary>
-    /// <param name="status">The status.</param>
-    public InteractiveInputResult(InteractiveInputStatus status)
-    {
-        Status = status;
-    }
-
-    /// <inheritdoc/>
-    public InteractiveInputStatus Status { get; }
-
-    /// <summary>
-    /// Defines an implicit conversion of an <see cref="InteractiveInputStatus"/> to an <see cref="InteractiveInputResult"/>.
-    /// </summary>
-    /// <param name="status">The status.</param>
-    /// <returns>An <see cref="InteractiveInputResult"/>.</returns>
-    public static implicit operator InteractiveInputResult(InteractiveInputStatus status) => new(status);
-}
 
 /// <summary>
 /// Represents the result of an input handler in an interactive element, with a single or multiple selected options.
 /// </summary>
 /// <typeparam name="TOption">The type of the selected options.</typeparam>
+[PublicAPI]
 public class InteractiveInputResult<TOption> : InteractiveInputResult
 {
     /// <summary>
@@ -87,4 +64,30 @@ public class InteractiveInputResult<TOption> : InteractiveInputResult
     /// <param name="status">The status.</param>
     /// <returns>An <see cref="InteractiveInputResult{TOption}"/>.</returns>
     public static implicit operator InteractiveInputResult<TOption>(InteractiveInputStatus status) => new(status);
+}
+
+/// <summary>
+/// Represents the result of an input handler in an interactive element.
+/// </summary>
+[PublicAPI]
+public class InteractiveInputResult : IInteractiveResult<InteractiveInputStatus>
+{
+    /// <summary>
+    /// Initializes a new instance of the <see cref="InteractiveInputResult"/> class with the specified status.
+    /// </summary>
+    /// <param name="status">The status.</param>
+    public InteractiveInputResult(InteractiveInputStatus status)
+    {
+        Status = status;
+    }
+
+    /// <inheritdoc/>
+    public InteractiveInputStatus Status { get; }
+
+    /// <summary>
+    /// Defines an implicit conversion of an <see cref="InteractiveInputStatus"/> to an <see cref="InteractiveInputResult"/>.
+    /// </summary>
+    /// <param name="status">The status.</param>
+    /// <returns>An <see cref="InteractiveInputResult"/>.</returns>
+    public static implicit operator InteractiveInputResult(InteractiveInputStatus status) => new(status);
 }

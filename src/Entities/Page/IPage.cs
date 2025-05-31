@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Discord;
+using JetBrains.Annotations;
 
 namespace Fergun.Interactive;
 
@@ -9,6 +10,7 @@ namespace Fergun.Interactive;
 /// Represents a page used in an interactive element.
 /// </summary>
 /// <typeparam name="TEmbed">The type of the embeds.</typeparam>
+[PublicAPI]
 public interface IPage<out TEmbed> where TEmbed : IEmbed
 {
     /// <summary>

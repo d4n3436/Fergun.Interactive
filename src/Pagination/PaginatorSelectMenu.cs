@@ -1,9 +1,11 @@
 ﻿using System.Collections.Generic;
 using Discord;
+using JetBrains.Annotations;
 
 namespace Fergun.Interactive.Pagination;
 
 /// <inheritdoc cref="IPaginatorSelectMenu"/>
+[PublicAPI]
 public class PaginatorSelectMenu : IPaginatorSelectMenu
 {
     private readonly SelectMenuBuilder _builder;

@@ -1,14 +1,16 @@
-﻿using Discord;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
+using Discord;
+using JetBrains.Annotations;
 
 namespace Fergun.Interactive.Pagination;
 
 /// <summary>
 /// Provides extension methods for paginators.
 /// </summary>
+[PublicAPI]
 public static class PaginatorExtensions
 {
     /// <summary>
@@ -136,7 +138,7 @@ public static class PaginatorExtensions
         InteractiveGuards.NotNull(paginator);
         InteractiveGuards.NotNull(interaction);
 
-        await paginator.RenderPageAsync(interaction, InteractionResponseType.UpdateMessage, false, page).ConfigureAwait(false);
+        await paginator.RenderPageAsync(interaction, InteractionResponseType.UpdateMessage, isEphemeral: false, page).ConfigureAwait(false);
     }
 
     /// <summary>

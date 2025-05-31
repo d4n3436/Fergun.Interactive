@@ -1,6 +1,9 @@
+using JetBrains.Annotations;
+
 namespace Fergun.Interactive.Pagination;
 
 /// <inheritdoc cref="IButtonContext"/>
+[PublicAPI]
 public readonly struct ButtonContext : IButtonContext
 {
     private readonly bool _disableAll;

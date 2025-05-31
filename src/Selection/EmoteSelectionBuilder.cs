@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Discord;
+using JetBrains.Annotations;
 
 namespace Fergun.Interactive.Selection;
 
@@ -9,6 +10,7 @@ namespace Fergun.Interactive.Selection;
 /// It provides overriden properties with default values that makes it ready to use with options using reactions or buttons as input.
 /// </summary>
 /// <typeparam name="TValue">The type of the value that represents a specific emote.</typeparam>
+[PublicAPI]
 public sealed class EmoteSelectionBuilder<TValue>
     : BaseSelectionBuilder<Selection<KeyValuePair<IEmote, TValue>>, KeyValuePair<IEmote, TValue>, EmoteSelectionBuilder<TValue>>
 {
@@ -60,6 +62,7 @@ public sealed class EmoteSelectionBuilder<TValue>
 /// Represents a variant of <see cref="SelectionBuilder{TValue}"/> that allows using emotes as input.
 /// It provides overriden properties with default values that makes it ready to use with options using reactions or buttons as input.
 /// </summary>
+[PublicAPI]
 public sealed class EmoteSelectionBuilder : BaseSelectionBuilder<Selection<IEmote>, IEmote, EmoteSelectionBuilder>
 {
     /// <summary>

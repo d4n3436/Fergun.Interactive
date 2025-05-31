@@ -3,12 +3,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Discord;
+using JetBrains.Annotations;
 
 namespace Fergun.Interactive;
 
 /// <summary>
 /// Represents a page with multiple embeds.
 /// </summary>
+[PublicAPI]
 public class MultiEmbedPage : IPage
 {
     private readonly Embed[] _embedArray;

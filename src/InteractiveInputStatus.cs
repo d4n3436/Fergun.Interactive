@@ -1,9 +1,12 @@
+using JetBrains.Annotations;
+
 namespace Fergun.Interactive;
 
 /// <summary>
 /// Specifies the possible status of the input handler of an interactive entity.
 /// </summary>
 /// <remarks>This is used as the status of the result of input handlers on component paginators and entities that implement <see cref="IInteractiveInputHandler"/>.</remarks>
+[PublicAPI]
 public enum InteractiveInputStatus
 {
     /// <summary>
