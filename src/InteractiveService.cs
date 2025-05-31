@@ -16,6 +16,7 @@ using Fergun.Interactive.Selection;
 using JetBrains.Annotations;
 
 namespace Fergun.Interactive;
+
 // Based on Discord.InteractivityAddon
 // https://github.com/Playwo/Discord.InteractivityAddon
 
@@ -907,6 +908,138 @@ public class InteractiveService
     /// <returns><see langword="true"/> if specified object triggers at least one of the filters; otherwise, <see langword="false"/>.</returns>
     public bool TriggersAnyFilter<T>(T obj) => _filteredCallbacks.Values.Any(x => x.TriggersFilter(obj));
 
+    private static async Task ApplyActionOnStopAsync<TOption>(IInteractiveElement<TOption> element, IInteractiveMessageResult result,
+        IDiscordInteraction? lastInteraction, SocketMessageComponent? stopInteraction, bool deferInteraction)
+    {
+        bool ephemeral = result.Message.Flags.GetValueOrDefault().HasFlag(MessageFlags.Ephemeral);
+
+        var action = result.Status switch
+        {
+            InteractiveStatus.Timeout => element.ActionOnTimeout,
+            InteractiveStatus.Canceled => element.ActionOnCancellation,
+            InteractiveStatus.Success when element is BaseSelection<TOption> selection => selection.ActionOnSuccess,
+            _ => throw new ArgumentException("Unknown status.", nameof(result))
+        };
+
+        if (action == ActionOnStop.None)
+        {
+            if (deferInteraction && stopInteraction is not null)
+            {
+                await stopInteraction.DeferAsync().ConfigureAwait(false);
+            }
+
+            return;
+        }
+
+        if (action.HasFlag(ActionOnStop.DeleteMessage))
+        {
+            try
+            {
+                if (lastInteraction is not null && (DateTimeOffset.UtcNow - lastInteraction.CreatedAt).TotalMinutes <= 15.0)
+                {
+                    await lastInteraction.DeleteOriginalResponseAsync().ConfigureAwait(false);
+                }
+                else if (!ephemeral)
+                {
+                    await result.Message.DeleteAsync().ConfigureAwait(false);
+                }
+                else if (deferInteraction && stopInteraction is not null)
+                {
+                    await stopInteraction.DeferAsync().ConfigureAwait(false);
+                }
+            }
+            catch (HttpException ex) when (ex.DiscordCode == DiscordErrorCode.UnknownMessage)
+            {
+                // We want to delete the message so we don't care if the message has been already deleted.
+            }
+
+            return;
+        }
+
+        IPage? page = null;
+        IEnumerable<FileAttachment>? attachments = null;
+        if (action.HasFlag(ActionOnStop.ModifyMessage))
+        {
+            page = result.Status switch
+            {
+                InteractiveStatus.Timeout => element.TimeoutPage,
+                InteractiveStatus.Canceled => element.CanceledPage,
+                InteractiveStatus.Success when element is BaseSelection<TOption> selection => selection.SuccessPage,
+                _ => throw new ArgumentException("Unknown status.", nameof(result))
+            };
+
+            attachments = page?.AttachmentsFactory is null ? null : await page.AttachmentsFactory().ConfigureAwait(false);
+        }
+
+        MessageComponent? components = null;
+        if (element.InputType.HasFlag(InputType.Buttons) || element.InputType.HasFlag(InputType.SelectMenus))
+        {
+            if (action.HasFlag(ActionOnStop.DisableInput))
+            {
+                components = element.GetOrAddComponents(disableAll: true).Build();
+            }
+            else if (action.HasFlag(ActionOnStop.DeleteInput))
+            {
+                components = new ComponentBuilder().Build();
+            }
+        }
+
+        bool modifyMessage = page?.Text is not null || page?.Embeds.Count > 0 || components is not null || attachments is not null;
+
+        if (modifyMessage)
+        {
+            try
+            {
+                if (stopInteraction is not null)
+                {
+                    // An interaction to stop the element has been received
+                    await stopInteraction.UpdateAsync(UpdateMessage).ConfigureAwait(false);
+                }
+                else if (lastInteraction is not null && (DateTimeOffset.UtcNow - lastInteraction.CreatedAt).TotalMinutes <= 15.0)
+                {
+                    // The element is from a message that was updated using an interaction, and its token is still valid
+                    await lastInteraction.ModifyOriginalResponseAsync(UpdateMessage).ConfigureAwait(false);
+                }
+                else if (!ephemeral)
+                {
+                    // Fallback for normal messages that don't use interactions or the token is no longer valid, only works for non-ephemeral messages
+                    await result.Message.ModifyAsync(UpdateMessage).ConfigureAwait(false);
+                }
+            }
+            catch (HttpException ex) when (ex.DiscordCode == DiscordErrorCode.UnknownMessage)
+            {
+                // Ignore 10008 (Unknown Message) error.
+            }
+        }
+        else if (deferInteraction && stopInteraction is not null)
+        {
+            await stopInteraction.DeferAsync().ConfigureAwait(false);
+        }
+
+        if (!action.HasFlag(ActionOnStop.DeleteInput) || !element.InputType.HasFlag(InputType.Reactions))
+            return;
+
+        Debug.Assert(!ephemeral, "Ephemeral messages cannot have InputType.Reactions");
+
+        bool manageMessages = await result.Message.Channel.CurrentUserHasManageMessagesAsync().ConfigureAwait(false);
+
+        if (manageMessages)
+        {
+            await result.Message.RemoveAllReactionsAsync().ConfigureAwait(false);
+        }
+
+        return;
+
+        void UpdateMessage(MessageProperties props)
+        {
+            props.Content = page?.Text ?? Optional<string>.Unspecified;
+            props.Embeds = page?.GetEmbedArray() ?? Optional<Embed[]>.Unspecified;
+            props.Components = components ?? Optional<MessageComponent>.Unspecified;
+            props.AllowedMentions = page?.AllowedMentions ?? Optional<AllowedMentions>.Unspecified;
+            props.Attachments = attachments.AsOptional();
+        }
+    }
+
     private async Task<InteractiveMessageResult> SendPaginatorInternalAsync(Paginator paginator, IMessageChannel? channel, TimeSpan? timeout = null,
         IUserMessage? message = null, Action<IUserMessage>? messageAction = null, bool resetTimeoutOnInput = false, CancellationToken cancellationToken = default)
     {
@@ -1153,7 +1286,7 @@ public class InteractiveService
                 x.Embeds = page.GetEmbedArray();
                 x.Components = component;
                 x.AllowedMentions = page.AllowedMentions;
-                x.Attachments = attachments is null ? new Optional<IEnumerable<FileAttachment>>() : new Optional<IEnumerable<FileAttachment>>(attachments);
+                x.Attachments = attachments.AsOptional();
                 x.Flags = page.MessageFlags;
             }).ConfigureAwait(false);
         }
@@ -1216,138 +1349,6 @@ public class InteractiveService
             props.AllowedMentions = page.AllowedMentions;
             props.Attachments = attachments.AsOptional();
             props.Flags = page.MessageFlags;
-        }
-    }
-
-    private static async Task ApplyActionOnStopAsync<TOption>(IInteractiveElement<TOption> element, IInteractiveMessageResult result,
-        IDiscordInteraction? lastInteraction, SocketMessageComponent? stopInteraction, bool deferInteraction)
-    {
-        bool ephemeral = result.Message.Flags.GetValueOrDefault().HasFlag(MessageFlags.Ephemeral);
-
-        var action = result.Status switch
-        {
-            InteractiveStatus.Timeout => element.ActionOnTimeout,
-            InteractiveStatus.Canceled => element.ActionOnCancellation,
-            InteractiveStatus.Success when element is BaseSelection<TOption> selection => selection.ActionOnSuccess,
-            _ => throw new ArgumentException("Unknown status.", nameof(result))
-        };
-
-        if (action == ActionOnStop.None)
-        {
-            if (deferInteraction && stopInteraction is not null)
-            {
-                await stopInteraction.DeferAsync().ConfigureAwait(false);
-            }
-
-            return;
-        }
-
-        if (action.HasFlag(ActionOnStop.DeleteMessage))
-        {
-            try
-            {
-                if (lastInteraction is not null && (DateTimeOffset.UtcNow - lastInteraction.CreatedAt).TotalMinutes <= 15.0)
-                {
-                    await lastInteraction.DeleteOriginalResponseAsync().ConfigureAwait(false);
-                }
-                else if (!ephemeral)
-                {
-                    await result.Message.DeleteAsync().ConfigureAwait(false);
-                }
-                else if (deferInteraction && stopInteraction is not null)
-                {
-                    await stopInteraction.DeferAsync().ConfigureAwait(false);
-                }
-            }
-            catch (HttpException ex) when (ex.DiscordCode == DiscordErrorCode.UnknownMessage)
-            {
-                // We want to delete the message so we don't care if the message has been already deleted.
-            }
-
-            return;
-        }
-
-        IPage? page = null;
-        IEnumerable<FileAttachment>? attachments = null;
-        if (action.HasFlag(ActionOnStop.ModifyMessage))
-        {
-            page = result.Status switch
-            {
-                InteractiveStatus.Timeout => element.TimeoutPage,
-                InteractiveStatus.Canceled => element.CanceledPage,
-                InteractiveStatus.Success when element is BaseSelection<TOption> selection => selection.SuccessPage,
-                _ => throw new ArgumentException("Unknown status.", nameof(result))
-            };
-
-            attachments = page?.AttachmentsFactory is null ? null : await page.AttachmentsFactory().ConfigureAwait(false);
-        }
-
-        MessageComponent? components = null;
-        if (element.InputType.HasFlag(InputType.Buttons) || element.InputType.HasFlag(InputType.SelectMenus))
-        {
-            if (action.HasFlag(ActionOnStop.DisableInput))
-            {
-                components = element.GetOrAddComponents(disableAll: true).Build();
-            }
-            else if (action.HasFlag(ActionOnStop.DeleteInput))
-            {
-                components = new ComponentBuilder().Build();
-            }
-        }
-
-        bool modifyMessage = page?.Text is not null || page?.Embeds.Count > 0 || components is not null || attachments is not null;
-
-        if (modifyMessage)
-        {
-            try
-            {
-                if (stopInteraction is not null)
-                {
-                    // An interaction to stop the element has been received
-                    await stopInteraction.UpdateAsync(UpdateMessage).ConfigureAwait(false);
-                }
-                else if (lastInteraction is not null && (DateTimeOffset.UtcNow - lastInteraction.CreatedAt).TotalMinutes <= 15.0)
-                {
-                    // The element is from a message that was updated using an interaction, and its token is still valid
-                    await lastInteraction.ModifyOriginalResponseAsync(UpdateMessage).ConfigureAwait(false);
-                }
-                else if (!ephemeral)
-                {
-                    // Fallback for normal messages that don't use interactions or the token is no longer valid, only works for non-ephemeral messages
-                    await result.Message.ModifyAsync(UpdateMessage).ConfigureAwait(false);
-                }
-            }
-            catch (HttpException ex) when (ex.DiscordCode == DiscordErrorCode.UnknownMessage)
-            {
-                // Ignore 10008 (Unknown Message) error.
-            }
-        }
-        else if (deferInteraction && stopInteraction is not null)
-        {
-            await stopInteraction.DeferAsync().ConfigureAwait(false);
-        }
-
-        if (!action.HasFlag(ActionOnStop.DeleteInput) || !element.InputType.HasFlag(InputType.Reactions))
-            return;
-
-        Debug.Assert(!ephemeral, "Ephemeral messages cannot have InputType.Reactions");
-
-        bool manageMessages = await result.Message.Channel.CurrentUserHasManageMessagesAsync().ConfigureAwait(false);
-
-        if (manageMessages)
-        {
-            await result.Message.RemoveAllReactionsAsync().ConfigureAwait(false);
-        }
-
-        return;
-
-        void UpdateMessage(MessageProperties props)
-        {
-            props.Content = page?.Text ?? new Optional<string>();
-            props.Embeds = page?.GetEmbedArray() ?? new Optional<Embed[]>();
-            props.Components = components ?? new Optional<MessageComponent>();
-            props.AllowedMentions = page?.AllowedMentions ?? new Optional<AllowedMentions>();
-            props.Attachments = attachments.AsOptional();
         }
     }
 

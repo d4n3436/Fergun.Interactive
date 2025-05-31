@@ -11,20 +11,20 @@ public enum InteractiveStatus
     /// <summary>
     /// The interactive action status is unknown.
     /// </summary>
-    Unknown,
+    Unknown = 0,
 
     /// <summary>
     /// The interactive action was successful.
     /// </summary>
-    Success,
+    Success = 1,
 
     /// <summary>
     /// The interactive action timed out.
     /// </summary>
-    Timeout,
+    Timeout = 2,
 
     /// <summary>
     /// The interactive action was canceled.
     /// </summary>
-    Canceled
+    Canceled = 3
 }

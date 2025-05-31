@@ -79,10 +79,6 @@ internal sealed class ComponentPaginatorCallback : IInteractiveCallback
                 StopInteraction = component as SocketMessageComponent;
                 Cancel();
                 break;
-
-            case InteractiveInputStatus.Ignored:
-            default:
-                break;
         }
     }
 

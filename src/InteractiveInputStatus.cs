@@ -12,15 +12,15 @@ public enum InteractiveInputStatus
     /// <summary>
     /// The handling of the input was successful.
     /// </summary>
-    Success,
+    Success = 0,
 
     /// <summary>
     /// The input was ignored.
     /// </summary>
-    Ignored,
+    Ignored = 1,
 
     /// <summary>
     /// The handling of the input was successful and the interactive entity should be canceled.
     /// </summary>
-    Canceled
+    Canceled = 2
 }

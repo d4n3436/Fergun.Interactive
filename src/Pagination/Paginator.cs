@@ -73,6 +73,9 @@ public abstract class Paginator : IInteractiveElement<KeyValuePair<IEmote, Pagin
         _lazyModalTcs = new Lazy<TimeoutTaskCompletionSource<IModalInteraction?>>(() => new TimeoutTaskCompletionSource<IModalInteraction?>(JumpInputTimeout));
     }
 
+    /// <inheritdoc/>
+    IReadOnlyCollection<KeyValuePair<IEmote, PaginatorAction>> IInteractiveElement<KeyValuePair<IEmote, PaginatorAction>>.Options => Emotes;
+
     /// <summary>
     /// Gets a value indicating whether this paginator is restricted to <see cref="Users"/>.
     /// </summary>
@@ -197,9 +200,6 @@ public abstract class Paginator : IInteractiveElement<KeyValuePair<IEmote, Pagin
     /// Gets the <see cref="TimeoutTaskCompletionSource{TResult}"/> used to receive modal interactions in <see cref="JumpToPageAsync(SocketMessageComponent)"/>.
     /// </summary>
     protected TimeoutTaskCompletionSource<IModalInteraction?> ModalTaskCompletionSource => _lazyModalTcs.Value;
-
-    /// <inheritdoc/>
-    IReadOnlyCollection<KeyValuePair<IEmote, PaginatorAction>> IInteractiveElement<KeyValuePair<IEmote, PaginatorAction>>.Options => Emotes;
 
     /// <summary>
     /// Sets the <see cref="CurrentPageIndex"/> of this paginator.
@@ -417,7 +417,7 @@ public abstract class Paginator : IInteractiveElement<KeyValuePair<IEmote, Pagin
             var context = new ButtonContext(i, CurrentPageIndex, MaxPageIndex, disableAll);
             var properties = ButtonFactories[i].Invoke(context);
 
-            if (properties is null || properties.IsHidden)
+            if (properties?.IsHidden is not false)
                 continue;
 
             var style = properties.Style ?? (properties.Action == PaginatorAction.Exit ? ButtonStyle.Danger : ButtonStyle.Primary);
@@ -447,7 +447,7 @@ public abstract class Paginator : IInteractiveElement<KeyValuePair<IEmote, Pagin
             var context = new SelectMenuContext(i, CurrentPageIndex, MaxPageIndex, disableAll);
             var properties = SelectMenuFactories[i]?.Invoke(context);
 
-            if (properties is null || properties.IsHidden)
+            if (properties?.IsHidden is not false)
                 continue;
 
             var selectMenu = new SelectMenuBuilder(properties.CustomId, properties.Options, properties.Placeholder, properties.MaxValues,
@@ -664,6 +664,12 @@ public abstract class Paginator : IInteractiveElement<KeyValuePair<IEmote, Pagin
         return emote is not null && Emotes.TryGetValue(emote, out action);
     }
 
+    private static async Task<InteractiveInputResult> DeferInteractionAsync(SocketMessageComponent input)
+    {
+        await input.DeferAsync().ConfigureAwait(false);
+        return InteractiveInputStatus.Success;
+    }
+
     // Attempts to update the message and reverts the page index to the previous one if an exception occurs
     private async Task TryUpdateMessageAsync(Func<Action<MessageProperties>, RequestOptions?, Task> updateMethod, int previousPageIndex, bool includeComponents = true)
     {
@@ -675,11 +681,11 @@ public abstract class Paginator : IInteractiveElement<KeyValuePair<IEmote, Pagin
         {
             await updateMethod(x =>
             {
-                x.Content = currentPage.Text ?? ""; // workaround for d.net bug
+                x.Content = currentPage.Text ?? string.Empty; // workaround for d.net bug
                 x.Embeds = currentPage.GetEmbedArray();
-                x.Components = includeComponents ? components : new Optional<MessageComponent>();
+                x.Components = includeComponents ? components : Optional<MessageComponent>.Unspecified;
                 x.AllowedMentions = currentPage.AllowedMentions;
-                x.Attachments = attachments is null ? new Optional<IEnumerable<FileAttachment>>() : new Optional<IEnumerable<FileAttachment>>(attachments);
+                x.Attachments = attachments.AsOptional();
                 x.Flags = currentPage.MessageFlags;
             }, arg2: null).ConfigureAwait(false);
         }
@@ -697,12 +703,6 @@ public abstract class Paginator : IInteractiveElement<KeyValuePair<IEmote, Pagin
         await input.RespondWithFilesAsync(attachments ?? [], page.Text, page.GetEmbedArray(), page.IsTTS,
             ephemeral: true, page.AllowedMentions, flags: page.MessageFlags ?? MessageFlags.None).ConfigureAwait(false);
 
-        return InteractiveInputStatus.Success;
-    }
-
-    private static async Task<InteractiveInputResult> DeferInteractionAsync(SocketMessageComponent input)
-    {
-        await input.DeferAsync().ConfigureAwait(false);
         return InteractiveInputStatus.Success;
     }
 }

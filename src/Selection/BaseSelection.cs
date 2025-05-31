@@ -411,6 +411,7 @@ public abstract class BaseSelection<TOption> : IInteractiveElement<TOption>
     /// <remarks>By default, this method adds the reactions to a message when <see cref="InputType"/> has <see cref="InputType.Reactions"/>.</remarks>
     /// <param name="message">The message to initialize.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to cancel this request.</param>
+    /// <exception cref="InvalidOperationException">Thrown when <see cref="EmoteConverter"/> is <see langword="null"/>.</exception>
     /// <returns>A task representing the asynchronous operation.</returns>
     internal virtual async Task InitializeMessageAsync(IUserMessage message, CancellationToken cancellationToken = default)
     {
@@ -437,6 +438,12 @@ public abstract class BaseSelection<TOption> : IInteractiveElement<TOption>
         }
     }
 
+    private static async Task<InteractiveInputResult<TOption>> DeferInteractionAsync(SocketMessageComponent input)
+    {
+        await input.DeferAsync().ConfigureAwait(false);
+        return InteractiveInputStatus.Ignored;
+    }
+
     private async Task<InteractiveInputResult<TOption>> SendRestrictedMessageAsync(SocketMessageComponent input)
     {
         var page = RestrictedPage ?? throw new InvalidOperationException($"Expected {nameof(RestrictedPage)} to be non-null.");
@@ -444,12 +451,6 @@ public abstract class BaseSelection<TOption> : IInteractiveElement<TOption>
         await input.RespondWithFilesAsync(attachments ?? [], page.Text, page.GetEmbedArray(), page.IsTTS,
             ephemeral: true, page.AllowedMentions, flags: page.MessageFlags ?? MessageFlags.None).ConfigureAwait(false);
 
-        return InteractiveInputStatus.Ignored;
-    }
-
-    private static async Task<InteractiveInputResult<TOption>> DeferInteractionAsync(SocketMessageComponent input)
-    {
-        await input.DeferAsync().ConfigureAwait(false);
         return InteractiveInputStatus.Ignored;
     }
 }

@@ -107,13 +107,13 @@ public class ComponentPaginator : IComponentPaginator
     /// <inheritdoc />
     public IPage? TimeoutPage { get; }
 
-    ///<inheritdoc />
+    /// <inheritdoc />
     public Func<IComponentPaginator, ModalBuilder>? JumpModalFactory { get; }
 
     /// <inheritdoc />
     public Func<IComponentPaginator, IPage>? RestrictedPageFactory { get; }
 
-    ///<inheritdoc />
+    /// <inheritdoc />
     public virtual bool SetPage(int pageIndex)
     {
         if (pageIndex < 0 || pageIndex >= PageCount) return false;
@@ -261,7 +261,7 @@ public class ComponentPaginator : IComponentPaginator
             props.Components = page.Components;
             props.AllowedMentions = page.AllowedMentions;
             props.Attachments = attachments.AsOptional();
-            props.Flags = page.MessageFlags ?? new Optional<MessageFlags?>();
+            props.Flags = page.MessageFlags ?? Optional<MessageFlags?>.Unspecified;
         }
     }
 
@@ -315,7 +315,7 @@ public class ComponentPaginator : IComponentPaginator
             props.AllowedMentions = page.AllowedMentions;
             props.Attachments = attachments.AsOptional();
             props.Components = page.Components;
-            props.Flags = page.MessageFlags ?? new Optional<MessageFlags?>();
+            props.Flags = page.MessageFlags ?? Optional<MessageFlags?>.Unspecified;
         }
     }
 
@@ -398,31 +398,28 @@ public class ComponentPaginator : IComponentPaginator
                     // Ignored, message was already deleted
                 }
             }
+            else if (stopInteraction is not null)
+            {
+                await stopInteraction.DeferAsync().ConfigureAwait(false);
+                await stopInteraction.DeleteOriginalResponseAsync().ConfigureAwait(false);
+            }
             else
             {
-                if (stopInteraction is not null)
+                try
                 {
-                    await stopInteraction.DeferAsync().ConfigureAwait(false);
-                    await stopInteraction.DeleteOriginalResponseAsync().ConfigureAwait(false);
+                    await (message switch
+                    {
+                        RestInteractionMessage im => im.DeleteAsync().ConfigureAwait(false),
+                        RestFollowupMessage fm => fm.DeleteAsync().ConfigureAwait(false),
+                        _ => Task.CompletedTask.ConfigureAwait(false)
+                    });
                 }
-                else
+                catch (HttpException e) when (e.DiscordCode == DiscordErrorCode.InvalidWebhookToken)
                 {
-                    try
-                    {
-                        await (message switch
-                        {
-                            RestInteractionMessage im => im.DeleteAsync().ConfigureAwait(false),
-                            RestFollowupMessage fm => fm.DeleteAsync().ConfigureAwait(false),
-                            _ => Task.CompletedTask.ConfigureAwait(false)
-                        });
-                    }
-                    catch (HttpException e) when (e.DiscordCode == DiscordErrorCode.InvalidWebhookToken)
-                    {
-                        // Ignored, token expired
-                    }
+                    // Ignored, token expired
                 }
             }
-            
+
             return;
         }
 
@@ -453,17 +450,6 @@ public class ComponentPaginator : IComponentPaginator
         }
     }
 
-    private async Task<InteractiveInputStatus> SendRestrictedPageAsync(IDiscordInteraction interaction)
-    {
-        var page = RestrictedPageFactory?.Invoke(this) ?? throw new InvalidOperationException($"Expected result of {nameof(RestrictedPageFactory)} to be non-null.");
-        var attachments = page.AttachmentsFactory is null ? null : await page.AttachmentsFactory().ConfigureAwait(false);
-
-        await interaction.RespondWithFilesAsync(attachments ?? [], page.Text, page.GetEmbedArray(), page.IsTTS,
-            ephemeral: true, page.AllowedMentions, flags: page.MessageFlags ?? MessageFlags.None).ConfigureAwait(false);
-
-        return InteractiveInputStatus.Success;
-    }
-
     private static async Task<InteractiveInputStatus> DeferInteractionAsync(IDiscordInteraction interaction)
     {
         await interaction.DeferAsync().ConfigureAwait(false);
@@ -483,5 +469,16 @@ public class ComponentPaginator : IComponentPaginator
         }
 
         return value > max ? max : value;
+    }
+
+    private async Task<InteractiveInputStatus> SendRestrictedPageAsync(IDiscordInteraction interaction)
+    {
+        var page = RestrictedPageFactory?.Invoke(this) ?? throw new InvalidOperationException($"Expected result of {nameof(RestrictedPageFactory)} to be non-null.");
+        var attachments = page.AttachmentsFactory is null ? null : await page.AttachmentsFactory().ConfigureAwait(false);
+
+        await interaction.RespondWithFilesAsync(attachments ?? [], page.Text, page.GetEmbedArray(), page.IsTTS,
+            ephemeral: true, page.AllowedMentions, flags: page.MessageFlags ?? MessageFlags.None).ConfigureAwait(false);
+
+        return InteractiveInputStatus.Success;
     }
 }

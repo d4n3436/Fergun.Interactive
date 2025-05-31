@@ -13,6 +13,7 @@ public class InteractiveConfig
     /// <summary>
     /// Gets or sets the default timeout for the interactive actions.
     /// </summary>
+    /// <exception cref="ArgumentOutOfRangeException">Thrown when setting a value that is negative or zero.</exception>
     public TimeSpan DefaultTimeout
     {
         get;

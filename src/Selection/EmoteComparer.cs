@@ -9,7 +9,7 @@ internal sealed class EmoteComparer<TValue> : IEqualityComparer<KeyValuePair<IEm
         => x.Key.ToString() == y.Key.ToString() && Equals(x.Value, y.Value);
 
     // ReSharper disable once UsageOfDefaultStructEquality
-    public int GetHashCode(KeyValuePair<IEmote, TValue> pair) => pair.GetHashCode();
+    public int GetHashCode(KeyValuePair<IEmote, TValue> obj) => obj.GetHashCode();
 }
 
 internal sealed class EmoteComparer : IEqualityComparer<IEmote>

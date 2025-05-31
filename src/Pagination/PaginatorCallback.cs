@@ -79,10 +79,6 @@ internal sealed class PaginatorCallback : IInteractiveCallback
                 StopMessage = message;
                 Cancel();
                 break;
-
-            case InteractiveInputStatus.Ignored:
-            default:
-                break;
         }
     }
 
@@ -99,10 +95,6 @@ internal sealed class PaginatorCallback : IInteractiveCallback
             case InteractiveInputStatus.Canceled:
                 StopReaction = reaction;
                 Cancel();
-                break;
-
-            case InteractiveInputStatus.Ignored:
-            default:
                 break;
         }
     }
@@ -132,10 +124,6 @@ internal sealed class PaginatorCallback : IInteractiveCallback
             case InteractiveInputStatus.Canceled:
                 StopInteraction = component;
                 Cancel();
-                break;
-
-            case InteractiveInputStatus.Ignored:
-            default:
                 break;
         }
     }

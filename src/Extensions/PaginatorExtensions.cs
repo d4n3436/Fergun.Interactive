@@ -38,6 +38,7 @@ public static class PaginatorExtensions
     /// <summary>
     /// Increments the <see cref="IComponentPaginator.CurrentPageIndex"/>, so it points to the next page if possible.
     /// </summary>
+    /// <param name="paginator">The paginator.</param>
     /// <returns><see langword="true"/> if <see cref="IComponentPaginator.CurrentPageIndex"/> is lower than <see cref="IComponentPaginator.PageCount"/> minus 1; otherwise, <see langword="false"/>.</returns>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="paginator"/> is <see langword="null"/>.</exception>
     public static bool NextPage(this IComponentPaginator paginator)
@@ -50,6 +51,7 @@ public static class PaginatorExtensions
     /// <summary>
     /// Decrements the <see cref="IComponentPaginator.CurrentPageIndex"/>, so it points to the previous page if possible.
     /// </summary>
+    /// <param name="paginator">The paginator.</param>
     /// <returns><see langword="true"/> if <see cref="IComponentPaginator.CurrentPageIndex"/> higher than 0; otherwise, <see langword="false"/>.</returns>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="paginator"/> is <see langword="null"/>.</exception>
     public static bool PreviousPage(this IComponentPaginator paginator)
@@ -62,6 +64,7 @@ public static class PaginatorExtensions
     /// <summary>
     /// Sets the <see cref="IComponentPaginator.CurrentPageIndex"/> to 0, so it points to the first page if possible.
     /// </summary>
+    /// <param name="paginator">The paginator.</param>
     /// <returns><see langword="true"/> if <see cref="IComponentPaginator.CurrentPageIndex"/> is not 0; otherwise, <see langword="false"/>.</returns>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="paginator"/> is <see langword="null"/>.</exception>
     public static bool FirstPage(this IComponentPaginator paginator)
@@ -74,6 +77,7 @@ public static class PaginatorExtensions
     /// <summary>
     /// Sets the <see cref="IComponentPaginator.CurrentPageIndex"/> to <see cref="IComponentPaginator.PageCount"/> minus 1, so it points to the last page if possible.
     /// </summary>
+    /// <param name="paginator">The paginator.</param>
     /// <returns><see langword="true"/> if <see cref="IComponentPaginator.CurrentPageIndex"/> is not <see cref="IComponentPaginator.PageCount"/> minus 1; otherwise, <see langword="false"/>.</returns>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="paginator"/> is <see langword="null"/>.</exception>
     public static bool LastPage(this IComponentPaginator paginator)

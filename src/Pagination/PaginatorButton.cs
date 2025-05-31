@@ -27,8 +27,8 @@ public class PaginatorButton : IPaginatorButton
     /// <summary>
     /// Initializes a new instance of the <see cref="PaginatorButton"/> class.
     /// </summary>
-    /// <param name="action">The action.</param>
     /// <param name="emote">The emote.</param>
+    /// <param name="action">The action.</param>
     /// <param name="style">The button style.</param>
     public PaginatorButton(IEmote emote, PaginatorAction action, ButtonStyle? style = null)
         : this(action, emote, text: null, style, isDisabled: null)

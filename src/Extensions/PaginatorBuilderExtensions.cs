@@ -123,8 +123,8 @@ public static class PaginatorBuilderExtensions
     /// Sets the users who can interact with the paginator.
     /// </summary>
     /// <typeparam name="TBuilder">The type of the component paginator builder.</typeparam>
-    /// <param name="users">The users.</param>
     /// <param name="builder">A paginator builder that implements <see cref="IComponentPaginatorBuilder"/>.</param>
+    /// <param name="users">The users.</param>
     /// <returns>This builder.</returns>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="builder"/> or <paramref name="users"/> are <see langword="null"/>.</exception>
     public static TBuilder WithUsers<TBuilder>(this TBuilder builder, IEnumerable<IUser> users)

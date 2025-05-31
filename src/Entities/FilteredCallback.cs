@@ -100,6 +100,7 @@ internal sealed class FilteredCallback<TInput> : IFilteredCallback, IInteractive
     private void Dispose(bool disposing)
     {
         if (_disposed) return;
+
         if (disposing)
         {
             TimeoutTaskSource.Dispose();

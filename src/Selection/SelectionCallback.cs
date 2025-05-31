@@ -83,10 +83,6 @@ internal sealed class SelectionCallback<TOption> : IInteractiveCallback
                 StopMessage = message;
                 TimeoutTaskSource.TrySetResult((result.SelectedOptions, InteractiveStatus.Canceled));
                 break;
-
-            case InteractiveInputStatus.Ignored:
-            default:
-                break;
         }
     }
 
@@ -105,10 +101,6 @@ internal sealed class SelectionCallback<TOption> : IInteractiveCallback
             case InteractiveInputStatus.Canceled:
                 StopReaction = reaction;
                 TimeoutTaskSource.TrySetResult((result.SelectedOptions, InteractiveStatus.Canceled));
-                break;
-
-            case InteractiveInputStatus.Ignored:
-            default:
                 break;
         }
     }
@@ -131,10 +123,6 @@ internal sealed class SelectionCallback<TOption> : IInteractiveCallback
             case InteractiveInputStatus.Canceled:
                 StopInteraction = component;
                 TimeoutTaskSource.TrySetResult((result.SelectedOptions, InteractiveStatus.Canceled));
-                break;
-
-            case InteractiveInputStatus.Ignored:
-            default:
                 break;
         }
     }

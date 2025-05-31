@@ -11,15 +11,15 @@ public enum PaginatorStatus
     /// <summary>
     /// The paginator is active and is currently accepting pagination requests.
     /// </summary>
-    Active,
+    Active = 0,
 
     /// <summary>
     /// The paginator is canceled and the action on <see cref="IComponentPaginator.ActionOnCancellation"/> will be performed.
     /// </summary>
-    Canceled,
+    Canceled = 1,
 
     /// <summary>
     /// The paginator is timed out and the action on <see cref="IComponentPaginator.ActionOnTimeout"/> will be performed.
     /// </summary>
-    TimedOut
+    TimedOut = 2
 }

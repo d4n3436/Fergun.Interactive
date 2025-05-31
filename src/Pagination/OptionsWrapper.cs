@@ -5,7 +5,9 @@ using Discord;
 
 namespace Fergun.Interactive.Pagination;
 
-// Used to add values to both Options and ButtonFactories
+/// <summary>
+/// Used to add values to both <see cref="PaginatorBuilder{TPaginator, TBuilder}.Options"/> and <see cref="PaginatorBuilder{TPaginator, TBuilder}.ButtonFactories"/>.
+/// </summary>
 internal sealed class OptionsWrapper : IDictionary<IEmote, PaginatorAction>
 {
     private readonly IDictionary<IEmote, PaginatorAction> _dictionary = new Dictionary<IEmote, PaginatorAction>();

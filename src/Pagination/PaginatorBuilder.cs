@@ -292,6 +292,8 @@ public abstract class PaginatorBuilder<TPaginator, TBuilder>
     /// <param name="emote">The emote.</param>
     /// <param name="text">The text (label) that will be displayed in the button.</param>
     /// <param name="isDisabled">A value indicating whether to disable the button. If the value is null, the library will decide its status.</param>
+    /// <exception cref="ArgumentException">Thrown when <paramref name="url"/> is <see langword="null"/> or empty.</exception>
+    /// <exception cref="InvalidOperationException">Thrown when <paramref name="emote"/> or <paramref name="text"/> do not have valid values.</exception>
     /// <returns>This builder.</returns>
     public virtual TBuilder AddOption(string url, IEmote? emote, string? text, bool? isDisabled = null)
     {
@@ -313,6 +315,8 @@ public abstract class PaginatorBuilder<TPaginator, TBuilder>
     /// <param name="text">The text (label) that will be displayed in the button.</param>
     /// <param name="style">The button style to use in the button. If the value is null, the library will decide the style of the button.</param>
     /// <param name="isDisabled">A value indicating whether to disable the button. If the value is null, the library will decide its status.</param>
+    /// <exception cref="ArgumentException">Thrown when <paramref name="customId"/> is <see langword="null"/> or empty.</exception>
+    /// <exception cref="InvalidOperationException">Thrown when <paramref name="emote"/> or <paramref name="text"/> do not have valid values.</exception>
     /// <returns>This builder.</returns>
     public virtual TBuilder AddOption(string customId, IEmote? emote, string? text, ButtonStyle? style, bool? isDisabled = null)
     {
@@ -333,6 +337,7 @@ public abstract class PaginatorBuilder<TPaginator, TBuilder>
     /// <param name="text">The text (label) that will be displayed in the button.</param>
     /// <param name="style">The button style to use in the button. If the value is null, the library will decide the style of the button.</param>
     /// <param name="isDisabled">A value indicating whether to disable the button. If the value is null, the library will decide its status.</param>
+    /// <exception cref="InvalidOperationException">Thrown when <paramref name="emote"/> or <paramref name="text"/> do not have valid values.</exception>
     /// <returns>This builder.</returns>
     public virtual TBuilder AddOption(PaginatorAction action, IEmote? emote, string? text, ButtonStyle? style = null, bool? isDisabled = null)
     {

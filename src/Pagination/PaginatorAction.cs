@@ -11,30 +11,30 @@ public enum PaginatorAction
     /// <summary>
     /// Go to the next page.
     /// </summary>
-    Forward,
+    Forward = 0,
 
     /// <summary>
     /// Go to the previous page.
     /// </summary>
-    Backward,
+    Backward = 1,
 
     /// <summary>
     /// Skip to the end (last page).
     /// </summary>
-    SkipToEnd,
+    SkipToEnd = 2,
 
     /// <summary>
     /// Skip to the start (first page).
     /// </summary>
-    SkipToStart,
+    SkipToStart = 3,
 
     /// <summary>
     /// Exit (stop) the paginator.
     /// </summary>
-    Exit,
+    Exit = 4,
 
     /// <summary>
     /// Jump to a specific page.
     /// </summary>
-    Jump
+    Jump = 5
 }

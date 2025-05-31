@@ -119,7 +119,7 @@ public sealed class MenuSelection<TOption> : BaseSelection<TOption>
         {
             await message.ModifyAsync(x =>
             {
-                x.Content = page.Text ?? new Optional<string>();
+                x.Content = page.Text ?? Optional<string>.Unspecified;
                 x.Embeds = page.GetEmbedArray();
             }).ConfigureAwait(false);
         }
@@ -140,7 +140,7 @@ public sealed class MenuSelection<TOption> : BaseSelection<TOption>
         {
             await message.ModifyAsync(x =>
             {
-                x.Content = page.Text ?? new Optional<string>();
+                x.Content = page.Text ?? Optional<string>.Unspecified;
                 x.Embeds = page.GetEmbedArray();
             }).ConfigureAwait(false);
         }
@@ -164,7 +164,7 @@ public sealed class MenuSelection<TOption> : BaseSelection<TOption>
         {
             await input.UpdateAsync(x =>
             {
-                x.Content = page.Text ?? new Optional<string>();
+                x.Content = page.Text ?? Optional<string>.Unspecified;
                 x.Embeds = page.GetEmbedArray();
                 x.Components = GetOrAddComponents(disableAll: false).Build();
             }).ConfigureAwait(false);

@@ -30,7 +30,7 @@ internal static class InteractiveExtensions
     public static TimeSpan GetElapsedTime<TInput>(this FilteredCallback<TInput> callback, InteractiveStatus status)
         => status.GetElapsedTime(callback.StartTime, callback.TimeoutTaskSource.Delay);
 
-    public static Optional<T> AsOptional<T>([NoEnumeration] this T? obj) => obj is null ? new Optional<T>() : new Optional<T>(obj);
+    public static Optional<T> AsOptional<T>([NoEnumeration] this T? obj) => obj is null ? Optional<T>.Unspecified : new Optional<T>(obj);
 
     private static TimeSpan GetElapsedTime(this DateTimeOffset startTime)
         => DateTimeOffset.UtcNow - startTime;

@@ -89,6 +89,7 @@ public sealed class MenuSelectionBuilder<TOption> : BaseSelectionBuilder<MenuSel
     /// <summary>
     /// Sets the delegate that will be executed when a valid input is received (except cancel options).
     /// </summary>
+    /// <typeparam name="TPage">A type that implements <see cref="IPage"/>.</typeparam>
     /// <remarks>
     /// The first argument of the delegate is the result of a valid input and the return value is a <see cref="ValueTask{TResult}"/> containing the page the selection should display.
     /// Return a <see cref="ValueTask{TResult}"/> containing a <see langword="null"/> page to leave the message unmodified.
@@ -108,6 +109,7 @@ public sealed class MenuSelectionBuilder<TOption> : BaseSelectionBuilder<MenuSel
     /// <summary>
     /// Sets the delegate that will be executed when a valid input is received (except cancel options).
     /// </summary>
+    /// <typeparam name="TPage">A type that implements <see cref="IPage"/>.</typeparam>
     /// <remarks>
     /// The first argument of the delegate is a read-only list containing the selected options of a multi-choice select menu and the return value is a <see cref="ValueTask{TResult}"/> containing the page the selection should display.
     /// Return a <see cref="ValueTask{TResult}"/> containing a <see langword="null"/> page to leave the message unmodified.
