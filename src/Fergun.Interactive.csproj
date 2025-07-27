@@ -1,10 +1,10 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <Version>1.9-beta.2</Version>
+    <Version>1.9</Version>
     <LangVersion>preview</LangVersion>
     <Nullable>enable</Nullable>
-	<TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <Authors>d4n3436</Authors>
     <NeutralLanguage>en</NeutralLanguage>
     <TargetFrameworks>netstandard2.0;netstandard2.1;net8.0</TargetFrameworks>
