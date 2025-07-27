@@ -1,5 +1,5 @@
 ﻿# Fergun.Interactive
-[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE) [![NuGet](https://img.shields.io/nuget/vpre/Fergun.Interactive)](https://www.nuget.org/packages/Fergun.Interactive) [![Discord](https://discord.com/api/guilds/460627183501574144/widget.png)](https://discord.gg/V3TgaZRUPX)
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE) [![NuGet](https://img.shields.io/nuget/vpre/Fergun.Interactive)](https://www.nuget.org/packages/Fergun.Interactive) [![Discord](https://img.shields.io/discord/460627183501574144?logo=discord&logoColor=ffffff&labelColor=697ec4&color=7289da)](https://discord.gg/V3TgaZRUPX)
 
 **Fergun.Interactive** is an addon that provides interactive functionality to Discord commands.
 
@@ -20,11 +20,13 @@ This is a fork of [Discord.InteractivityAddon](https://github.com/Playwo/Discord
   - Supports extension methods that can be used in any paginator builder
   - Supports custom paginators, inheriting from the `Paginator` and `PaginatorBuilder` classes
   - Allows jumping (skipping) to a specific page using message input or modals (more info [here](https://github.com/d4n3436/Fergun.Interactive/releases/tag/v1.5))
-
+\
+&nbsp;
 - 🆕 Component paginator:
   - A new type of paginator separate from the regular ones, written from scratch with customization and flexibility in mind, with support for components V2
   - Information about its usage can be found [here](../../wiki/Component-paginators).
-
+\
+&nbsp;
 - Customizable selection:
   - Uses a list of options for users to select from
   - Supports messages, reactions, buttons, and select menus
