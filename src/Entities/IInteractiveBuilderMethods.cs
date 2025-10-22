@@ -1,6 +1,6 @@
 using System;
 using System.Collections.Generic;
-using Discord;
+
 using JetBrains.Annotations;
 
 namespace Fergun.Interactive;
@@ -25,21 +25,21 @@ public interface IInteractiveBuilderMethods<out TElement, TOption, out TBuilder>
     /// </summary>
     /// <param name="users">The users.</param>
     /// <returns>This builder.</returns>
-    TBuilder WithUsers(params IUser[] users);
+    TBuilder WithUsers(params NetCord.User[] users);
 
     /// <summary>
     /// Sets the users who can interact with the <typeparamref name="TElement"/>.
     /// </summary>
     /// <param name="users">The users.</param>
     /// <returns>This builder.</returns>
-    TBuilder WithUsers(IEnumerable<IUser> users);
+    TBuilder WithUsers(IEnumerable<NetCord.User> users);
 
     /// <summary>
     /// Adds a user who can interact with the <typeparamref name="TElement"/>.
     /// </summary>
     /// <param name="user">The user.</param>
     /// <returns>This builder.</returns>
-    TBuilder AddUser(IUser user);
+    TBuilder AddUser(NetCord.User user);
 
     /// <summary>
     /// Sets the options.
@@ -117,5 +117,5 @@ public interface IInteractiveBuilderMethods<out TElement, TOption, out TBuilder>
     /// <remarks>The first argument of the factory is a read-only collection of users who are allowed to interact with the paginator.</remarks>
     /// <param name="pageFactory">The restricted page factory.</param>
     /// <returns>This builder.</returns>
-    TBuilder WithRestrictedPageFactory(Func<IReadOnlyCollection<IUser>, IPage> pageFactory);
+    TBuilder WithRestrictedPageFactory(Func<IReadOnlyCollection<NetCord.User>, IPage> pageFactory);
 }

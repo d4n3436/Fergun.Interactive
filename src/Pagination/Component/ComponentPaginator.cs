@@ -4,11 +4,12 @@ using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
-using Discord;
-using Discord.Net;
-using Discord.Rest;
+
 using Fergun.Interactive.Extensions;
 using JetBrains.Annotations;
+using NetCord;
+using NetCord.Gateway;
+using NetCord.Rest;
 
 namespace Fergun.Interactive.Pagination;
 
@@ -60,7 +61,7 @@ public class ComponentPaginator : IComponentPaginator
         CurrentPageIndex = builder.InitialPageIndex;
         PageFactory = builder.PageFactory;
         UserState = builder.UserState;
-        Users = new ReadOnlyCollection<IUser>(builder.Users.ToArray());
+        Users = new ReadOnlyCollection<NetCord.User>(builder.Users.ToArray());
         ActionOnCancellation = builder.ActionOnCancellation;
         ActionOnTimeout = builder.ActionOnTimeout;
         RestrictedInputBehavior = builder.RestrictedInputBehavior;
@@ -90,7 +91,7 @@ public class ComponentPaginator : IComponentPaginator
     public object? UserState { get; set; }
 
     /// <inheritdoc />
-    public IReadOnlyCollection<IUser> Users { get; }
+    public IReadOnlyCollection<NetCord.User> Users { get; }
 
     /// <inheritdoc />
     public ActionOnStop ActionOnCancellation { get; }
@@ -108,7 +109,7 @@ public class ComponentPaginator : IComponentPaginator
     public IPage? TimeoutPage { get; }
 
     /// <inheritdoc />
-    public Func<IComponentPaginator, ModalBuilder>? JumpModalFactory { get; }
+    public Func<IComponentPaginator, ModalProperties>? JumpModalFactory { get; }
 
     /// <inheritdoc />
     public Func<IComponentPaginator, IPage>? RestrictedPageFactory { get; }
@@ -165,7 +166,7 @@ public class ComponentPaginator : IComponentPaginator
         };
 
     /// <inheritdoc/>
-    public virtual async ValueTask<InteractiveInputStatus> HandleInteractionAsync(IComponentInteraction interaction)
+    public virtual async ValueTask<InteractiveInputStatus> HandleInteractionAsync(MessageComponentInteraction interaction)
     {
         InteractiveGuards.NotNull(interaction);
 
@@ -210,123 +211,127 @@ public class ComponentPaginator : IComponentPaginator
         }
         else
         {
-            await interaction.DeferAsync().ConfigureAwait(false);
+            await interaction.SendResponseAsync(InteractionCallback.DeferredModifyMessage).ConfigureAwait(false);
         }
 
         return InteractiveInputStatus.Success;
     }
 
     /// <inheritdoc/>
-    public virtual async Task<IUserMessage> RenderPageAsync(IDiscordInteraction interaction, InteractionResponseType responseType, bool isEphemeral, IPage? page = null)
+    public virtual async Task<RestMessage> RenderPageAsync(Interaction interaction, InteractionCallbackType responseType, bool isEphemeral, IPage? page = null)
     {
         InteractiveGuards.NotNull(interaction);
 
         page ??= await PageFactory(this).ConfigureAwait(false);
         var attachments = page.AttachmentsFactory is null ? [] : await page.AttachmentsFactory().ConfigureAwait(false);
 
+        var message = new InteractionMessageProperties
+        {
+            Content = page.Text,
+            Tts = page.IsTTS,
+            Embeds = page.Embeds,
+            Components = page.Components,
+            AllowedMentions = page.AllowedMentions,
+            Attachments = attachments ?? [],
+            Flags = page.MessageFlags
+        };
+
+        var props = InteractionCallback.Message(message);
+
         switch (responseType)
         {
-            case InteractionResponseType.ChannelMessageWithSource:
-                await interaction.RespondWithFilesAsync(attachments, page.Text, page.GetEmbedArray(), page.IsTTS,
-                    isEphemeral, page.AllowedMentions, page.Components, embed: null, options: null, poll: null, page.MessageFlags ?? MessageFlags.None).ConfigureAwait(false);
+            case InteractionCallbackType.Message:
+                await interaction.SendResponseAsync(props).ConfigureAwait(false);
 
-                return await interaction.GetOriginalResponseAsync().ConfigureAwait(false);
+                return await interaction.GetResponseAsync().ConfigureAwait(false);
 
-            case InteractionResponseType.DeferredChannelMessageWithSource:
-                return await interaction.FollowupWithFilesAsync(attachments ?? [],
-                    page.Text, page.GetEmbedArray(), page.IsTTS, isEphemeral, page.AllowedMentions, page.Components, flags: page.MessageFlags ?? MessageFlags.None).ConfigureAwait(false);
+            case InteractionCallbackType.DeferredMessage:
+                return await interaction.SendFollowupMessageAsync(message).ConfigureAwait(false);
 
-            case InteractionResponseType.DeferredUpdateMessage:
-                return await interaction.ModifyOriginalResponseAsync(UpdateMessage).ConfigureAwait(false);
+            case InteractionCallbackType.DeferredModifyMessage:
+                return await interaction.ModifyResponseAsync(UpdateMessage).ConfigureAwait(false);
 
-            case InteractionResponseType.UpdateMessage:
+            case InteractionCallbackType.ModifyMessage:
                 InteractiveGuards.ValidResponseType(responseType, interaction);
-                if (interaction is IComponentInteraction componentInteraction)
+                if (interaction is MessageComponentInteraction componentInteraction)
                 {
-                    await componentInteraction.UpdateAsync(UpdateMessage).ConfigureAwait(false);
+                    await componentInteraction.SendResponseAsync(InteractionCallback.ModifyMessage(UpdateMessage)).ConfigureAwait(false);
                     return componentInteraction.Message;
                 }
 
-                await ((IModalInteraction)interaction).UpdateAsync(UpdateMessage).ConfigureAwait(false);
-                return ((IModalInteraction)interaction).Message;
+                await ((ModalInteraction)interaction).SendResponseAsync(InteractionCallback.ModifyMessage(UpdateMessage)).ConfigureAwait(false);
+                return await interaction.GetResponseAsync().ConfigureAwait(false);
 
             default:
                 throw new ArgumentException("Unsupported interaction response type.", nameof(responseType));
         }
 
-        void UpdateMessage(MessageProperties props)
+        void UpdateMessage(MessageOptions options)
         {
-            props.Content = page.Text;
-            props.Embeds = page.GetEmbedArray();
-            props.Components = page.Components;
-            props.AllowedMentions = page.AllowedMentions;
-            props.Attachments = attachments.AsOptional();
-            props.Flags = page.MessageFlags ?? Optional<MessageFlags?>.Unspecified;
+            options.Content = page.Text;
+            options.Embeds = page.Embeds;
+            options.Components = page.Components;
+            options.AllowedMentions = page.AllowedMentions;
+            options.Attachments = attachments;
+            options.Flags = page.MessageFlags;
         }
     }
 
     /// <inheritdoc/>
-    public virtual async Task<IUserMessage> RenderPageAsync(IMessageChannel channel, IPage? page = null)
+    public virtual async Task<RestMessage> RenderPageAsync(TextChannel channel, IPage? page = null)
     {
         InteractiveGuards.NotNull(channel);
 
         page ??= await PageFactory(this).ConfigureAwait(false);
         var attachments = page.AttachmentsFactory is null ? [] : await page.AttachmentsFactory().ConfigureAwait(false);
 
-        return await channel.SendFilesAsync(attachments, page.Text, page.IsTTS, embed: null, options: null, page.AllowedMentions, page.MessageReference,
-            page.Components, page.Stickers.ToArray(), page.GetEmbedArray(), page.MessageFlags ?? MessageFlags.None).ConfigureAwait(false);
+        var message = new MessageProperties
+        {
+            Content = page.Text,
+            Tts = page.IsTTS,
+            Embeds = page.Embeds,
+            MessageReference = page.MessageReference,
+            StickerIds = page.StickerIds,
+            Components = page.Components,
+            AllowedMentions = page.AllowedMentions,
+            Attachments = attachments ?? [],
+            Flags = page.MessageFlags
+        };
+
+        return await channel.SendMessageAsync(message).ConfigureAwait(false);
     }
 
     /// <inheritdoc/>
-    public virtual async Task RenderPageAsync(IUserMessage message, IPage? page = null)
+    public virtual async Task RenderPageAsync(RestMessage message, IPage? page = null)
     {
         InteractiveGuards.NotNull(message);
 
         page ??= await PageFactory(this).ConfigureAwait(false);
         var attachments = page.AttachmentsFactory is null ? [] : await page.AttachmentsFactory().ConfigureAwait(false);
 
-        // REST interaction messages need to be special-cased unfortunately
-        bool retry = false;
-        try
-        {
-            await (message switch
-            {
-                RestInteractionMessage im => im.ModifyAsync(UpdateMessage).ConfigureAwait(false),
-                RestFollowupMessage fm => fm.ModifyAsync(UpdateMessage).ConfigureAwait(false),
-                _ => message.ModifyAsync(UpdateMessage).ConfigureAwait(false)
-            });
-        }
-        catch (HttpException e) when (e.DiscordCode == DiscordErrorCode.InvalidWebhookToken)
-        {
-            retry = true;
-        }
-
-        if (retry)
-        {
-            await message.ModifyAsync(UpdateMessage).ConfigureAwait(false);
-        }
+        await message.ModifyAsync(UpdateMessage).ConfigureAwait(false);
 
         return;
 
-        void UpdateMessage(MessageProperties props)
+        void UpdateMessage(MessageOptions props)
         {
             props.Content = page.Text;
-            props.Embeds = page.GetEmbedArray();
+            props.Embeds = page.Embeds;
             props.AllowedMentions = page.AllowedMentions;
-            props.Attachments = attachments.AsOptional();
+            props.Attachments = attachments;
             props.Components = page.Components;
-            props.Flags = page.MessageFlags ?? Optional<MessageFlags?>.Unspecified;
+            props.Flags = page.MessageFlags;
         }
     }
 
     /// <inheritdoc/>
-    public virtual async Task SendJumpPromptAsync(IComponentInteraction interaction)
+    public virtual async Task SendJumpPromptAsync(MessageComponentInteraction interaction)
     {
         InteractiveGuards.NotNull(interaction);
 
         var builder = JumpModalFactory?
             .Invoke(this)?
-            .WithCustomId(JumpModalId) ?? new ModalBuilder()
+            .WithCustomId(JumpModalId) ?? new ModalProperties()
             .WithTitle("Enter a page number")
             .AddTextInput($"Page number (1-{PageCount})", "jump_modal_text_input", minLength: 1, maxLength: (int)Math.Floor(Math.Log10(PageCount) + 1), required: true)
             .WithCustomId(JumpModalId);
@@ -335,7 +340,7 @@ public class ComponentPaginator : IComponentPaginator
     }
 
     /// <inheritdoc/>
-    public virtual async ValueTask<InteractiveInputStatus> HandleModalInteractionAsync(IModalInteraction interaction)
+    public virtual async ValueTask<InteractiveInputStatus> HandleModalInteractionAsync(ModalInteraction interaction)
     {
         InteractiveGuards.NotNull(interaction);
 
@@ -359,12 +364,12 @@ public class ComponentPaginator : IComponentPaginator
             return await DeferInteractionAsync(interaction).ConfigureAwait(false);
         }
 
-        await RenderPageAsync(interaction, InteractionResponseType.UpdateMessage, isEphemeral: false).ConfigureAwait(false);
+        await RenderPageAsync(interaction, InteractionCallbackType.ModifyMessage, isEphemeral: false).ConfigureAwait(false);
         return InteractiveInputStatus.Success;
     }
 
     /// <inheritdoc/>
-    public virtual async ValueTask ApplyActionOnStopAsync(IUserMessage message, IComponentInteraction? stopInteraction, bool deferInteraction)
+    public virtual async ValueTask ApplyActionOnStopAsync(Message message, MessageComponentInteraction? stopInteraction, bool deferInteraction)
     {
         InteractiveGuards.NotNull(message);
 
@@ -379,7 +384,7 @@ public class ComponentPaginator : IComponentPaginator
         {
             if (deferInteraction && stopInteraction is not null)
             {
-                await stopInteraction.DeferAsync().ConfigureAwait(false);
+                await stopInteraction.SendResponseAsync(InteractionCallback.DeferredModifyMessage).ConfigureAwait(false);
             }
 
             return;
@@ -400,7 +405,7 @@ public class ComponentPaginator : IComponentPaginator
             }
             else if (stopInteraction is not null)
             {
-                await stopInteraction.DeferAsync().ConfigureAwait(false);
+                await stopInteraction.SendResponseAsync(InteractionCallback.DeferredModifyMessage).ConfigureAwait(false);
                 await stopInteraction.DeleteOriginalResponseAsync().ConfigureAwait(false);
             }
             else
@@ -450,9 +455,9 @@ public class ComponentPaginator : IComponentPaginator
         }
     }
 
-    private static async Task<InteractiveInputStatus> DeferInteractionAsync(IDiscordInteraction interaction)
+    private static async Task<InteractiveInputStatus> DeferInteractionAsync(Interaction interaction)
     {
-        await interaction.DeferAsync().ConfigureAwait(false);
+        await interaction.SendResponseAsync(InteractionCallback.DeferredModifyMessage).ConfigureAwait(false);
         return InteractiveInputStatus.Success;
     }
 
@@ -471,12 +476,12 @@ public class ComponentPaginator : IComponentPaginator
         return value > max ? max : value;
     }
 
-    private async Task<InteractiveInputStatus> SendRestrictedPageAsync(IDiscordInteraction interaction)
+    private async Task<InteractiveInputStatus> SendRestrictedPageAsync(Interaction interaction)
     {
         var page = RestrictedPageFactory?.Invoke(this) ?? throw new InvalidOperationException($"Expected result of {nameof(RestrictedPageFactory)} to be non-null.");
         var attachments = page.AttachmentsFactory is null ? null : await page.AttachmentsFactory().ConfigureAwait(false);
 
-        await interaction.RespondWithFilesAsync(attachments ?? [], page.Text, page.GetEmbedArray(), page.IsTTS,
+        await interaction.RespondWithFilesAsync(attachments ?? [], page.Text, page.Embeds, page.IsTTS,
             ephemeral: true, page.AllowedMentions, flags: page.MessageFlags ?? MessageFlags.None).ConfigureAwait(false);
 
         return InteractiveInputStatus.Success;

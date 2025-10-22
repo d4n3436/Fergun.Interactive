@@ -1,7 +1,10 @@
 using System;
 using System.Collections.Generic;
-using Discord;
-using Discord.WebSocket;
+
+
+using NetCord;
+using NetCord.Gateway;
+using NetCord.Rest;
 
 namespace Fergun.Interactive;
 
@@ -13,15 +16,15 @@ internal abstract class BaseInteractiveMessageResultBuilder<TSelf, TResult>
 
     public InteractiveStatus Status { get; set; } = InteractiveStatus.Success;
 
-    public IUserMessage Message { get; set; } = null!;
+    public RestMessage Message { get; set; } = null!;
 
-    public IUser? User { get; set; }
+    public NetCord.User? User { get; set; }
 
-    public IMessage? StopMessage { get; set; }
+    public Message? StopMessage { get; set; }
 
-    public SocketReaction? StopReaction { get; set; }
+    public MessageReactionAddEventArgs? StopReaction { get; set; }
 
-    public IComponentInteraction? StopInteraction { get; set; }
+    public MessageComponentInteraction? StopInteraction { get; set; }
 
     public abstract TResult Build();
 
@@ -37,31 +40,31 @@ internal abstract class BaseInteractiveMessageResultBuilder<TSelf, TResult>
         return (TSelf)this;
     }
 
-    public TSelf WithMessage(IUserMessage message)
+    public TSelf WithMessage(RestMessage message)
     {
         Message = message;
         return (TSelf)this;
     }
 
-    public TSelf WithUser(IUser? user)
+    public TSelf WithUser(User? user)
     {
         User = user;
         return (TSelf)this;
     }
 
-    public TSelf WithStopMessage(IMessage? stopMessage)
+    public TSelf WithStopMessage(Message? stopMessage)
     {
         StopMessage = stopMessage;
         return (TSelf)this;
     }
 
-    public TSelf WithStopReaction(SocketReaction? stopReaction)
+    public TSelf WithStopReaction(MessageReactionAddEventArgs? stopReaction)
     {
         StopReaction = stopReaction;
         return (TSelf)this;
     }
 
-    public TSelf WithStopInteraction(IComponentInteraction? stopInteraction)
+    public TSelf WithStopInteraction(MessageComponentInteraction? stopInteraction)
     {
         StopInteraction = stopInteraction;
         return (TSelf)this;

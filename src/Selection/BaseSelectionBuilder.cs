@@ -1,8 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Discord;
+
 using JetBrains.Annotations;
+using NetCord;
 
 namespace Fergun.Interactive.Selection;
 
@@ -22,7 +23,7 @@ public abstract class BaseSelectionBuilder<TSelection, TOption, TBuilder>
     public virtual bool IsUserRestricted => Users.Count > 0;
 
     /// <inheritdoc/>
-    public virtual Func<TOption, IEmote>? EmoteConverter { get; set; }
+    public virtual Func<TOption, EmojiProperties>? EmoteConverter { get; set; }
 
     /// <inheritdoc/>
     public virtual Func<TOption, string>? StringConverter { get; set; }
@@ -37,7 +38,7 @@ public abstract class BaseSelectionBuilder<TSelection, TOption, TBuilder>
     public virtual IPageBuilder SelectionPage { get; set; } = null!;
 
     /// <inheritdoc/>
-    public virtual ICollection<IUser> Users { get; set; } = [];
+    public virtual ICollection<NetCord.User> Users { get; set; } = [];
 
     /// <summary>
     /// Gets or sets the options to select from.
@@ -77,7 +78,7 @@ public abstract class BaseSelectionBuilder<TSelection, TOption, TBuilder>
     /// Gets or sets the factory of the <see cref="IPage"/> that will be displayed ephemerally to a user when they are not allowed to interact with the <typeparamref name="TSelection"/>.
     /// </summary>
     /// <remarks>The first argument of the factory is a read-only collection of users who are allowed to interact with the paginator.</remarks>
-    public virtual Func<IReadOnlyCollection<IUser>, IPage>? RestrictedPageFactory { get; set; }
+    public virtual Func<IReadOnlyCollection<NetCord.User>, IPage>? RestrictedPageFactory { get; set; }
 
     /// <inheritdoc/>
     public virtual ActionOnStop ActionOnSuccess { get; set; }
@@ -98,7 +99,7 @@ public abstract class BaseSelectionBuilder<TSelection, TOption, TBuilder>
     public abstract TSelection Build();
 
     /// <summary>
-    /// Sets a function that returns an <see cref="IEmote"/> representation of a <typeparamref name="TOption"/>.
+    /// Sets a function that returns an <see cref="EmojiProperties"/> representation of a <typeparamref name="TOption"/>.
     /// </summary>
     /// <param name="emoteConverter">The emote converter.</param>
     /// <remarks>
@@ -109,7 +110,7 @@ public abstract class BaseSelectionBuilder<TSelection, TOption, TBuilder>
     /// Select menus: Optional.
     /// </remarks>
     /// <returns>This builder.</returns>
-    public virtual TBuilder WithEmoteConverter(Func<TOption, IEmote> emoteConverter)
+    public virtual TBuilder WithEmoteConverter(Func<TOption, EmojiProperties> emoteConverter)
     {
         EmoteConverter = emoteConverter;
         return (TBuilder)this;
@@ -175,7 +176,7 @@ public abstract class BaseSelectionBuilder<TSelection, TOption, TBuilder>
     /// </summary>
     /// <param name="users">The users.</param>
     /// <returns>This builder.</returns>
-    public virtual TBuilder WithUsers(params IUser[] users)
+    public virtual TBuilder WithUsers(params NetCord.User[] users)
     {
         InteractiveGuards.NotNull(users);
         Users = users.ToList();
@@ -187,7 +188,7 @@ public abstract class BaseSelectionBuilder<TSelection, TOption, TBuilder>
     /// </summary>
     /// <param name="users">The users.</param>
     /// <returns>This builder.</returns>
-    public virtual TBuilder WithUsers(IEnumerable<IUser> users)
+    public virtual TBuilder WithUsers(IEnumerable<NetCord.User> users)
     {
         InteractiveGuards.NotNull(users);
         Users = users.ToList();
@@ -199,7 +200,7 @@ public abstract class BaseSelectionBuilder<TSelection, TOption, TBuilder>
     /// </summary>
     /// <param name="user">The user.</param>
     /// <returns>This builder.</returns>
-    public virtual TBuilder AddUser(IUser user)
+    public virtual TBuilder AddUser(NetCord.User user)
     {
         InteractiveGuards.NotNull(user);
         Users.Add(user);
@@ -318,7 +319,7 @@ public abstract class BaseSelectionBuilder<TSelection, TOption, TBuilder>
     /// <remarks>The first argument of the factory is a read-only collection of users who are allowed to interact with the selection.</remarks>
     /// <param name="pageFactory">The restricted page factory. The first argument is a read-only collection of users who are allowed to interact with the selection.</param>
     /// <returns>This builder.</returns>
-    public virtual TBuilder WithRestrictedPageFactory(Func<IReadOnlyCollection<IUser>, IPage> pageFactory)
+    public virtual TBuilder WithRestrictedPageFactory(Func<IReadOnlyCollection<NetCord.User>, IPage> pageFactory)
     {
         InteractiveGuards.NotNull(pageFactory);
         RestrictedPageFactory = pageFactory;

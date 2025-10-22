@@ -1,6 +1,7 @@
 using System;
-using Discord;
+
 using JetBrains.Annotations;
+using NetCord;
 
 namespace Fergun.Interactive.Pagination;
 
@@ -15,7 +16,7 @@ public class PaginatorButton : IPaginatorButton
     /// <param name="emote">The emote.</param>
     /// <param name="text">The button text.</param>
     /// <param name="isDisabled">A value indicating whether to disable the button.</param>
-    public PaginatorButton(string url, IEmote? emote, string? text, bool? isDisabled = null)
+    public PaginatorButton(string url, EmojiProperties? emote, string? text, bool? isDisabled = null)
         : this((PaginatorAction)(-1), emote, text, ButtonStyle.Link, isDisabled)
     {
         if (string.IsNullOrEmpty(url))
@@ -30,7 +31,7 @@ public class PaginatorButton : IPaginatorButton
     /// <param name="emote">The emote.</param>
     /// <param name="action">The action.</param>
     /// <param name="style">The button style.</param>
-    public PaginatorButton(IEmote emote, PaginatorAction action, ButtonStyle? style = null)
+    public PaginatorButton(EmojiProperties emote, PaginatorAction action, ButtonStyle? style = null)
         : this(action, emote, text: null, style, isDisabled: null)
     {
     }
@@ -55,7 +56,7 @@ public class PaginatorButton : IPaginatorButton
     /// <param name="text">The button text.</param>
     /// <param name="style">The button style.</param>
     /// <param name="isDisabled">A value indicating whether to disable the button.</param>
-    public PaginatorButton(string customId, IEmote? emote, string? text, ButtonStyle? style, bool? isDisabled = null)
+    public PaginatorButton(string customId, EmojiProperties? emote, string? text, ButtonStyle? style, bool? isDisabled = null)
      : this((PaginatorAction)(-1), emote, text, style, isDisabled)
     {
         if (string.IsNullOrEmpty(customId))
@@ -72,7 +73,7 @@ public class PaginatorButton : IPaginatorButton
     /// <param name="text">The button text.</param>
     /// <param name="style">The button style.</param>
     /// <param name="isDisabled">A value indicating whether to disable the button.</param>
-    public PaginatorButton(PaginatorAction action, IEmote? emote, string? text, ButtonStyle? style, bool? isDisabled)
+    public PaginatorButton(PaginatorAction action, EmojiProperties? emote, string? text, ButtonStyle? style, bool? isDisabled)
     {
         if (emote is null && string.IsNullOrEmpty(text))
         {
@@ -103,7 +104,7 @@ public class PaginatorButton : IPaginatorButton
     public string? Text { get; }
 
     /// <inheritdoc/>
-    public IEmote? Emote { get; }
+    public EmojiProperties? Emote { get; }
 
     /// <inheritdoc/>
     public PaginatorAction Action { get; }

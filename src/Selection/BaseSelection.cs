@@ -5,10 +5,13 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Discord;
-using Discord.WebSocket;
+
+
 using Fergun.Interactive.Extensions;
 using JetBrains.Annotations;
+using NetCord;
+using NetCord.Gateway;
+using NetCord.Rest;
 
 namespace Fergun.Interactive.Selection;
 
@@ -50,7 +53,7 @@ public abstract class BaseSelection<TOption> : IInteractiveElement<TOption>
         MinValues = properties.MinValues;
         MaxValues = properties.MaxValues;
         Placeholder = properties.Placeholder;
-        Users = new ReadOnlyCollection<IUser>(properties.Users.ToArray());
+        Users = new ReadOnlyCollection<NetCord.User>(properties.Users.ToArray());
         CanceledPage = properties.CanceledPage?.Build();
         TimeoutPage = properties.TimeoutPage?.Build();
         RestrictedPage = properties.RestrictedPageFactory?.Invoke(Users);
@@ -76,9 +79,9 @@ public abstract class BaseSelection<TOption> : IInteractiveElement<TOption>
     public bool IsUserRestricted => Users.Count > 0;
 
     /// <summary>
-    /// Gets a function that returns an <see cref="IEmote"/> representation of a <typeparamref name="TOption"/>.
+    /// Gets a function that returns an <see cref="EmojiProperties"/> representation of a <typeparamref name="TOption"/>.
     /// </summary>
-    public Func<TOption, IEmote>? EmoteConverter { get; }
+    public Func<TOption, EmojiProperties>? EmoteConverter { get; }
 
     /// <summary>
     /// Gets a function that returns a <see cref="string"/> representation of a <typeparamref name="TOption"/>.
@@ -126,7 +129,7 @@ public abstract class BaseSelection<TOption> : IInteractiveElement<TOption>
     public string? Placeholder { get; }
 
     /// <inheritdoc/>
-    public IReadOnlyCollection<IUser> Users { get; }
+    public IReadOnlyCollection<NetCord.User> Users { get; }
 
     /// <inheritdoc/>
     public IReadOnlyCollection<TOption> Options { get; }
@@ -171,17 +174,17 @@ public abstract class BaseSelection<TOption> : IInteractiveElement<TOption>
     public ActionOnStop ActionOnSuccess { get; }
 
     /// <inheritdoc/>
-    public virtual ComponentBuilder GetOrAddComponents(bool disableAll, ComponentBuilder? builder = null)
+    public virtual List<IMessageComponentProperties> GetOrAddComponents(bool disableAll, List<IMessageComponentProperties>? builder = null)
     {
         if (!(InputType.HasFlag(InputType.Buttons) || InputType.HasFlag(InputType.SelectMenus)))
         {
             throw new InvalidOperationException($"{nameof(InputType)} must have either {nameof(InputType.Buttons)} or {nameof(InputType.SelectMenus)}.");
         }
 
-        builder ??= new ComponentBuilder();
+        builder ??= new List<IMessageComponentProperties>();
         if (InputType.HasFlag(InputType.SelectMenus))
         {
-            var options = new List<SelectMenuOptionBuilder>();
+            var options = new List<StringMenuSelectOptionProperties>();
 
             foreach (var selection in Options)
             {
@@ -192,16 +195,13 @@ public abstract class BaseSelection<TOption> : IInteractiveElement<TOption>
                     throw new InvalidOperationException($"Neither {nameof(EmoteConverter)} nor {nameof(StringConverter)} returned a valid emote or string.");
                 }
 
-                var option = new SelectMenuOptionBuilder()
-                    .WithLabel(label)
-                    .WithEmote(emote)
-                    .WithValue(emote?.ToString() ?? label);
+                var option = new StringMenuSelectOptionProperties(label!, emote?.ToString() ?? label!)
+                    .WithEmoji(emote);
 
                 options.Add(option);
             }
 
-            var selectMenu = new SelectMenuBuilder()
-                .WithCustomId("foobar")
+            var selectMenu = new StringMenuProperties("foobar")
                 .WithOptions(options)
                 .WithDisabled(disableAll)
                 .WithMinValues(MinValues)
@@ -210,7 +210,7 @@ public abstract class BaseSelection<TOption> : IInteractiveElement<TOption>
             if (!string.IsNullOrEmpty(Placeholder))
                 selectMenu.WithPlaceholder(Placeholder);
 
-            builder.WithSelectMenu(selectMenu);
+            builder.Add(selectMenu);
         }
 
         if (!InputType.HasFlag(InputType.Buttons))
@@ -225,23 +225,20 @@ public abstract class BaseSelection<TOption> : IInteractiveElement<TOption>
                 throw new InvalidOperationException($"Neither {nameof(EmoteConverter)} nor {nameof(StringConverter)} returned a valid emote or string.");
             }
 
-            var button = new ButtonBuilder()
-                .WithCustomId(emote?.ToString() ?? label)
-                .WithStyle(ButtonStyle.Primary)
-                .WithEmote(emote)
+            var button = new ButtonProperties(emote?.ToString() ?? label!, emote!, ButtonStyle.Primary)
                 .WithDisabled(disableAll);
 
             if (label is not null)
                 button.Label = label;
 
-            builder.WithButton(button);
+            builder.Add(new ActionRowProperties([button]));
         }
 
         return builder;
     }
 
     /// <inheritdoc cref="IInteractiveInputHandler.HandleMessageAsync"/>
-    public virtual async Task<InteractiveInputResult<TOption>> HandleMessageAsync(IMessage input, IUserMessage message)
+    public virtual async Task<InteractiveInputResult<TOption>> HandleMessageAsync(Message input, RestMessage message)
     {
         InteractiveGuards.NotNull(input);
         InteractiveGuards.NotNull(message);
@@ -250,8 +247,6 @@ public abstract class BaseSelection<TOption> : IInteractiveElement<TOption>
         {
             return InteractiveInputStatus.Ignored;
         }
-
-        bool manageMessages = await message.Channel.CurrentUserHasManageMessagesAsync().ConfigureAwait(false);
 
         TOption? selected = default;
         foreach (var value in Options)
@@ -264,11 +259,6 @@ public abstract class BaseSelection<TOption> : IInteractiveElement<TOption>
 
         if (selected is null)
         {
-            if (manageMessages && Deletion.HasFlag(DeletionOptions.Invalid))
-            {
-                await input.DeleteAsync().ConfigureAwait(false);
-            }
-
             return InteractiveInputStatus.Ignored;
         }
 
@@ -279,16 +269,12 @@ public abstract class BaseSelection<TOption> : IInteractiveElement<TOption>
             return new InteractiveInputResult<TOption>(InteractiveInputStatus.Canceled, selected);
         }
 
-        if (manageMessages && Deletion.HasFlag(DeletionOptions.Valid))
-        {
-            await input.DeleteAsync().ConfigureAwait(false);
-        }
-
+        await Task.CompletedTask;
         return new InteractiveInputResult<TOption>(InteractiveInputStatus.Success, selected);
     }
 
     /// <inheritdoc cref="IInteractiveInputHandler.HandleReactionAsync"/>
-    public virtual async Task<InteractiveInputResult<TOption>> HandleReactionAsync(SocketReaction input, IUserMessage message)
+    public virtual async Task<InteractiveInputResult<TOption>> HandleReactionAsync(MessageReactionAddEventArgs input, RestMessage message)
     {
         InteractiveGuards.NotNull(input);
         InteractiveGuards.NotNull(message);
@@ -298,24 +284,17 @@ public abstract class BaseSelection<TOption> : IInteractiveElement<TOption>
             return InteractiveInputStatus.Ignored;
         }
 
-        bool manageMessages = await message.Channel.CurrentUserHasManageMessagesAsync().ConfigureAwait(false);
-
         TOption? selected = default;
         foreach (var value in Options)
         {
             var temp = EmoteConverter?.Invoke(value);
-            if (temp?.Name != input.Emote.Name) continue;
+            if (temp?.Name != input.Emoji.Name) continue;
             selected = value;
             break;
         }
 
         if (selected is null)
         {
-            if (manageMessages && Deletion.HasFlag(DeletionOptions.Invalid))
-            {
-                await message.RemoveReactionAsync(input.Emote, input.UserId).ConfigureAwait(false);
-            }
-
             return InteractiveInputStatus.Ignored;
         }
 
@@ -326,16 +305,12 @@ public abstract class BaseSelection<TOption> : IInteractiveElement<TOption>
             return new InteractiveInputResult<TOption>(InteractiveInputStatus.Canceled, selected);
         }
 
-        if (manageMessages && Deletion.HasFlag(DeletionOptions.Valid))
-        {
-            await message.RemoveReactionAsync(input.Emote, input.UserId).ConfigureAwait(false);
-        }
-
+        await Task.CompletedTask;
         return new InteractiveInputResult<TOption>(InteractiveInputStatus.Success, selected);
     }
 
     /// <inheritdoc cref="IInteractiveInputHandler.HandleInteractionAsync"/>
-    public virtual async Task<InteractiveInputResult<TOption>> HandleInteractionAsync(SocketMessageComponent input, IUserMessage message)
+    public virtual async Task<InteractiveInputResult<TOption>> HandleInteractionAsync(MessageComponentInteraction input, RestMessage message)
     {
         InteractiveGuards.NotNull(input);
         InteractiveGuards.NotNull(message);
@@ -356,10 +331,10 @@ public abstract class BaseSelection<TOption> : IInteractiveElement<TOption>
             };
         }
 
-        var selectedValues = input.Data.Type switch
+        var selectedValues = input.Data.ComponentType switch
         {
             ComponentType.Button => [input.Data.CustomId],
-            ComponentType.SelectMenu => input.Data.Values,
+            ComponentType.StringMenu => ((StringMenuInteractionData)input.Data).SelectedValues,
             _ => []
         };
 
@@ -388,21 +363,19 @@ public abstract class BaseSelection<TOption> : IInteractiveElement<TOption>
     }
 
     /// <inheritdoc/>
-    async Task<IInteractiveResult<InteractiveInputStatus>> IInteractiveInputHandler.HandleMessageAsync(IMessage input, IUserMessage message)
+    async Task<IInteractiveResult<InteractiveInputStatus>> IInteractiveInputHandler.HandleMessageAsync(Message input, RestMessage message)
         => await HandleMessageAsync(input, message).ConfigureAwait(false);
 
     /// <inheritdoc/>
-    async Task<IInteractiveResult<InteractiveInputStatus>> IInteractiveInputHandler.HandleReactionAsync(IReaction input, IUserMessage message)
+    async Task<IInteractiveResult<InteractiveInputStatus>> IInteractiveInputHandler.HandleReactionAsync(MessageReactionAddEventArgs input, RestMessage message)
     {
-        InteractiveGuards.ExpectedType<IReaction, SocketReaction>(input, out var socketReaction);
-        return await HandleReactionAsync(socketReaction, message).ConfigureAwait(false);
+        return await HandleReactionAsync(input, message).ConfigureAwait(false);
     }
 
     /// <inheritdoc/>
-    async Task<IInteractiveResult<InteractiveInputStatus>> IInteractiveInputHandler.HandleInteractionAsync(IComponentInteraction input, IUserMessage message)
+    async Task<IInteractiveResult<InteractiveInputStatus>> IInteractiveInputHandler.HandleInteractionAsync(MessageComponentInteraction input, RestMessage message)
     {
-        InteractiveGuards.ExpectedType<IComponentInteraction, SocketMessageComponent>(input, out var socketMessageComponent);
-        return await HandleInteractionAsync(socketMessageComponent, message).ConfigureAwait(false);
+        return await HandleInteractionAsync(input, message).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -413,7 +386,7 @@ public abstract class BaseSelection<TOption> : IInteractiveElement<TOption>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to cancel this request.</param>
     /// <exception cref="InvalidOperationException">Thrown when <see cref="EmoteConverter"/> is <see langword="null"/>.</exception>
     /// <returns>A task representing the asynchronous operation.</returns>
-    internal virtual async Task InitializeMessageAsync(IUserMessage message, CancellationToken cancellationToken = default)
+    internal virtual async Task InitializeMessageAsync(Message message, CancellationToken cancellationToken = default)
     {
         if (!InputType.HasFlag(InputType.Reactions)) return;
         if (EmoteConverter is null)
@@ -430,25 +403,31 @@ public abstract class BaseSelection<TOption> : IInteractiveElement<TOption>
 
             var emote = EmoteConverter(selection);
 
+            
+            // TODO: Fix?
+
+            await Task.CompletedTask;
             // Only add missing reactions
-            if (!message.Reactions.ContainsKey(emote))
+            /*
+            if (!message.Reactions.Any(x => x.Emoji == emote))
             {
                 await message.AddReactionAsync(emote).ConfigureAwait(false);
             }
+            */
         }
     }
 
-    private static async Task<InteractiveInputResult<TOption>> DeferInteractionAsync(SocketMessageComponent input)
+    private static async Task<InteractiveInputResult<TOption>> DeferInteractionAsync(MessageComponentInteraction input)
     {
-        await input.DeferAsync().ConfigureAwait(false);
+        await input.SendResponseAsync(InteractionCallback.DeferredModifyMessage).ConfigureAwait(false);
         return InteractiveInputStatus.Ignored;
     }
 
-    private async Task<InteractiveInputResult<TOption>> SendRestrictedMessageAsync(SocketMessageComponent input)
+    private async Task<InteractiveInputResult<TOption>> SendRestrictedMessageAsync(MessageComponentInteraction input)
     {
         var page = RestrictedPage ?? throw new InvalidOperationException($"Expected {nameof(RestrictedPage)} to be non-null.");
         var attachments = page.AttachmentsFactory is null ? null : await page.AttachmentsFactory().ConfigureAwait(false);
-        await input.RespondWithFilesAsync(attachments ?? [], page.Text, page.GetEmbedArray(), page.IsTTS,
+        await input.RespondWithFilesAsync(attachments ?? [], page.Text, page.Embeds, page.IsTTS,
             ephemeral: true, page.AllowedMentions, flags: page.MessageFlags ?? MessageFlags.None).ConfigureAwait(false);
 
         return InteractiveInputStatus.Ignored;

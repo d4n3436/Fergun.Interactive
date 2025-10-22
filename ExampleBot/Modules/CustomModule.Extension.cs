@@ -2,8 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Discord;
-using Discord.Interactions;
+
+
 using ExampleBot.Extensions;
 using Fergun.Interactive;
 using Fergun.Interactive.Pagination;
@@ -96,11 +96,11 @@ public static class BuilderExtensions
     {
         builder.Options.Clear();
 
-        builder.AddOption(Emoji.Parse("⏮️"), PaginatorAction.SkipToStart);
-        builder.AddOption(Emoji.Parse("◀️"), PaginatorAction.Backward);
-        builder.AddOption(Emoji.Parse("▶️"), PaginatorAction.Forward);
-        builder.AddOption(Emoji.Parse("⏭️"), PaginatorAction.SkipToEnd);
-        builder.AddOption(Emoji.Parse("🛑"), PaginatorAction.Exit);
+        builder.AddOption(EmojiProperties.Parse("⏮️"), PaginatorAction.SkipToStart);
+        builder.AddOption(EmojiProperties.Parse("◀️"), PaginatorAction.Backward);
+        builder.AddOption(EmojiProperties.Parse("▶️"), PaginatorAction.Forward);
+        builder.AddOption(EmojiProperties.Parse("⏭️"), PaginatorAction.SkipToEnd);
+        builder.AddOption(EmojiProperties.Parse("🛑"), PaginatorAction.Exit);
 
         return (TBuilder)builder;
     }

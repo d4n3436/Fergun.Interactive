@@ -1,8 +1,10 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
-using Discord;
 using JetBrains.Annotations;
+using NetCord;
+using NetCord.Rest;
 
 namespace Fergun.Interactive;
 
@@ -12,46 +14,45 @@ namespace Fergun.Interactive;
 [PublicAPI]
 public class Page : IPage
 {
-    private readonly Lazy<Embed[]> _lazyEmbeds;
+    private readonly Lazy<EmbedProperties[]> _lazyEmbeds;
 
     internal Page(PageBuilder builder)
     {
         InteractiveGuards.NotNull(builder);
-        InteractiveGuards.NotNull(builder.Stickers);
+        InteractiveGuards.NotNull(builder.StickerIds);
 
         Text = builder.Text;
         IsTTS = builder.IsTTS;
         AllowedMentions = builder.AllowedMentions;
         MessageReference = builder.MessageReference;
-        Stickers = builder.Stickers;
+        StickerIds = builder.StickerIds;
         AttachmentsFactory = builder.AttachmentsFactory;
         Components = builder.Components;
         MessageFlags = builder.MessageFlags;
 
         bool isEmpty = false;
-        var embedBuilder = builder.GetEmbedBuilder();
+        var embedProperties = builder.GetEmbedProperties();
 
-        if (embedBuilder.Author is null &&
-            embedBuilder.Color is null &&
-            embedBuilder.Description is null &&
-            (embedBuilder.Fields is null || embedBuilder.Fields.Count == 0) &&
-            embedBuilder.Footer is null &&
-            embedBuilder.ImageUrl is null &&
-            embedBuilder.ThumbnailUrl is null &&
-            embedBuilder.Timestamp is null &&
-            embedBuilder.Title is null &&
-            embedBuilder.Url is null)
+        if (embedProperties.Author is null &&
+            embedProperties.Description is null &&
+            (embedProperties.Fields is null || !embedProperties.Fields.Any()) &&
+            embedProperties.Footer is null &&
+            embedProperties.Image is null &&
+            embedProperties.Thumbnail is null &&
+            embedProperties.Timestamp is null &&
+            embedProperties.Title is null &&
+            embedProperties.Url is null)
         {
             if (string.IsNullOrEmpty(builder.Text) && Components is null && AttachmentsFactory is null)
             {
-                throw new InvalidOperationException("Either a text, a valid EmbedBuilder, Components or an AttachmentsFactory must be present.");
+                throw new InvalidOperationException("Either a text, a valid EmbedProperties, Components or an AttachmentsFactory must be present.");
             }
 
             isEmpty = true;
         }
 
-        Embed = isEmpty ? null : embedBuilder.Build();
-        _lazyEmbeds = new Lazy<Embed[]>(() => Embed is null ? [] : [Embed]);
+        Embed = isEmpty ? null : embedProperties;
+        _lazyEmbeds = new Lazy<EmbedProperties[]>(() => Embed is null ? [] : [Embed]);
     }
 
     /// <inheritdoc/>
@@ -61,19 +62,19 @@ public class Page : IPage
     public bool IsTTS { get; }
 
     /// <inheritdoc/>
-    public AllowedMentions? AllowedMentions { get; }
+    public AllowedMentionsProperties? AllowedMentions { get; }
 
     /// <inheritdoc/>
-    public MessageReference? MessageReference { get; }
+    public MessageReferenceProperties? MessageReference { get; }
 
     /// <inheritdoc/>
-    public IReadOnlyCollection<ISticker> Stickers { get; }
+    public IReadOnlyCollection<ulong> StickerIds { get; }
 
     /// <inheritdoc/>
-    public Func<ValueTask<IEnumerable<FileAttachment>?>>? AttachmentsFactory { get; }
+    public Func<ValueTask<IEnumerable<AttachmentProperties>?>>? AttachmentsFactory { get; }
 
     /// <inheritdoc/>
-    public MessageComponent? Components { get; }
+    public List<IMessageComponentProperties>? Components { get; }
 
     /// <inheritdoc/>
     public MessageFlags? MessageFlags { get; }
@@ -81,29 +82,18 @@ public class Page : IPage
     /// <summary>
     /// Gets the embed of this page.
     /// </summary>
-    public Embed? Embed { get; }
+    public EmbedProperties? Embed { get; }
 
     /// <inheritdoc/>
-    IReadOnlyCollection<Embed> IPage<Embed>.Embeds => _lazyEmbeds.Value;
-
-    /// <inheritdoc />
-    Embed[] IPage.GetEmbedArray() => _lazyEmbeds.Value;
+    public IReadOnlyCollection<EmbedProperties> Embeds => _lazyEmbeds.Value;
 
     /// <summary>
-    /// Creates a new <see cref="Page"/> from an <see cref="Discord.Embed"/>.
-    /// </summary>
-    /// <param name="embed">The embed.</param>
-    /// <returns>A <see cref="Page"/>.</returns>
-    public static Page FromEmbed(Embed embed)
-        => new(PageBuilder.FromEmbed(embed));
-
-    /// <summary>
-    /// Creates a new <see cref="Page"/> from an <see cref="EmbedBuilder"/>.
+    /// Creates a new <see cref="Page"/> from an <see cref="EmbedProperties"/>.
     /// </summary>
     /// <param name="builder">The builder.</param>
     /// <returns>A <see cref="Page"/>.</returns>
-    public static Page FromEmbedBuilder(EmbedBuilder builder)
-        => new(PageBuilder.FromEmbedBuilder(builder));
+    public static Page FromEmbedProperties(EmbedProperties builder)
+        => new(PageBuilder.FromEmbedProperties(builder));
 
     /// <summary>
     /// Creates a <see cref="PageBuilder"/> with all the values of this <see cref="Page"/>.

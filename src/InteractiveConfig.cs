@@ -1,5 +1,5 @@
 ﻿using System;
-using Discord;
+
 using JetBrains.Annotations;
 
 namespace Fergun.Interactive;

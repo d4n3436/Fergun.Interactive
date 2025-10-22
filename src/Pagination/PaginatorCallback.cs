@@ -1,7 +1,9 @@
 using System;
 using System.Threading.Tasks;
-using Discord;
-using Discord.WebSocket;
+using NetCord;
+using NetCord.Gateway;
+using NetCord.Rest;
+
 
 namespace Fergun.Interactive.Pagination;
 
@@ -12,9 +14,9 @@ internal sealed class PaginatorCallback : IInteractiveCallback
 {
     private bool _disposed;
 
-    public PaginatorCallback(Paginator paginator, IUserMessage message,
+    public PaginatorCallback(Paginator paginator, RestMessage message,
         TimeoutTaskCompletionSource<InteractiveStatus> timeoutTaskSource,
-        DateTimeOffset startTime, IDiscordInteraction? initialInteraction = null)
+        DateTimeOffset startTime, Interaction? initialInteraction = null)
     {
         Paginator = paginator;
         Message = message;
@@ -31,7 +33,7 @@ internal sealed class PaginatorCallback : IInteractiveCallback
     /// <summary>
     /// Gets the message that contains the paginator.
     /// </summary>
-    public IUserMessage Message { get; }
+    public RestMessage Message { get; }
 
     /// <summary>
     /// Gets the <see cref="TimeoutTaskCompletionSource{TResult}"/> used to set the result of the paginator.
@@ -45,28 +47,28 @@ internal sealed class PaginatorCallback : IInteractiveCallback
     /// Gets the last received interaction that is not <see cref="StopInteraction"/>.
     /// </summary>
     /// <remarks>For paginators, this is either the interaction that was received to update a message to a paginator or the interaction received to change the pages.</remarks>
-    public IDiscordInteraction? LastInteraction { get; private set; }
+    public Interaction? LastInteraction { get; private set; }
 
     /// <summary>
     /// Gets the message that was received to stop the paginator.
     /// </summary>
-    public IMessage? StopMessage { get; private set; }
+    public Message? StopMessage { get; private set; }
 
     /// <summary>
     /// Gets the reaction that was received to stop the paginator.
     /// </summary>
-    public SocketReaction? StopReaction { get; private set; }
+    public MessageReactionAddEventArgs? StopReaction { get; private set; }
 
     /// <summary>
     /// Gets the interaction that was received to stop the paginator.
     /// </summary>
-    public SocketMessageComponent? StopInteraction { get; private set; }
+    public MessageComponentInteraction? StopInteraction { get; private set; }
 
     /// <inheritdoc/>
     public void Cancel() => TimeoutTaskSource.TryCancel();
 
     /// <inheritdoc/>
-    public async Task ExecuteAsync(SocketMessage message)
+    public async Task ExecuteAsync(Message message)
     {
         var result = await Paginator.HandleMessageAsync(message, Message).ConfigureAwait(false);
         switch (result.Status)
@@ -83,7 +85,7 @@ internal sealed class PaginatorCallback : IInteractiveCallback
     }
 
     /// <inheritdoc/>
-    public async Task ExecuteAsync(SocketReaction reaction)
+    public async Task ExecuteAsync(MessageReactionAddEventArgs reaction)
     {
         var result = await Paginator.HandleReactionAsync(reaction, Message).ConfigureAwait(false);
         switch (result.Status)
@@ -100,14 +102,14 @@ internal sealed class PaginatorCallback : IInteractiveCallback
     }
 
     /// <inheritdoc/>
-    public async Task ExecuteAsync(SocketInteraction interaction)
+    public async Task ExecuteAsync(Interaction interaction)
     {
-        if (interaction is SocketModal modal)
+        if (interaction is ModalInteraction modal)
         {
             await Paginator.HandleModalAsync(modal, Message).ConfigureAwait(false);
         }
 
-        if (interaction is not SocketMessageComponent component)
+        if (interaction is not MessageComponentInteraction component)
         {
             return;
         }

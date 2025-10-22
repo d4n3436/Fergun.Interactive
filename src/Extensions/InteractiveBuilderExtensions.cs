@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Linq;
-using Discord;
+
 using JetBrains.Annotations;
 
 namespace Fergun.Interactive.Extensions;

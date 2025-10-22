@@ -1,6 +1,6 @@
 using System;
 using System.Collections.Generic;
-using Discord;
+
 using JetBrains.Annotations;
 
 namespace Fergun.Interactive;
@@ -15,7 +15,7 @@ public interface IInteractiveBuilderProperties<TOption>
     /// <summary>
     /// Gets or sets the users who can interact with the element.
     /// </summary>
-    ICollection<IUser> Users { get; set; }
+    ICollection<NetCord.User> Users { get; set; }
 
     /// <summary>
     /// Gets or sets a collection of options.
@@ -62,5 +62,5 @@ public interface IInteractiveBuilderProperties<TOption>
     /// Gets or sets the factory of the <see cref="IPage"/> that will be displayed ephemerally to a user when they are not allowed to interact with the element.
     /// </summary>
     /// <remarks>The first argument of the factory is a read-only collection of users who are allowed to interact with the paginator.</remarks>
-    Func<IReadOnlyCollection<IUser>, IPage>? RestrictedPageFactory { get; set; }
+    Func<IReadOnlyCollection<NetCord.User>, IPage>? RestrictedPageFactory { get; set; }
 }

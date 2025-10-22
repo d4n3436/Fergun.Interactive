@@ -1,6 +1,7 @@
 using System;
 using System.Threading.Tasks;
-using Discord.WebSocket;
+using NetCord.Gateway;
+
 
 namespace Fergun.Interactive;
 
@@ -56,7 +57,7 @@ internal sealed class FilteredCallback<TInput> : IFilteredCallback, IInteractive
     }
 
     /// <inheritdoc/>
-    public Task ExecuteAsync(SocketMessage message)
+    public Task ExecuteAsync(Message message)
     {
         if (message is TInput input)
         {
@@ -67,7 +68,7 @@ internal sealed class FilteredCallback<TInput> : IFilteredCallback, IInteractive
     }
 
     /// <inheritdoc/>
-    public Task ExecuteAsync(SocketReaction reaction)
+    public Task ExecuteAsync(MessageReactionAddEventArgs reaction)
     {
         if (reaction is TInput input)
         {
@@ -78,7 +79,7 @@ internal sealed class FilteredCallback<TInput> : IFilteredCallback, IInteractive
     }
 
     /// <inheritdoc/>
-    public Task ExecuteAsync(SocketInteraction interaction)
+    public Task ExecuteAsync(Interaction interaction)
     {
         if (interaction is TInput input)
         {

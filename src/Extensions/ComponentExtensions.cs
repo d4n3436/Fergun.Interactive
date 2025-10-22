@@ -1,6 +1,7 @@
 ﻿using System;
-using Discord;
+
 using JetBrains.Annotations;
+using NetCord;
 
 namespace Fergun.Interactive.Pagination;
 
@@ -15,12 +16,12 @@ public static class ComponentExtensions
     /// </summary>
     /// <param name="builder">The action row builder.</param>
     /// <param name="paginator">The paginator.</param>
-    /// <param name="label">The label of the button. If both <paramref name="label"/> and <paramref name="emote"/> are empty, a default <see cref="IEmote"/> will be set.</param>
+    /// <param name="label">The label of the button. If both <paramref name="label"/> and <paramref name="emote"/> are empty, a default <see cref="EmojiProperties"/> will be set.</param>
     /// <param name="style">The style of the button. If one is not provided, the library will decide which one to use.</param>
-    /// <param name="emote">The <see cref="IEmote"/> to be used with the button. If both <paramref name="label"/> and <paramref name="emote"/> are empty, a default <see cref="IEmote"/> will be set.</param>
+    /// <param name="emote">The <see cref="EmojiProperties"/> to be used with the button. If both <paramref name="label"/> and <paramref name="emote"/> are empty, a default <see cref="EmojiProperties"/> will be set.</param>
     /// <returns>This <see cref="ActionRowBuilder"/>.</returns>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="builder"/> or <paramref name="paginator"/> are <see langword="null"/>.</exception>
-    public static ActionRowBuilder AddPreviousButton(this ActionRowBuilder builder, IComponentPaginator paginator, string? label = null, ButtonStyle? style = null, IEmote? emote = null)
+    public static ActionRowBuilder AddPreviousButton(this ActionRowBuilder builder, IComponentPaginator paginator, string? label = null, ButtonStyle? style = null, EmojiProperties? emote = null)
         => builder.AddButton(paginator, PaginatorAction.Backward, label, style, emote);
 
     /// <summary>
@@ -28,13 +29,13 @@ public static class ComponentExtensions
     /// </summary>
     /// <param name="builder">The component builder.</param>
     /// <param name="paginator">The paginator.</param>
-    /// <param name="label">The label of the button. If both <paramref name="label"/> and <paramref name="emote"/> are empty, a default <see cref="IEmote"/> will be set.</param>
+    /// <param name="label">The label of the button. If both <paramref name="label"/> and <paramref name="emote"/> are empty, a default <see cref="EmojiProperties"/> will be set.</param>
     /// <param name="style">The style of the button. If one is not provided, the library will decide which one to use.</param>
-    /// <param name="emote">The <see cref="IEmote"/> to be used with the button. If both <paramref name="label"/> and <paramref name="emote"/> are empty, a default <see cref="IEmote"/> will be set.</param>
+    /// <param name="emote">The <see cref="EmojiProperties"/> to be used with the button. If both <paramref name="label"/> and <paramref name="emote"/> are empty, a default <see cref="EmojiProperties"/> will be set.</param>
     /// <param name="row">The row the button should be placed on.</param>
     /// <returns>This <see cref="ComponentBuilder"/>.</returns>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="builder"/> or <paramref name="paginator"/> are <see langword="null"/>.</exception>
-    public static ComponentBuilder AddPreviousButton(this ComponentBuilder builder, IComponentPaginator paginator, string? label = null, ButtonStyle? style = null, IEmote? emote = null, int row = 0)
+    public static ComponentBuilder AddPreviousButton(this ComponentBuilder builder, IComponentPaginator paginator, string? label = null, ButtonStyle? style = null, EmojiProperties? emote = null, int row = 0)
         => builder.AddButton(paginator, PaginatorAction.Backward, label, style, emote, row);
 
     /// <summary>
@@ -42,12 +43,12 @@ public static class ComponentExtensions
     /// </summary>
     /// <param name="builder">The action row builder.</param>
     /// <param name="paginator">The paginator.</param>
-    /// <param name="label">The label of the button. If both <paramref name="label"/> and <paramref name="emote"/> are empty, a default <see cref="IEmote"/> will be set.</param>
+    /// <param name="label">The label of the button. If both <paramref name="label"/> and <paramref name="emote"/> are empty, a default <see cref="EmojiProperties"/> will be set.</param>
     /// <param name="style">The style of the button. If one is not provided, the library will decide which one to use.</param>
-    /// <param name="emote">The <see cref="IEmote"/> to be used with the button. If both <paramref name="label"/> and <paramref name="emote"/> are empty, a default <see cref="IEmote"/> will be set.</param>
+    /// <param name="emote">The <see cref="EmojiProperties"/> to be used with the button. If both <paramref name="label"/> and <paramref name="emote"/> are empty, a default <see cref="EmojiProperties"/> will be set.</param>
     /// <returns>This <see cref="ActionRowBuilder"/>.</returns>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="builder"/> or <paramref name="paginator"/> are <see langword="null"/>.</exception>
-    public static ActionRowBuilder AddNextButton(this ActionRowBuilder builder, IComponentPaginator paginator, string? label = null, ButtonStyle? style = null, IEmote? emote = null)
+    public static ActionRowBuilder AddNextButton(this ActionRowBuilder builder, IComponentPaginator paginator, string? label = null, ButtonStyle? style = null, EmojiProperties? emote = null)
         => builder.AddButton(paginator, PaginatorAction.Forward, label, style, emote);
 
     /// <summary>
@@ -55,13 +56,13 @@ public static class ComponentExtensions
     /// </summary>
     /// <param name="builder">The component builder.</param>
     /// <param name="paginator">The paginator.</param>
-    /// <param name="label">The label of the button. If both <paramref name="label"/> and <paramref name="emote"/> are empty, a default <see cref="IEmote"/> will be set.</param>
+    /// <param name="label">The label of the button. If both <paramref name="label"/> and <paramref name="emote"/> are empty, a default <see cref="EmojiProperties"/> will be set.</param>
     /// <param name="style">The style of the button. If one is not provided, the library will decide which one to use.</param>
-    /// <param name="emote">The <see cref="IEmote"/> to be used with the button. If both <paramref name="label"/> and <paramref name="emote"/> are empty, a default <see cref="IEmote"/> will be set.</param>
+    /// <param name="emote">The <see cref="EmojiProperties"/> to be used with the button. If both <paramref name="label"/> and <paramref name="emote"/> are empty, a default <see cref="EmojiProperties"/> will be set.</param>
     /// <param name="row">The row the button should be placed on.</param>
     /// <returns>This <see cref="ComponentBuilder"/>.</returns>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="builder"/> or <paramref name="paginator"/> are <see langword="null"/>.</exception>
-    public static ComponentBuilder AddNextButton(this ComponentBuilder builder, IComponentPaginator paginator, string? label = null, ButtonStyle? style = null, IEmote? emote = null, int row = 0)
+    public static ComponentBuilder AddNextButton(this ComponentBuilder builder, IComponentPaginator paginator, string? label = null, ButtonStyle? style = null, EmojiProperties? emote = null, int row = 0)
         => builder.AddButton(paginator, PaginatorAction.Forward, label, style, emote, row);
 
     /// <summary>
@@ -69,12 +70,12 @@ public static class ComponentExtensions
     /// </summary>
     /// <param name="builder">The action row builder.</param>
     /// <param name="paginator">The paginator.</param>
-    /// <param name="label">The label of the button. If both <paramref name="label"/> and <paramref name="emote"/> are empty, a default <see cref="IEmote"/> will be set.</param>
+    /// <param name="label">The label of the button. If both <paramref name="label"/> and <paramref name="emote"/> are empty, a default <see cref="EmojiProperties"/> will be set.</param>
     /// <param name="style">The style of the button. If one is not provided, the library will decide which one to use.</param>
-    /// <param name="emote">The <see cref="IEmote"/> to be used with the button. If both <paramref name="label"/> and <paramref name="emote"/> are empty, a default <see cref="IEmote"/> will be set.</param>
+    /// <param name="emote">The <see cref="EmojiProperties"/> to be used with the button. If both <paramref name="label"/> and <paramref name="emote"/> are empty, a default <see cref="EmojiProperties"/> will be set.</param>
     /// <returns>This <see cref="ActionRowBuilder"/>.</returns>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="builder"/> or <paramref name="paginator"/> are <see langword="null"/>.</exception>
-    public static ActionRowBuilder AddFirstButton(this ActionRowBuilder builder, IComponentPaginator paginator, string? label = null, ButtonStyle? style = null, IEmote? emote = null)
+    public static ActionRowBuilder AddFirstButton(this ActionRowBuilder builder, IComponentPaginator paginator, string? label = null, ButtonStyle? style = null, EmojiProperties? emote = null)
         => builder.AddButton(paginator, PaginatorAction.SkipToStart, label, style, emote);
 
     /// <summary>
@@ -82,13 +83,13 @@ public static class ComponentExtensions
     /// </summary>
     /// <param name="builder">The component builder.</param>
     /// <param name="paginator">The paginator.</param>
-    /// <param name="label">The label of the button. If both <paramref name="label"/> and <paramref name="emote"/> are empty, a default <see cref="IEmote"/> will be set.</param>
+    /// <param name="label">The label of the button. If both <paramref name="label"/> and <paramref name="emote"/> are empty, a default <see cref="EmojiProperties"/> will be set.</param>
     /// <param name="style">The style of the button. If one is not provided, the library will decide which one to use.</param>
-    /// <param name="emote">The <see cref="IEmote"/> to be used with the button. If both <paramref name="label"/> and <paramref name="emote"/> are empty, a default <see cref="IEmote"/> will be set.</param>
+    /// <param name="emote">The <see cref="EmojiProperties"/> to be used with the button. If both <paramref name="label"/> and <paramref name="emote"/> are empty, a default <see cref="EmojiProperties"/> will be set.</param>
     /// <param name="row">The row the button should be placed on.</param>
     /// <returns>This <see cref="ComponentBuilder"/>.</returns>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="builder"/> or <paramref name="paginator"/> are <see langword="null"/>.</exception>
-    public static ComponentBuilder AddFirstButton(this ComponentBuilder builder, IComponentPaginator paginator, string? label = null, ButtonStyle? style = null, IEmote? emote = null, int row = 0)
+    public static ComponentBuilder AddFirstButton(this ComponentBuilder builder, IComponentPaginator paginator, string? label = null, ButtonStyle? style = null, EmojiProperties? emote = null, int row = 0)
         => builder.AddButton(paginator, PaginatorAction.SkipToStart, label, style, emote, row);
 
     /// <summary>
@@ -96,12 +97,12 @@ public static class ComponentExtensions
     /// </summary>
     /// <param name="builder">The action row builder.</param>
     /// <param name="paginator">The paginator.</param>
-    /// <param name="label">The label of the button. If both <paramref name="label"/> and <paramref name="emote"/> are empty, a default <see cref="IEmote"/> will be set.</param>
+    /// <param name="label">The label of the button. If both <paramref name="label"/> and <paramref name="emote"/> are empty, a default <see cref="EmojiProperties"/> will be set.</param>
     /// <param name="style">The style of the button. If one is not provided, the library will decide which one to use.</param>
-    /// <param name="emote">The <see cref="IEmote"/> to be used with the button. If both <paramref name="label"/> and <paramref name="emote"/> are empty, a default <see cref="IEmote"/> will be set.</param>
+    /// <param name="emote">The <see cref="EmojiProperties"/> to be used with the button. If both <paramref name="label"/> and <paramref name="emote"/> are empty, a default <see cref="EmojiProperties"/> will be set.</param>
     /// <returns>This <see cref="ActionRowBuilder"/>.</returns>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="builder"/> or <paramref name="paginator"/> are <see langword="null"/>.</exception>
-    public static ActionRowBuilder AddLastButton(this ActionRowBuilder builder, IComponentPaginator paginator, string? label = null, ButtonStyle? style = null, IEmote? emote = null)
+    public static ActionRowBuilder AddLastButton(this ActionRowBuilder builder, IComponentPaginator paginator, string? label = null, ButtonStyle? style = null, EmojiProperties? emote = null)
         => builder.AddButton(paginator, PaginatorAction.SkipToEnd, label, style, emote);
 
     /// <summary>
@@ -109,13 +110,13 @@ public static class ComponentExtensions
     /// </summary>
     /// <param name="builder">The component builder.</param>
     /// <param name="paginator">The paginator.</param>
-    /// <param name="label">The label of the button. If both <paramref name="label"/> and <paramref name="emote"/> are empty, a default <see cref="IEmote"/> will be set.</param>
+    /// <param name="label">The label of the button. If both <paramref name="label"/> and <paramref name="emote"/> are empty, a default <see cref="EmojiProperties"/> will be set.</param>
     /// <param name="style">The style of the button. If one is not provided, the library will decide which one to use.</param>
-    /// <param name="emote">The <see cref="IEmote"/> to be used with the button. If both <paramref name="label"/> and <paramref name="emote"/> are empty, a default <see cref="IEmote"/> will be set.</param>
+    /// <param name="emote">The <see cref="EmojiProperties"/> to be used with the button. If both <paramref name="label"/> and <paramref name="emote"/> are empty, a default <see cref="EmojiProperties"/> will be set.</param>
     /// <param name="row">The row the button should be placed on.</param>
     /// <returns>This <see cref="ComponentBuilder"/>.</returns>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="builder"/> or <paramref name="paginator"/> are <see langword="null"/>.</exception>
-    public static ComponentBuilder AddLastButton(this ComponentBuilder builder, IComponentPaginator paginator, string? label = null, ButtonStyle? style = null, IEmote? emote = null, int row = 0)
+    public static ComponentBuilder AddLastButton(this ComponentBuilder builder, IComponentPaginator paginator, string? label = null, ButtonStyle? style = null, EmojiProperties? emote = null, int row = 0)
         => builder.AddButton(paginator, PaginatorAction.SkipToEnd, label, style, emote, row);
 
     /// <summary>
@@ -123,12 +124,12 @@ public static class ComponentExtensions
     /// </summary>
     /// <param name="builder">The action row builder.</param>
     /// <param name="paginator">The paginator.</param>
-    /// <param name="label">The label of the button. If both <paramref name="label"/> and <paramref name="emote"/> are empty, a default <see cref="IEmote"/> will be set.</param>
+    /// <param name="label">The label of the button. If both <paramref name="label"/> and <paramref name="emote"/> are empty, a default <see cref="EmojiProperties"/> will be set.</param>
     /// <param name="style">The style of the button. If one is not provided, the library will decide which one to use.</param>
-    /// <param name="emote">The <see cref="IEmote"/> to be used with the button. If both <paramref name="label"/> and <paramref name="emote"/> are empty, a default <see cref="IEmote"/> will be set.</param>
+    /// <param name="emote">The <see cref="EmojiProperties"/> to be used with the button. If both <paramref name="label"/> and <paramref name="emote"/> are empty, a default <see cref="EmojiProperties"/> will be set.</param>
     /// <returns>This <see cref="ActionRowBuilder"/>.</returns>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="builder"/> or <paramref name="paginator"/> are <see langword="null"/>.</exception>
-    public static ActionRowBuilder AddStopButton(this ActionRowBuilder builder, IComponentPaginator paginator, string? label = null, ButtonStyle? style = null, IEmote? emote = null)
+    public static ActionRowBuilder AddStopButton(this ActionRowBuilder builder, IComponentPaginator paginator, string? label = null, ButtonStyle? style = null, EmojiProperties? emote = null)
         => builder.AddButton(paginator, PaginatorAction.Exit, label, style, emote);
 
     /// <summary>
@@ -136,13 +137,13 @@ public static class ComponentExtensions
     /// </summary>
     /// <param name="builder">The component builder.</param>
     /// <param name="paginator">The paginator.</param>
-    /// <param name="label">The label of the button. If both <paramref name="label"/> and <paramref name="emote"/> are empty, a default <see cref="IEmote"/> will be set.</param>
+    /// <param name="label">The label of the button. If both <paramref name="label"/> and <paramref name="emote"/> are empty, a default <see cref="EmojiProperties"/> will be set.</param>
     /// <param name="style">The style of the button. If one is not provided, the library will decide which one to use.</param>
-    /// <param name="emote">The <see cref="IEmote"/> to be used with the button. If both <paramref name="label"/> and <paramref name="emote"/> are empty, a default <see cref="IEmote"/> will be set.</param>
+    /// <param name="emote">The <see cref="EmojiProperties"/> to be used with the button. If both <paramref name="label"/> and <paramref name="emote"/> are empty, a default <see cref="EmojiProperties"/> will be set.</param>
     /// <param name="row">The row the button should be placed on.</param>
     /// <returns>This <see cref="ComponentBuilder"/>.</returns>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="builder"/> or <paramref name="paginator"/> are <see langword="null"/>.</exception>
-    public static ComponentBuilder AddStopButton(this ComponentBuilder builder, IComponentPaginator paginator, string? label = null, ButtonStyle? style = null, IEmote? emote = null, int row = 0)
+    public static ComponentBuilder AddStopButton(this ComponentBuilder builder, IComponentPaginator paginator, string? label = null, ButtonStyle? style = null, EmojiProperties? emote = null, int row = 0)
         => builder.AddButton(paginator, PaginatorAction.Exit, label, style, emote, row);
 
     /// <summary>
@@ -150,12 +151,12 @@ public static class ComponentExtensions
     /// </summary>
     /// <param name="builder">The action row builder.</param>
     /// <param name="paginator">The paginator.</param>
-    /// <param name="label">The label of the button. If both <paramref name="label"/> and <paramref name="emote"/> are empty, a default <see cref="IEmote"/> will be set.</param>
+    /// <param name="label">The label of the button. If both <paramref name="label"/> and <paramref name="emote"/> are empty, a default <see cref="EmojiProperties"/> will be set.</param>
     /// <param name="style">The style of the button. If one is not provided, the library will decide which one to use.</param>
-    /// <param name="emote">The <see cref="IEmote"/> to be used with the button. If both <paramref name="label"/> and <paramref name="emote"/> are empty, a default <see cref="IEmote"/> will be set.</param>
+    /// <param name="emote">The <see cref="EmojiProperties"/> to be used with the button. If both <paramref name="label"/> and <paramref name="emote"/> are empty, a default <see cref="EmojiProperties"/> will be set.</param>
     /// <returns>This <see cref="ActionRowBuilder"/>.</returns>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="builder"/> or <paramref name="paginator"/> are <see langword="null"/>.</exception>
-    public static ActionRowBuilder AddJumpButton(this ActionRowBuilder builder, IComponentPaginator paginator, string? label = null, ButtonStyle? style = null, IEmote? emote = null)
+    public static ActionRowBuilder AddJumpButton(this ActionRowBuilder builder, IComponentPaginator paginator, string? label = null, ButtonStyle? style = null, EmojiProperties? emote = null)
         => builder.AddButton(paginator, PaginatorAction.Jump, label, style, emote);
 
     /// <summary>
@@ -163,13 +164,13 @@ public static class ComponentExtensions
     /// </summary>
     /// <param name="builder">The component builder.</param>
     /// <param name="paginator">The paginator.</param>
-    /// <param name="label">The label of the button. If both <paramref name="label"/> and <paramref name="emote"/> are empty, a default <see cref="IEmote"/> will be set.</param>
+    /// <param name="label">The label of the button. If both <paramref name="label"/> and <paramref name="emote"/> are empty, a default <see cref="EmojiProperties"/> will be set.</param>
     /// <param name="style">The style of the button. If one is not provided, the library will decide which one to use.</param>
-    /// <param name="emote">The <see cref="IEmote"/> to be used with the button. If both <paramref name="label"/> and <paramref name="emote"/> are empty, a default <see cref="IEmote"/> will be set.</param>
+    /// <param name="emote">The <see cref="EmojiProperties"/> to be used with the button. If both <paramref name="label"/> and <paramref name="emote"/> are empty, a default <see cref="EmojiProperties"/> will be set.</param>
     /// <param name="row">The row the button should be placed on.</param>
     /// <returns>This <see cref="ComponentBuilder"/>.</returns>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="builder"/> or <paramref name="paginator"/> are <see langword="null"/>.</exception>
-    public static ComponentBuilder AddJumpButton(this ComponentBuilder builder, IComponentPaginator paginator, string? label = null, ButtonStyle? style = null, IEmote? emote = null, int row = 0)
+    public static ComponentBuilder AddJumpButton(this ComponentBuilder builder, IComponentPaginator paginator, string? label = null, ButtonStyle? style = null, EmojiProperties? emote = null, int row = 0)
         => builder.AddButton(paginator, PaginatorAction.Jump, label, style, emote, row);
 
     /// <summary>
@@ -178,12 +179,12 @@ public static class ComponentExtensions
     /// <param name="builder">The component builder.</param>
     /// <param name="paginator">The paginator.</param>
     /// <param name="action">The paginator action the button represents.</param>
-    /// <param name="label">The label of the button. If both <paramref name="label"/> and <paramref name="emote"/> are empty, a default <see cref="IEmote"/> will be set.</param>
+    /// <param name="label">The label of the button. If both <paramref name="label"/> and <paramref name="emote"/> are empty, a default <see cref="EmojiProperties"/> will be set.</param>
     /// <param name="style">The style of the button. If one is not provided, the library will decide which one to use.</param>
-    /// <param name="emote">The <see cref="IEmote"/> to be used with the button. If both <paramref name="label"/> and <paramref name="emote"/> are empty, a default <see cref="IEmote"/> will be set.</param>
+    /// <param name="emote">The <see cref="EmojiProperties"/> to be used with the button. If both <paramref name="label"/> and <paramref name="emote"/> are empty, a default <see cref="EmojiProperties"/> will be set.</param>
     /// <returns>This <see cref="ActionRowBuilder"/>.</returns>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="builder"/> or <paramref name="paginator"/> are <see langword="null"/>.</exception>
-    public static ActionRowBuilder AddButton(this ActionRowBuilder builder, IComponentPaginator paginator, PaginatorAction action, string? label = null, ButtonStyle? style = null, IEmote? emote = null)
+    public static ActionRowBuilder AddButton(this ActionRowBuilder builder, IComponentPaginator paginator, PaginatorAction action, string? label = null, ButtonStyle? style = null, EmojiProperties? emote = null)
     {
         InteractiveGuards.NotNull(builder);
         InteractiveGuards.NotNull(paginator);
@@ -197,13 +198,13 @@ public static class ComponentExtensions
     /// <param name="builder">The component builder.</param>
     /// <param name="paginator">The paginator.</param>
     /// <param name="action">The paginator action the button represents.</param>
-    /// <param name="label">The label of the button. If both <paramref name="label"/> and <paramref name="emote"/> are empty, a default <see cref="IEmote"/> will be set.</param>
+    /// <param name="label">The label of the button. If both <paramref name="label"/> and <paramref name="emote"/> are empty, a default <see cref="EmojiProperties"/> will be set.</param>
     /// <param name="style">The style of the button. If one is not provided, the library will decide which one to use.</param>
-    /// <param name="emote">The <see cref="IEmote"/> to be used with the button. If both <paramref name="label"/> and <paramref name="emote"/> are empty, a default <see cref="IEmote"/> will be set.</param>
+    /// <param name="emote">The <see cref="EmojiProperties"/> to be used with the button. If both <paramref name="label"/> and <paramref name="emote"/> are empty, a default <see cref="EmojiProperties"/> will be set.</param>
     /// <param name="row">The row the button should be placed on.</param>
     /// <returns>This <see cref="ComponentBuilder"/>.</returns>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="builder"/> or <paramref name="paginator"/> are <see langword="null"/>.</exception>
-    public static ComponentBuilder AddButton(this ComponentBuilder builder, IComponentPaginator paginator, PaginatorAction action, string? label = null, ButtonStyle? style = null, IEmote? emote = null, int row = 0)
+    public static ComponentBuilder AddButton(this ComponentBuilder builder, IComponentPaginator paginator, PaginatorAction action, string? label = null, ButtonStyle? style = null, EmojiProperties? emote = null, int row = 0)
     {
         InteractiveGuards.NotNull(builder);
         InteractiveGuards.NotNull(paginator);
@@ -299,7 +300,7 @@ public static class ComponentExtensions
         return builder.WithDisabled(paginator.ShouldDisable(action));
     }
 
-    private static ButtonBuilder CreateButton(IComponentPaginator paginator, PaginatorAction action, string? label = null, ButtonStyle? style = null, IEmote? emote = null)
+    private static ButtonBuilder CreateButton(IComponentPaginator paginator, PaginatorAction action, string? label = null, ButtonStyle? style = null, EmojiProperties? emote = null)
     {
         InteractiveGuards.NotNull(paginator);
 
@@ -307,12 +308,12 @@ public static class ComponentExtensions
         {
             emote = action switch
             {
-                PaginatorAction.Backward => new Emoji("◀"),
-                PaginatorAction.Forward => new Emoji("▶"),
-                PaginatorAction.SkipToStart => new Emoji("⏮"),
-                PaginatorAction.SkipToEnd => new Emoji("⏭"),
-                PaginatorAction.Exit => new Emoji("🛑"),
-                PaginatorAction.Jump => new Emoji("🔢"),
+                PaginatorAction.Backward => EmojiPropertiesProperties.Standard("◀"),
+                PaginatorAction.Forward => EmojiPropertiesProperties.Standard("▶"),
+                PaginatorAction.SkipToStart => EmojiPropertiesProperties.Standard("⏮"),
+                PaginatorAction.SkipToEnd => EmojiPropertiesProperties.Standard("⏭"),
+                PaginatorAction.Exit => EmojiPropertiesProperties.Standard("🛑"),
+                PaginatorAction.Jump => EmojiPropertiesProperties.Standard("🔢"),
                 _ => throw new ArgumentOutOfRangeException(nameof(action))
             };
         }

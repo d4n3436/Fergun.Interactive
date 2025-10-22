@@ -2,8 +2,10 @@
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
-using Discord;
+
 using JetBrains.Annotations;
+using NetCord;
+using NetCord.Rest;
 
 namespace Fergun.Interactive.Pagination;
 
@@ -94,7 +96,7 @@ public static class PaginatorExtensions
     /// <param name="user">The user.</param>
     /// <returns><see langword="true"/> if the user can interact with this paginator; otherwise, <see langword="false"/>.</returns>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="paginator"/> or <paramref name="user"/> are is <see langword="null"/>.</exception>
-    public static bool CanInteract(this IComponentPaginator paginator, IUser user)
+    public static bool CanInteract(this IComponentPaginator paginator, NetCord.User user)
     {
         InteractiveGuards.NotNull(paginator);
         InteractiveGuards.NotNull(user);
@@ -137,12 +139,12 @@ public static class PaginatorExtensions
     /// <param name="page">A specific page to render.</param>
     /// <returns>A <see cref="Task"/> representing the operation.</returns>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="paginator"/> or <paramref name="interaction"/> are <see langword="null"/>.</exception>
-    public static async Task RenderPageAsync(this IComponentPaginator paginator, IComponentInteraction interaction, IPage? page = null)
+    public static async Task RenderPageAsync(this IComponentPaginator paginator, MessageComponentInteraction interaction, IPage? page = null)
     {
         InteractiveGuards.NotNull(paginator);
         InteractiveGuards.NotNull(interaction);
 
-        await paginator.RenderPageAsync(interaction, InteractionResponseType.UpdateMessage, isEphemeral: false, page).ConfigureAwait(false);
+        await paginator.RenderPageAsync(interaction, InteractionCallbackType.ModifyMessage, isEphemeral: false, page).ConfigureAwait(false);
     }
 
     /// <summary>

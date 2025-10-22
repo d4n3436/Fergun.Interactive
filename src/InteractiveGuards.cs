@@ -3,8 +3,9 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.CompilerServices;
-using Discord;
-using Discord.WebSocket;
+using NetCord;
+using NetCord.Gateway;
+using NetCord.Rest;
 
 namespace Fergun.Interactive;
 
@@ -97,7 +98,7 @@ internal static class InteractiveGuards
         expected = temp;
     }
 
-    public static void EmbedCountInRange(ICollection<EmbedBuilder> builders, bool ensureMaxCapacity = false, [CallerArgumentExpression(nameof(builders))] string? parameterName = null)
+    public static void EmbedCountInRange(ICollection<EmbedProperties> builders, bool ensureMaxCapacity = false, [CallerArgumentExpression(nameof(builders))] string? parameterName = null)
     {
         if (builders.Count > 10 || (ensureMaxCapacity && builders.Count + 1 > 10))
         {
@@ -105,9 +106,9 @@ internal static class InteractiveGuards
         }
     }
 
-    public static void MessageFromCurrentUser(BaseSocketClient client, IUserMessage? message, [CallerArgumentExpression(nameof(message))] string? parameterName = null)
+    public static void MessageFromCurrentUser(ShardedGatewayClient client, Message? message, [CallerArgumentExpression(nameof(message))] string? parameterName = null)
     {
-        if (message is not null && message.Author.Id != client.CurrentUser.Id)
+        if (message is not null && message.Author.Id != client.Id)
         {
             throw new ArgumentException("Message author must be the current user.", parameterName);
         }
@@ -156,7 +157,7 @@ internal static class InteractiveGuards
         }
     }
 
-    public static void RequiredEmoteConverter<TOption>(InputType inputType, Func<TOption, IEmote>? emoteConverter, [CallerArgumentExpression(nameof(emoteConverter))] string? parameterName = null)
+    public static void RequiredEmoteConverter<TOption>(InputType inputType, Func<TOption, EmojiProperties>? emoteConverter, [CallerArgumentExpression(nameof(emoteConverter))] string? parameterName = null)
     {
         if (inputType.HasFlag(InputType.Reactions) && emoteConverter is null)
         {
@@ -164,7 +165,7 @@ internal static class InteractiveGuards
         }
     }
 
-    public static void ValidResponseType(InteractionResponseType responseType, [CallerArgumentExpression(nameof(responseType))] string? parameterName = null)
+    public static void ValidResponseType(InteractionCallbackType responseType, [CallerArgumentExpression(nameof(responseType))] string? parameterName = null)
     {
         int value = (int)responseType;
         if (value is >= 1 and <= 3)
@@ -173,9 +174,9 @@ internal static class InteractiveGuards
         }
     }
 
-    public static void ValidResponseType(InteractionResponseType responseType, IDiscordInteraction interaction, [CallerArgumentExpression(nameof(responseType))] string? parameterName = null)
+    public static void ValidResponseType(InteractionCallbackType responseType, Interaction interaction, [CallerArgumentExpression(nameof(responseType))] string? parameterName = null)
     {
-        if (interaction is not IComponentInteraction and not IModalInteraction && responseType is InteractionResponseType.UpdateMessage)
+        if (interaction is not MessageComponentInteraction and not ModalInteraction && responseType is InteractionCallbackType.ModifyMessage)
         {
             throw new ArgumentException($"Interaction response type {responseType} can only be used on component interactions or modal interactions.", parameterName);
         }

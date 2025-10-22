@@ -1,6 +1,9 @@
 using System.Threading.Tasks;
-using Discord;
+
 using JetBrains.Annotations;
+using NetCord;
+using NetCord.Gateway;
+using NetCord.Rest;
 
 namespace Fergun.Interactive;
 
@@ -16,7 +19,7 @@ public interface IInteractiveInputHandler
     /// <param name="input">The message to handle.</param>
     /// <param name="message">The message containing the interactive element.</param>
     /// <returns>A <see cref="Task{TResult}"/> containing the result.</returns>
-    Task<IInteractiveResult<InteractiveInputStatus>> HandleMessageAsync(IMessage input, IUserMessage message);
+    Task<IInteractiveResult<InteractiveInputStatus>> HandleMessageAsync(Message input, RestMessage message);
 
     /// <summary>
     /// Handles a reaction.
@@ -24,7 +27,7 @@ public interface IInteractiveInputHandler
     /// <param name="input">The reaction to handle.</param>
     /// <param name="message">The message containing the interactive element.</param>
     /// <returns>A <see cref="Task{TResult}"/> containing the result.</returns>
-    Task<IInteractiveResult<InteractiveInputStatus>> HandleReactionAsync(IReaction input, IUserMessage message);
+    Task<IInteractiveResult<InteractiveInputStatus>> HandleReactionAsync(MessageReactionAddEventArgs input, RestMessage message);
 
     /// <summary>
     /// Handles a component interaction.
@@ -32,5 +35,5 @@ public interface IInteractiveInputHandler
     /// <param name="input">The component interaction to handle.</param>
     /// <param name="message">The message containing the interactive element.</param>
     /// <returns>A <see cref="Task{TResult}"/> containing the result.</returns>
-    Task<IInteractiveResult<InteractiveInputStatus>> HandleInteractionAsync(IComponentInteraction input, IUserMessage message);
+    Task<IInteractiveResult<InteractiveInputStatus>> HandleInteractionAsync(MessageComponentInteraction input, RestMessage message);
 }

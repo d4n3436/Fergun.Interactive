@@ -1,5 +1,6 @@
-using Discord;
+
 using JetBrains.Annotations;
+using NetCord;
 
 namespace Fergun.Interactive.Pagination;
 
@@ -23,7 +24,7 @@ public interface IPaginatorButton
     /// <summary>
     /// Gets the emote that will be displayed in the button.
     /// </summary>
-    IEmote? Emote { get; }
+    EmojiProperties? Emote { get; }
 
     /// <summary>
     /// Gets the action that will be applied when the button is pressed.

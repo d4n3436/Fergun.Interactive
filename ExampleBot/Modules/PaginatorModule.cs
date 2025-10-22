@@ -2,8 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Discord;
-using Discord.Interactions;
+
+
 using ExampleBot.Extensions;
 using Fergun.Interactive;
 using Fergun.Interactive.Extensions;
@@ -42,8 +42,8 @@ public class PaginatorModule : InteractionModuleBase
             {
                 Builders =
                 [
-                    new EmbedBuilder().WithTitle("Customization").WithColor(Color.Gold),
-                    new EmbedBuilder().WithDescription("You can customize the paginator with various settings, including user restrictions, timeouts and the ability to have multiple embeds.").WithColor(Color.LightGrey)
+                    new EmbedProperties().WithTitle("Customization").WithColor(Color.Gold),
+                    new EmbedProperties().WithDescription("You can customize the paginator with various settings, including user restrictions, timeouts and the ability to have multiple embeds.").WithColor(Color.LightGrey)
                 ]
             },
             new PageBuilder().WithDescription($"This paginator is restricted to {Context.User.Mention} and will expire in 10 minutes.").WithColor(Color.Green),
@@ -103,12 +103,12 @@ public class PaginatorModule : InteractionModuleBase
             .WithMaxPageIndex(images) // Convenience extension method that sets the max. page index based on the number of items in a collection.
             .AddOption(context => // Factory method that creates a disabled blurple button with text "Page x / y"
             new PaginatorButton(PaginatorAction.Backward, emote: null, $"Page {context.CurrentPageIndex + 1} / {context.MaxPageIndex + 1}", ButtonStyle.Primary, isDisabled: true))
-            .AddOption(new Emoji("◀"), PaginatorAction.Backward, ButtonStyle.Secondary) // Gray buttons
-            .AddOption(new Emoji("❌"), PaginatorAction.Exit, ButtonStyle.Secondary)
-            .AddOption(new Emoji("▶"), PaginatorAction.Forward, ButtonStyle.Secondary)
-            .AddOption(new Emoji("🔢"), PaginatorAction.Jump, ButtonStyle.Secondary) // Use the jump feature
+            .AddOption(EmojiPropertiesProperties.Standard("◀"), PaginatorAction.Backward, ButtonStyle.Secondary) // Gray buttons
+            .AddOption(EmojiPropertiesProperties.Standard("❌"), PaginatorAction.Exit, ButtonStyle.Secondary)
+            .AddOption(EmojiPropertiesProperties.Standard("▶"), PaginatorAction.Forward, ButtonStyle.Secondary)
+            .AddOption(EmojiPropertiesProperties.Standard("🔢"), PaginatorAction.Jump, ButtonStyle.Secondary) // Use the jump feature
             .WithCacheLoadedPages(false) // The lazy paginator caches generated pages by default, but it's possible to disable this.
-            .WithActionOnCancellation(ActionOnStop.DeleteMessage) // Delete the message after pressing the stop emoji.
+            .WithActionOnCancellation(ActionOnStop.DeleteMessage) // Delete the message after pressing the stop EmojiProperties.
             .WithActionOnTimeout(ActionOnStop.DisableInput) // Disable the input (buttons) after a timeout.
             .WithFooter(PaginatorFooter.None) // Do not override the page footer. This allows us to write our own page footer in the page factory.
             .Build();
@@ -175,7 +175,7 @@ public class PaginatorModule : InteractionModuleBase
             .WithPageCount(info.Options[info.SelectedOption].Images.Count) // Component paginators have a page count instead of a max. page index
             .Build();
 
-        await _interactive.SendPaginatorAsync(paginator, Context.Interaction, TimeSpan.FromMinutes(20), InteractionResponseType.DeferredChannelMessageWithSource);
+        await _interactive.SendPaginatorAsync(paginator, Context.Interaction, TimeSpan.FromMinutes(20), InteractionCallbackType.DeferredMessage);
         return;
 
         IPage GeneratePage(IComponentPaginator p)
@@ -214,7 +214,7 @@ public class PaginatorModule : InteractionModuleBase
     [ComponentInteraction(SelectOptionId, ignoreGroupNames: true)]
     public async Task SelectOptionAsync(string option)
     {
-        var interaction = (IComponentInteraction)Context.Interaction;
+        var interaction = (MessageComponentInteraction)Context.Interaction;
 
         if (!_interactive.TryGetComponentPaginator(interaction.Message, out var paginator) || !paginator.CanInteract(interaction.User))
         {

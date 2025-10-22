@@ -1,7 +1,8 @@
 using System;
 using System.Collections.Generic;
-using Discord;
+
 using JetBrains.Annotations;
+using NetCord;
 
 namespace Fergun.Interactive.Pagination;
 
@@ -9,7 +10,7 @@ namespace Fergun.Interactive.Pagination;
 /// Represents the properties of a <see cref="PaginatorBuilder{TPaginator, TBuilder}"/>.
 /// </summary>
 [PublicAPI]
-public interface IBasePaginatorBuilderProperties : IInteractiveBuilderProperties<KeyValuePair<IEmote, PaginatorAction>>
+public interface IBasePaginatorBuilderProperties : IInteractiveBuilderProperties<KeyValuePair<EmojiProperties, PaginatorAction>>
 {
     /// <summary>
     /// Gets a value indicating whether the paginator is restricted to <see cref="IInteractiveBuilderProperties{TOption}.Users"/>.
@@ -31,7 +32,7 @@ public interface IBasePaginatorBuilderProperties : IInteractiveBuilderProperties
     /// Gets or sets the emotes and their related actions of the paginator.
     /// </summary>
     /// <remarks>This property has been replaced by <see cref="ButtonFactories"/> and it shouldn't be used on button-based paginators.</remarks>
-    new IDictionary<IEmote, PaginatorAction> Options
+    new IDictionary<EmojiProperties, PaginatorAction> Options
     {
         get;
         [Obsolete($"The library no longer uses this property for button-based paginators and it will add any values added here into {nameof(ButtonFactories)}, unless this value is changed.")]

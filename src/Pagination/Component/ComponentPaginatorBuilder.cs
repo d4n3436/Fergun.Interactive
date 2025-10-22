@@ -1,8 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Discord;
+
 using JetBrains.Annotations;
+using NetCord.Rest;
 
 namespace Fergun.Interactive.Pagination;
 
@@ -32,7 +33,7 @@ public class ComponentPaginatorBuilder : IComponentPaginatorBuilder
     public virtual object? UserState { get; set; }
 
     /// <inheritdoc />
-    public virtual ICollection<IUser> Users { get; set; } = [];
+    public virtual ICollection<NetCord.User> Users { get; set; } = [];
 
     /// <inheritdoc />
     /// <remarks>The default value is <see cref="ActionOnStop.None"/>.</remarks>
@@ -52,7 +53,7 @@ public class ComponentPaginatorBuilder : IComponentPaginatorBuilder
     public virtual IPage? TimeoutPage { get; set; }
 
     /// <inheritdoc />
-    public virtual Func<IComponentPaginator, ModalBuilder>? JumpModalFactory { get; set; }
+    public virtual Func<IComponentPaginator, ModalProperties>? JumpModalFactory { get; set; }
 
     /// <inheritdoc />
     public virtual Func<IComponentPaginator, IPage>? RestrictedPageFactory { get; set; }

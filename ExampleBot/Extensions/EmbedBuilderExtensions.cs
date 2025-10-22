@@ -1,8 +1,10 @@
-﻿using Discord;
+﻿
+
+using NetCord.Rest;
 
 namespace ExampleBot.Extensions;
 
-public static class EmbedBuilderExtensions
+public static class EmbedPropertiesExtensions
 {
-    public static EmbedBuilder WithRandomColor(this EmbedBuilder builder) => builder.WithColor(Utils.GetRandomColor());
+    public static EmbedProperties WithRandomColor(this EmbedProperties builder) => builder.WithColor(Utils.GetRandomColor());
 }

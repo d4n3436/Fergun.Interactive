@@ -2,8 +2,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Discord;
+
 using JetBrains.Annotations;
+using NetCord;
+using NetCord.Rest;
 
 namespace Fergun.Interactive;
 
@@ -34,34 +36,34 @@ public class MultiEmbedPageBuilder : IPageBuilder<MultiEmbedPage>, IPageBuilder
     /// <summary>
     /// Gets or sets the allowed mentions of the <see cref="MultiEmbedPage"/>.
     /// </summary>
-    public AllowedMentions? AllowedMentions { get; set; }
+    public AllowedMentionsProperties? AllowedMentions { get; set; }
 
     /// <summary>
     /// Gets or sets the message reference of the <see cref="MultiEmbedPage"/>.
     /// </summary>
-    public MessageReference? MessageReference { get; set; }
+    public MessageReferenceProperties? MessageReference { get; set; }
 
     /// <summary>
     /// Gets or sets the stickers of the <see cref="MultiEmbedPage"/>.
     /// </summary>
-    public IReadOnlyCollection<ISticker> Stickers { get; set; } = [];
+    public IReadOnlyCollection<ulong> StickerIds { get; set; } = [];
 
     /// <summary>
     /// Gets or sets the builders that will be in the page.
     /// </summary>
     /// <returns>The list of builders.</returns>
-    public IList<EmbedBuilder> Builders { get; set; } = [];
+    public IList<EmbedProperties> Builders { get; set; } = [];
 
     /// <summary>
     /// Gets or sets the factory of attachments.
     /// </summary>
-    public Func<ValueTask<IEnumerable<FileAttachment>?>>? AttachmentsFactory { get; set; }
+    public Func<ValueTask<IEnumerable<AttachmentProperties>?>>? AttachmentsFactory { get; set; }
 
     /// <summary>
     /// Gets or sets the components of this page.
     /// </summary>
-    /// <remarks>This property is only used on component paginators. Using the new components (components V2) requires not using <see cref="Text"/>, <see cref="Stickers"/> or any embed property.</remarks>
-    public MessageComponent? Components { get; set; }
+    /// <remarks>This property is only used on component paginators. Using the new components (components V2) requires not using <see cref="Text"/>, <see cref="StickerIds"/> or any embed property.</remarks>
+    public List<IMessageComponentProperties>? Components { get; set; }
 
     /// <summary>
     /// Gets or sets the message flags.
@@ -90,23 +92,12 @@ public class MultiEmbedPageBuilder : IPageBuilder<MultiEmbedPage>, IPageBuilder
     /// </summary>
     /// <param name="builders">The embed builders.</param>
     /// <returns>This builder.</returns>
-    public MultiEmbedPageBuilder WithBuilders(params EmbedBuilder[] builders)
+    public MultiEmbedPageBuilder WithBuilders(params EmbedProperties[] builders)
     {
-        var list = new List<EmbedBuilder>(builders);
+        var list = new List<EmbedProperties>(builders);
         InteractiveGuards.EmbedCountInRange(list);
         Builders = list;
         return this;
-    }
-
-    /// <summary>
-    /// Sets the embed builders.
-    /// </summary>
-    /// <param name="embeds">The embeds.</param>
-    /// <returns>This builder.</returns>
-    public MultiEmbedPageBuilder WithBuilders(params Embed[] embeds)
-    {
-        InteractiveGuards.NotNull(embeds);
-        return WithBuilders(embeds.AsEnumerable());
     }
 
     /// <summary>
@@ -114,23 +105,12 @@ public class MultiEmbedPageBuilder : IPageBuilder<MultiEmbedPage>, IPageBuilder
     /// </summary>
     /// <param name="builders">The embed builders.</param>
     /// <returns>This builder.</returns>
-    public MultiEmbedPageBuilder WithBuilders(IEnumerable<EmbedBuilder> builders)
+    public MultiEmbedPageBuilder WithBuilders(IEnumerable<EmbedProperties> builders)
     {
-        var list = new List<EmbedBuilder>(builders);
+        var list = new List<EmbedProperties>(builders);
         InteractiveGuards.EmbedCountInRange(list);
         Builders = list;
         return this;
-    }
-
-    /// <summary>
-    /// Sets the embed builders.
-    /// </summary>
-    /// <param name="embeds">The embeds.</param>
-    /// <returns>This builder.</returns>
-    public MultiEmbedPageBuilder WithBuilders(IEnumerable<Embed> embeds)
-    {
-        InteractiveGuards.NotNull(embeds);
-        return WithBuilders(embeds.Select(x => x.ToEmbedBuilder()));
     }
 
     /// <summary>
@@ -138,23 +118,12 @@ public class MultiEmbedPageBuilder : IPageBuilder<MultiEmbedPage>, IPageBuilder
     /// </summary>
     /// <param name="builder">The embed builder.</param>
     /// <returns>This builder.</returns>
-    public MultiEmbedPageBuilder AddBuilder(EmbedBuilder builder)
+    public MultiEmbedPageBuilder AddBuilder(EmbedProperties builder)
     {
         InteractiveGuards.NotNull(builder);
         InteractiveGuards.EmbedCountInRange(Builders, ensureMaxCapacity: true);
         Builders.Add(builder);
         return this;
-    }
-
-    /// <summary>
-    /// Adds an embed builder from an <see cref="Embed"/>.
-    /// </summary>
-    /// <param name="embed">The embed.</param>
-    /// <returns>This builder.</returns>
-    public MultiEmbedPageBuilder AddBuilder(Embed embed)
-    {
-        InteractiveGuards.NotNull(embed);
-        return AddBuilder(embed.ToEmbedBuilder());
     }
 
     /// <summary>
@@ -173,7 +142,7 @@ public class MultiEmbedPageBuilder : IPageBuilder<MultiEmbedPage>, IPageBuilder
     /// </summary>
     /// <param name="allowedMentions">The allowed mentions.</param>
     /// <returns>The current builder.</returns>
-    public MultiEmbedPageBuilder WithAllowedMentions(AllowedMentions? allowedMentions)
+    public MultiEmbedPageBuilder WithAllowedMentions(AllowedMentionsProperties? allowedMentions)
     {
         AllowedMentions = allowedMentions;
         return this;
@@ -184,7 +153,7 @@ public class MultiEmbedPageBuilder : IPageBuilder<MultiEmbedPage>, IPageBuilder
     /// </summary>
     /// <param name="messageReference">The message reference.</param>
     /// <returns>The current builder.</returns>
-    public MultiEmbedPageBuilder WithMessageReference(MessageReference? messageReference)
+    public MultiEmbedPageBuilder WithMessageReference(MessageReferenceProperties? messageReference)
     {
         MessageReference = messageReference;
         return this;
@@ -193,66 +162,66 @@ public class MultiEmbedPageBuilder : IPageBuilder<MultiEmbedPage>, IPageBuilder
     /// <summary>
     /// Sets the stickers of the <see cref="MultiEmbedPage"/>.
     /// </summary>
-    /// <param name="stickers">The stickers.</param>
+    /// <param name="stickerIds">The stickers.</param>
     /// <returns>The current builder.</returns>
-    public MultiEmbedPageBuilder WithStickers(IReadOnlyCollection<ISticker> stickers)
+    public MultiEmbedPageBuilder WithStickerIds(IReadOnlyCollection<ulong> stickerIds)
     {
-        InteractiveGuards.NotNull(stickers);
-        Stickers = stickers;
+        InteractiveGuards.NotNull(stickerIds);
+        StickerIds = stickerIds;
         return this;
     }
 
     /// <summary>
     /// Sets the function that generates the attachment.
     /// </summary>
-    /// <remarks>To leave the attachment in the message unmodified, <paramref name="attachmentFactory"/> must return <see langword="null"/> instead of a <see cref="FileAttachment"/> object.</remarks>
-    /// <param name="attachmentFactory">The attachment factory. To leave the attachment in the message unmodified, <paramref name="attachmentFactory"/> must return <see langword="null"/> instead of a <see cref="FileAttachment"/> object.</param>
+    /// <remarks>To leave the attachment in the message unmodified, <paramref name="attachmentFactory"/> must return <see langword="null"/> instead of a <see cref="AttachmentProperties"/> object.</remarks>
+    /// <param name="attachmentFactory">The attachment factory. To leave the attachment in the message unmodified, <paramref name="attachmentFactory"/> must return <see langword="null"/> instead of a <see cref="AttachmentProperties"/> object.</param>
     /// <returns>The current builder.</returns>
-    public MultiEmbedPageBuilder WithAttachmentFactory(Func<FileAttachment?> attachmentFactory)
+    public MultiEmbedPageBuilder WithAttachmentFactory(Func<AttachmentProperties?> attachmentFactory)
     {
         InteractiveGuards.NotNull(attachmentFactory);
         return WithAttachmentsFactory(() =>
         {
             var attachment = attachmentFactory();
-            return new ValueTask<IEnumerable<FileAttachment>?>(attachment is null ? null : new[] { attachment.Value });
+            return new ValueTask<IEnumerable<AttachmentProperties>?>(attachment is null ? null : new[] { attachment });
         });
     }
 
     /// <summary>
     /// Sets the function that generates the attachment.
     /// </summary>
-    /// <remarks>To leave the attachment in the message unmodified, <paramref name="attachmentFactory"/> must return <see langword="null"/> instead of a <see cref="FileAttachment"/> object.</remarks>
-    /// <param name="attachmentFactory">The attachment factory. To leave the attachment in the message unmodified, <paramref name="attachmentFactory"/> must return <see langword="null"/> instead of a <see cref="FileAttachment"/> object.</param>
+    /// <remarks>To leave the attachment in the message unmodified, <paramref name="attachmentFactory"/> must return <see langword="null"/> instead of a <see cref="AttachmentProperties"/> object.</remarks>
+    /// <param name="attachmentFactory">The attachment factory. To leave the attachment in the message unmodified, <paramref name="attachmentFactory"/> must return <see langword="null"/> instead of a <see cref="AttachmentProperties"/> object.</param>
     /// <returns>The current builder.</returns>
-    public MultiEmbedPageBuilder WithAttachmentFactory(Func<ValueTask<FileAttachment?>> attachmentFactory)
+    public MultiEmbedPageBuilder WithAttachmentFactory(Func<ValueTask<AttachmentProperties?>> attachmentFactory)
     {
         InteractiveGuards.NotNull(attachmentFactory);
         return WithAttachmentsFactory(async () =>
         {
             var attachment = await attachmentFactory().ConfigureAwait(false);
-            return attachment is null ? null : new[] { attachment.Value };
+            return attachment is null ? null : new[] { attachment };
         });
     }
 
     /// <summary>
     /// Sets the function that generates the attachments.
     /// </summary>
-    /// <remarks>To leave the attachments in the message unmodified, <paramref name="attachmentsFactory"/> must return <see langword="null"/> instead of a <see cref="FileAttachment"/> object.</remarks>
-    /// <param name="attachmentsFactory">The attachments factory. To leave the attachments in the message unmodified, <paramref name="attachmentsFactory"/> must return <see langword="null"/> instead of a <see cref="FileAttachment"/> object.</param>
+    /// <remarks>To leave the attachments in the message unmodified, <paramref name="attachmentsFactory"/> must return <see langword="null"/> instead of a <see cref="AttachmentProperties"/> object.</remarks>
+    /// <param name="attachmentsFactory">The attachments factory. To leave the attachments in the message unmodified, <paramref name="attachmentsFactory"/> must return <see langword="null"/> instead of a <see cref="AttachmentProperties"/> object.</param>
     /// <returns>The current builder.</returns>
-    public MultiEmbedPageBuilder WithAttachmentsFactory(Func<IEnumerable<FileAttachment>?> attachmentsFactory)
+    public MultiEmbedPageBuilder WithAttachmentsFactory(Func<IEnumerable<AttachmentProperties>?> attachmentsFactory)
     {
         InteractiveGuards.NotNull(attachmentsFactory);
-        return WithAttachmentsFactory(() => new ValueTask<IEnumerable<FileAttachment>?>(attachmentsFactory()));
+        return WithAttachmentsFactory(() => new ValueTask<IEnumerable<AttachmentProperties>?>(attachmentsFactory()));
     }
 
     /// <summary>
     /// Sets the function that generates the attachments.
     /// </summary>
-    /// <remarks>To leave the attachments in the message unmodified, <paramref name="attachmentsFactory"/> must return <see langword="null"/> instead of a <see cref="FileAttachment"/> object.</remarks>
-    /// <param name="attachmentsFactory">The attachments factory. To leave the attachments in the message unmodified, <paramref name="attachmentsFactory"/> must return <see langword="null"/> instead of a <see cref="FileAttachment"/> object.</param>
+    /// <remarks>To leave the attachments in the message unmodified, <paramref name="attachmentsFactory"/> must return <see langword="null"/> instead of a <see cref="AttachmentProperties"/> object.</remarks>
+    /// <param name="attachmentsFactory">The attachments factory. To leave the attachments in the message unmodified, <paramref name="attachmentsFactory"/> must return <see langword="null"/> instead of a <see cref="AttachmentProperties"/> object.</param>
     /// <returns>The current builder.</returns>
-    public MultiEmbedPageBuilder WithAttachmentsFactory(Func<ValueTask<IEnumerable<FileAttachment>?>>? attachmentsFactory)
+    public MultiEmbedPageBuilder WithAttachmentsFactory(Func<ValueTask<IEnumerable<AttachmentProperties>?>>? attachmentsFactory)
     {
         AttachmentsFactory = attachmentsFactory;
         return this;
@@ -261,10 +230,10 @@ public class MultiEmbedPageBuilder : IPageBuilder<MultiEmbedPage>, IPageBuilder
     /// <summary>
     /// Sets the components of the <see cref="Page"/>.
     /// </summary>
-    /// <remarks>The <see cref="Components"/> property is only used on component paginators. Using the new components (components V2) requires not setting <see cref="Text"/>, <see cref="Stickers"/> or any embed property.</remarks>
+    /// <remarks>The <see cref="Components"/> property is only used on component paginators. Using the new components (components V2) requires not setting <see cref="Text"/>, <see cref="StickerIds"/> or any embed property.</remarks>
     /// <param name="components">The components.</param>
     /// <returns>The current builder.</returns>
-    public MultiEmbedPageBuilder WithComponents(MessageComponent? components)
+    public MultiEmbedPageBuilder WithComponents(List<IMessageComponentProperties>? components)
     {
         Components = components;
         return this;

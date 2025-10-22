@@ -1,7 +1,7 @@
 using System.Threading;
-using Discord;
-using Discord.WebSocket;
 using JetBrains.Annotations;
+using NetCord;
+using NetCord.Gateway;
 
 namespace Fergun.Interactive;
 
@@ -14,13 +14,13 @@ public interface IInteractiveMessageResult : IInteractiveResult<InteractiveStatu
     /// <summary>
     /// Gets the message this interactive result comes from.
     /// </summary>
-    IUserMessage Message { get; }
+    Message Message { get; }
 
     /// <summary>
     /// Gets the user that caused the interactive action to end, if the result was successful.
     /// </summary>
     /// <remarks>This is not present if there was no input that ended this action, e.g. a timeout or a cancellation with a <see cref="CancellationToken"/>.</remarks>
-    IUser? User { get; }
+    User? User { get; }
 
     /// <summary>
     /// Gets the message that caused the interactive action to end.
@@ -30,7 +30,7 @@ public interface IInteractiveMessageResult : IInteractiveResult<InteractiveStatu
     /// - There was no input that ended this action, e.g. a timeout or a cancellation with a <see cref="CancellationToken"/>.<br/>
     /// - The action was ended with other input type.
     /// </remarks>
-    IMessage? StopMessage { get; }
+    Message? StopMessage { get; }
 
     /// <summary>
     /// Gets the reaction that caused the interactive action to end.
@@ -40,7 +40,7 @@ public interface IInteractiveMessageResult : IInteractiveResult<InteractiveStatu
     /// - There was no input that ended this action, e.g. a timeout or a cancellation with a <see cref="CancellationToken"/>.<br/>
     /// - The action was ended with other input type.
     /// </remarks>
-    SocketReaction? StopReaction { get; }
+    MessageReactionAddEventArgs? StopReaction { get; }
 
     /// <summary>
     /// Gets the component interaction that caused the interactive action to end.
@@ -50,5 +50,5 @@ public interface IInteractiveMessageResult : IInteractiveResult<InteractiveStatu
     /// - There was no input that ended this action, e.g. a timeout or a cancellation with a <see cref="CancellationToken"/>.<br/>
     /// - The action was ended with other input type.
     /// </remarks>
-    IComponentInteraction? StopInteraction { get; }
+    MessageComponentInteraction? StopInteraction { get; }
 }

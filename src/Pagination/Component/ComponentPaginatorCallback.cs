@@ -1,7 +1,8 @@
 using System;
 using System.Threading.Tasks;
-using Discord;
-using Discord.WebSocket;
+using NetCord;
+using NetCord.Gateway;
+
 
 namespace Fergun.Interactive.Pagination;
 
@@ -12,7 +13,7 @@ internal sealed class ComponentPaginatorCallback : IInteractiveCallback
 {
     private bool _disposed;
 
-    public ComponentPaginatorCallback(IComponentPaginator paginator, IUserMessage message,
+    public ComponentPaginatorCallback(IComponentPaginator paginator, Message message,
         TimeoutTaskCompletionSource<InteractiveStatus> timeoutTaskSource, DateTimeOffset startTime)
     {
         Paginator = paginator;
@@ -29,7 +30,7 @@ internal sealed class ComponentPaginatorCallback : IInteractiveCallback
     /// <summary>
     /// Gets the message that contains the paginator.
     /// </summary>
-    public IUserMessage Message { get; }
+    public Message Message { get; }
 
     /// <summary>
     /// Gets the <see cref="TimeoutTaskCompletionSource{TResult}"/> used to set the result of the paginator.
@@ -42,27 +43,27 @@ internal sealed class ComponentPaginatorCallback : IInteractiveCallback
     /// <summary>
     /// Gets the interaction that was received to stop the paginator.
     /// </summary>
-    public SocketMessageComponent? StopInteraction { get; private set; }
+    public MessageComponentInteraction? StopInteraction { get; private set; }
 
     /// <inheritdoc/>
     public void Cancel() => TimeoutTaskSource.TryCancel();
 
     /// <inheritdoc />
-    Task IInteractiveCallback.ExecuteAsync(SocketMessage message) => Task.CompletedTask;
+    Task IInteractiveCallback.ExecuteAsync(Message message) => Task.CompletedTask;
 
     /// <inheritdoc />
-    Task IInteractiveCallback.ExecuteAsync(SocketReaction reaction) => Task.CompletedTask;
+    Task IInteractiveCallback.ExecuteAsync(MessageReactionAddEventArgs reaction) => Task.CompletedTask;
 
     /// <inheritdoc />
-    public async Task ExecuteAsync(SocketInteraction interaction)
+    public async Task ExecuteAsync(Interaction interaction)
     {
-        if (interaction is IModalInteraction modalInteraction)
+        if (interaction is ModalInteraction modalInteraction)
         {
             await Paginator.HandleModalInteractionAsync(modalInteraction).ConfigureAwait(false);
             return;
         }
 
-        if (interaction is not IComponentInteraction component)
+        if (interaction is not MessageComponentInteraction component)
         {
             return;
         }
@@ -76,7 +77,7 @@ internal sealed class ComponentPaginatorCallback : IInteractiveCallback
                 break;
 
             case InteractiveInputStatus.Canceled:
-                StopInteraction = component as SocketMessageComponent;
+                StopInteraction = component as MessageComponentInteraction;
                 Cancel();
                 break;
         }

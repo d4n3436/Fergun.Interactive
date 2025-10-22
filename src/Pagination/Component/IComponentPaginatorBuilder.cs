@@ -1,8 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Discord;
+
 using JetBrains.Annotations;
+using NetCord.Rest;
 
 namespace Fergun.Interactive.Pagination;
 
@@ -36,7 +37,7 @@ public interface IComponentPaginatorBuilder
     /// <summary>
     /// Gets or sets a collection of users who can interact with this paginator.
     /// </summary>
-    ICollection<IUser> Users { get; set; }
+    ICollection<NetCord.User> Users { get; set; }
 
     /// <summary>
     /// Gets or sets the action that will be done after a cancellation.
@@ -67,7 +68,7 @@ public interface IComponentPaginatorBuilder
     /// Gets or sets the factory of the modal that will be displayed when the user clicks the jump button. The paginator will use a default/standard jump modal if one is not provided.
     /// </summary>
     /// <remarks>The first argument is the current paginator. The paginator will automatically set the custom ID of the modal to identify it and will take the page number from the first text input.</remarks>
-    Func<IComponentPaginator, ModalBuilder>? JumpModalFactory { get; set; }
+    Func<IComponentPaginator, ModalProperties>? JumpModalFactory { get; set; }
 
     /// <summary>
     /// Gets or sets the factory of the <see cref="IPage"/> that will be displayed ephemerally to a user when they are not allowed to interact with the paginator.

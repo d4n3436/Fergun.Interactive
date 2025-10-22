@@ -1,6 +1,8 @@
-using Discord;
-using Discord.WebSocket;
+
+
 using JetBrains.Annotations;
+using NetCord;
+using NetCord.Gateway;
 
 namespace Fergun.Interactive;
 
@@ -22,19 +24,19 @@ public class InteractiveMessageResult<T> : InteractiveResult<T>, IInteractiveMes
     }
 
     /// <inheritdoc/>
-    public IUserMessage Message { get; }
+    public Message Message { get; }
 
     /// <inheritdoc/>
-    public IUser? User { get; }
+    public NetCord.User? User { get; }
 
     /// <inheritdoc/>
-    public IMessage? StopMessage { get; }
+    public Message? StopMessage { get; }
 
     /// <inheritdoc/>
-    public SocketReaction? StopReaction { get; }
+    public MessageReactionAddEventArgs? StopReaction { get; }
 
     /// <inheritdoc/>
-    public IComponentInteraction? StopInteraction { get; }
+    public MessageComponentInteraction? StopInteraction { get; }
 }
 
 /// <summary>
@@ -54,17 +56,17 @@ public class InteractiveMessageResult : InteractiveResult, IInteractiveMessageRe
     }
 
     /// <inheritdoc/>
-    public IUserMessage Message { get; }
+    public Message Message { get; }
 
     /// <inheritdoc/>
-    public IUser? User { get; }
+    public NetCord.User? User { get; }
 
     /// <inheritdoc/>
-    public IMessage? StopMessage { get; }
+    public Message? StopMessage { get; }
 
     /// <inheritdoc/>
-    public SocketReaction? StopReaction { get; }
+    public MessageReactionAddEventArgs? StopReaction { get; }
 
     /// <inheritdoc/>
-    public IComponentInteraction? StopInteraction { get; }
+    public MessageComponentInteraction? StopInteraction { get; }
 }

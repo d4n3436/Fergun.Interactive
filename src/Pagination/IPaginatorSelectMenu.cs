@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
-using Discord;
+
 using JetBrains.Annotations;
+using NetCord;
 
 namespace Fergun.Interactive.Pagination;
 

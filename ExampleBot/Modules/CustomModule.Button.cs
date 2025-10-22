@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
-using Discord;
-using Discord.Interactions;
+
+
 using ExampleBot.Extensions;
 using Fergun.Interactive;
 using Fergun.Interactive.Selection;

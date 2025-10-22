@@ -7,18 +7,17 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Discord;
-using Discord.Net;
-using Discord.WebSocket;
 using Fergun.Interactive.Extensions;
 using Fergun.Interactive.Pagination;
 using Fergun.Interactive.Selection;
 using JetBrains.Annotations;
+using Microsoft.Extensions.Logging;
+using NetCord;
+using NetCord.Gateway;
+using NetCord.Hosting.Gateway;
+using NetCord.Rest;
 
 namespace Fergun.Interactive;
-
-// Based on Discord.InteractivityAddon
-// https://github.com/Playwo/Discord.InteractivityAddon
 
 /// <summary>
 /// Represents a service containing methods for interactivity purposes.
@@ -26,7 +25,8 @@ namespace Fergun.Interactive;
 [PublicAPI]
 public class InteractiveService
 {
-    private readonly BaseSocketClient _client;
+    private readonly ShardedGatewayClient _client;
+    private readonly ILogger<InteractiveService> _logger;
     private readonly ConcurrentDictionary<ulong, IInteractiveCallback> _callbacks = new();
     private readonly ConcurrentDictionary<Guid, IFilteredCallback> _filteredCallbacks = new();
     private readonly InteractiveConfig _config;
@@ -35,26 +35,9 @@ public class InteractiveService
     /// Initializes a new instance of the <see cref="InteractiveService"/> class using the default configuration.
     /// </summary>
     /// <param name="client">An instance of <see cref="BaseSocketClient"/>.</param>
-    public InteractiveService(BaseSocketClient client)
-        : this(client, new InteractiveConfig())
-    {
-    }
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="InteractiveService"/> class using the default configuration.
-    /// </summary>
-    /// <param name="client">An instance of <see cref="DiscordSocketClient"/>.</param>
-    public InteractiveService(DiscordSocketClient client)
-        : this((BaseSocketClient)client)
-    {
-    }
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="InteractiveService"/> class using the default configuration.
-    /// </summary>
-    /// <param name="client">An instance of <see cref="DiscordShardedClient"/>.</param>
-    public InteractiveService(DiscordShardedClient client)
-        : this((BaseSocketClient)client)
+    /// <param name="logger"></param>
+    public InteractiveService(ShardedGatewayClient client, ILogger<InteractiveService> logger)
+        : this(client, logger, new InteractiveConfig())
     {
     }
 
@@ -63,44 +46,18 @@ public class InteractiveService
     /// </summary>
     /// <param name="client">An instance of <see cref="BaseSocketClient"/>.</param>
     /// <param name="config">The configuration.</param>
-    public InteractiveService(BaseSocketClient client, InteractiveConfig config)
+    public InteractiveService(ShardedGatewayClient client, ILogger<InteractiveService> logger, InteractiveConfig config)
     {
         InteractiveGuards.NotNull(client);
         InteractiveGuards.NotNull(config);
 
         _client = client;
+        _logger = logger;
         _config = config;
-        _client.MessageReceived += MessageReceived;
-        _client.ReactionAdded += ReactionAdded;
-        _client.InteractionCreated += InteractionCreated;
 
-        Log = LogMessage;
+        _client.MessageCreate += MessageCreated;
+        _client.MessageReactionAdd += ReactionAdded;
     }
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="InteractiveService"/> class using a specified configuration.
-    /// </summary>
-    /// <param name="client">An instance of <see cref="DiscordSocketClient"/>.</param>
-    /// <param name="config">The configuration.</param>
-    public InteractiveService(DiscordSocketClient client, InteractiveConfig config)
-        : this((BaseSocketClient)client, config)
-    {
-    }
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="InteractiveService"/> class using a specified configuration.
-    /// </summary>
-    /// <param name="client">An instance of <see cref="DiscordShardedClient"/>.</param>
-    /// <param name="config">The configuration.</param>
-    public InteractiveService(DiscordShardedClient client, InteractiveConfig config)
-        : this((BaseSocketClient)client, config)
-    {
-    }
-
-    /// <summary>
-    /// Occurs when an interactive-related information is received.
-    /// </summary>
-    public event Func<LogMessage, Task> Log;
 
     /// <summary>
     /// Gets a dictionary of active callbacks.
@@ -117,147 +74,12 @@ public class InteractiveService
         => _callbacks.TryRemove(id, out callback);
 
     /// <summary>
-    /// Sends a message to a channel (after an optional delay) and deletes it after another delay.
-    /// </summary>
-    /// <remarks>Discard the returning task if you don't want to wait it for completion.</remarks>
-    /// <param name="channel">The target message channel.</param>
-    /// <param name="sendDelay">The time to wait before sending the message.</param>
-    /// <param name="deleteDelay">The time to wait between sending and deleting the message.</param>
-    /// <param name="message">An existing message to modify.</param>
-    /// <param name="text">The message to be sent.</param>
-    /// <param name="isTTS">Determines whether the message should be read aloud by Discord or not.</param>
-    /// <param name="embed">The <see cref="EmbedType.Rich"/> <see cref="Embed"/> to be sent.</param>
-    /// <param name="options">The options to be used when sending the request.</param>
-    /// <param name="allowedMentions">
-    ///     Specifies if notifications are sent for mentioned users and roles in the message <paramref name="text"/>.
-    ///     If <see langword="null"/>, all mentioned roles and users will be notified.
-    /// </param>
-    /// <param name="messageReference">The message references to be included. Used to reply to specific messages.</param>
-    /// <returns>A task that represents the asynchronous delay, send message operation, delay and delete message operation.</returns>
-    /// <exception cref="ArgumentException"/>
-    /// <exception cref="ArgumentNullException"/>
-    public async Task DelayedSendMessageAndDeleteAsync(IMessageChannel channel, TimeSpan? sendDelay = null, TimeSpan? deleteDelay = null,
-        IUserMessage? message = null, string? text = null, bool isTTS = false, Embed? embed = null, RequestOptions? options = null,
-        AllowedMentions? allowedMentions = null, MessageReference? messageReference = null)
-    {
-        InteractiveGuards.NotNull(channel);
-        InteractiveGuards.MessageFromCurrentUser(_client, message);
-
-        await Task.Delay(sendDelay ?? TimeSpan.Zero, CancellationToken.None).ConfigureAwait(false);
-
-        if (message is null)
-        {
-            message = await channel.SendMessageAsync(text, isTTS, embed, options, allowedMentions, messageReference).ConfigureAwait(false);
-        }
-        else
-        {
-            await message.ModifyAsync(x =>
-            {
-                x.Content = text;
-                x.Embed = embed;
-                x.AllowedMentions = allowedMentions;
-            }, options).ConfigureAwait(false);
-        }
-
-        await DelayedDeleteMessageAsync(message, deleteDelay).ConfigureAwait(false);
-    }
-
-    /// <summary>
-    /// Sends a file to a channel delayed and deletes it after another delay.
-    /// </summary>
-    /// <remarks>Discard the returning task if you don't want to wait it for completion.</remarks>
-    /// <param name="channel">The target message channel.</param>
-    /// <param name="sendDelay">The time to wait before sending the message.</param>
-    /// <param name="deleteDelay">The time to wait between sending and deleting the message.</param>
-    /// <param name="filePath">The file path of the file.</param>
-    /// <param name="text">The message to be sent.</param>
-    /// <param name="isTTS">Whether the message should be read aloud by Discord or not.</param>
-    /// <param name="embed">The <see cref="EmbedType.Rich"/> <see cref="Embed"/> to be sent.</param>
-    /// <param name="options">The options to be used when sending the request.</param>
-    /// <param name="isSpoiler">Whether the message attachment should be hidden as a spoiler.</param>
-    /// <param name="allowedMentions">
-    ///     Specifies if notifications are sent for mentioned users and roles in the message <paramref name="text"/>.
-    ///     If <see langword="null"/>, all mentioned roles and users will be notified.
-    /// </param>
-    /// <param name="messageReference">The message references to be included. Used to reply to specific messages.</param>
-    /// <returns>A task that represents the asynchronous delay, send message operation, delay and delete message operation.</returns>
-    /// <exception cref="ArgumentNullException"/>
-    public async Task DelayedSendFileAndDeleteAsync(IMessageChannel channel, TimeSpan? sendDelay = null, TimeSpan? deleteDelay = null,
-        string? filePath = null, string? text = null, bool isTTS = false, Embed? embed = null, RequestOptions? options = null,
-        bool isSpoiler = false, AllowedMentions? allowedMentions = null, MessageReference? messageReference = null)
-    {
-        InteractiveGuards.NotNull(channel);
-
-        await Task.Delay(sendDelay ?? TimeSpan.Zero, CancellationToken.None).ConfigureAwait(false);
-        var msg = await channel.SendFileAsync(filePath, text, isTTS, embed, options, isSpoiler, allowedMentions, messageReference)
-            .ConfigureAwait(false);
-        await DelayedDeleteMessageAsync(msg, deleteDelay).ConfigureAwait(false);
-    }
-
-    /// <summary>
-    /// Sends a file to a channel delayed and deletes it after another delay.
-    /// </summary>
-    /// <remarks>Discard the returning task if you don't want to wait it for completion.</remarks>
-    /// <param name="channel">The target message channel.</param>
-    /// <param name="sendDelay">The time to wait before sending the message.</param>
-    /// <param name="deleteDelay">The time to wait between sending and deleting the message.</param>
-    /// <param name="stream">The <see cref="Stream"/> of the file to be sent.</param>
-    /// <param name="filename">The name of the attachment.</param>
-    /// <param name="text">The message to be sent.</param>
-    /// <param name="isTTS">Whether the message should be read aloud by Discord or not.</param>
-    /// <param name="embed">The <see cref="EmbedType.Rich"/> <see cref="Embed"/> to be sent.</param>
-    /// <param name="options">The options to be used when sending the request.</param>
-    /// <param name="isSpoiler">Whether the message attachment should be hidden as a spoiler.</param>
-    /// <param name="allowedMentions">
-    ///     Specifies if notifications are sent for mentioned users and roles in the message <paramref name="text"/>.
-    ///     If <see langword="null"/>, all mentioned roles and users will be notified.
-    /// </param>
-    /// <param name="messageReference">The message references to be included. Used to reply to specific messages.</param>
-    /// <returns>A task that represents the asynchronous delay, send message operation, delay and delete message operation.</returns>
-    /// <exception cref="ArgumentNullException"/>
-    public async Task DelayedSendFileAndDeleteAsync(IMessageChannel channel, TimeSpan? sendDelay = null, TimeSpan? deleteDelay = null,
-        Stream? stream = null, string? filename = null, string? text = null, bool isTTS = false, Embed? embed = null, RequestOptions? options = null,
-        bool isSpoiler = false, AllowedMentions? allowedMentions = null, MessageReference? messageReference = null)
-    {
-        InteractiveGuards.NotNull(channel);
-
-        await Task.Delay(sendDelay ?? TimeSpan.Zero, CancellationToken.None).ConfigureAwait(false);
-        var msg = await channel.SendFileAsync(stream, filename, text, isTTS, embed, options, isSpoiler, allowedMentions, messageReference)
-            .ConfigureAwait(false);
-        await DelayedDeleteMessageAsync(msg, deleteDelay).ConfigureAwait(false);
-    }
-
-    /// <summary>
-    /// Deletes a message after a delay.
-    /// </summary>
-    /// <remarks>Discard the returning task if you don't want to wait it for completion.</remarks>
-    /// <param name="message">The message to delete.</param>
-    /// <param name="deleteDelay">The time to wait before deleting the message.</param>
-    /// <returns>A task that represents the asynchronous delay and delete message operation.</returns>
-    /// <exception cref="ArgumentNullException"/>
-    public async Task DelayedDeleteMessageAsync(IMessage message, TimeSpan? deleteDelay = null)
-    {
-        InteractiveGuards.NotNull(message);
-
-        await Task.Delay(deleteDelay ?? _config.DefaultTimeout).ConfigureAwait(false);
-
-        try
-        {
-            await message.DeleteAsync().ConfigureAwait(false);
-        }
-        catch (HttpException ex) when (ex.DiscordCode == DiscordErrorCode.UnknownMessage)
-        {
-            // We want to delete the message so we don't care if the message has been already deleted.
-        }
-    }
-
-    /// <summary>
     /// Gets the next incoming message that passes the <paramref name="filter"/>.
     /// </summary>
     /// <param name="filter">A filter which the message has to pass.</param>
     /// <param name="action">
     /// An action which gets executed to incoming messages,
-    /// where <see cref="SocketMessage"/> is the incoming message and <see cref="bool"/>
+    /// where <see cref="Message"/> is the incoming message and <see cref="bool"/>
     /// is whether the message passed the <paramref name="filter"/>.
     /// </param>
     /// <param name="timeout">The time to wait before the methods returns a timeout result.</param>
@@ -267,8 +89,8 @@ public class InteractiveService
     /// The task result contains an <see cref="InteractiveResult{T}"/> with the
     /// message (if successful), the elapsed time and the status.
     /// </returns>
-    public async Task<InteractiveResult<SocketMessage?>> NextMessageAsync(Func<SocketMessage, bool>? filter = null,
-        Func<SocketMessage, bool, Task>? action = null, TimeSpan? timeout = null, CancellationToken cancellationToken = default)
+    public async Task<InteractiveResult<Message?>> NextMessageAsync(Func<Message, bool>? filter = null,
+        Func<Message, bool, Task>? action = null, TimeSpan? timeout = null, CancellationToken cancellationToken = default)
         => await NextEntityAsync(filter, action, timeout, cancellationToken).ConfigureAwait(false);
 
     /// <summary>
@@ -276,7 +98,7 @@ public class InteractiveService
     /// </summary>
     /// <param name="filter">A filter which the reaction has to pass.</param>
     /// <param name="action">
-    /// An action which gets executed to incoming reactions, where <see cref="SocketReaction"/>
+    /// An action which gets executed to incoming reactions, where <see cref="MessageReactionAddEventArgs"/>
     /// is the incoming reaction and <see cref="bool"/> is whether the interaction passed the <paramref name="filter"/>.
     /// </param>
     /// <param name="timeout">The time to wait before the methods returns a timeout result.</param>
@@ -286,8 +108,8 @@ public class InteractiveService
     /// The task result contains an <see cref="InteractiveResult{T}"/> with the
     /// reaction (if successful), the elapsed time and the status.
     /// </returns>
-    public async Task<InteractiveResult<SocketReaction?>> NextReactionAsync(Func<SocketReaction, bool>? filter = null,
-        Func<SocketReaction, bool, Task>? action = null, TimeSpan? timeout = null, CancellationToken cancellationToken = default)
+    public async Task<InteractiveResult<MessageReactionAddEventArgs?>> NextReactionAsync(Func<MessageReactionAddEventArgs, bool>? filter = null,
+        Func<MessageReactionAddEventArgs, bool, Task>? action = null, TimeSpan? timeout = null, CancellationToken cancellationToken = default)
         => await NextEntityAsync(filter, action, timeout, cancellationToken).ConfigureAwait(false);
 
     /// <summary>
@@ -296,7 +118,7 @@ public class InteractiveService
     /// <param name="filter">A filter which the interaction has to pass.</param>
     /// <param name="action">
     /// An action which gets executed to incoming interactions,
-    /// where <see cref="SocketInteraction"/> is the incoming interaction and <see cref="bool"/>
+    /// where <see cref="Interaction"/> is the incoming interaction and <see cref="bool"/>
     /// is whether the interaction passed the <paramref name="filter"/>.
     /// </param>
     /// <param name="timeout">The time to wait before the methods returns a timeout result.</param>
@@ -306,8 +128,8 @@ public class InteractiveService
     /// The task result contains an <see cref="InteractiveResult{T}"/> with the
     /// interaction (if successful), the elapsed time and the status.
     /// </returns>
-    public async Task<InteractiveResult<SocketInteraction?>> NextInteractionAsync(Func<SocketInteraction, bool>? filter = null,
-        Func<SocketInteraction, bool, Task>? action = null, TimeSpan? timeout = null, CancellationToken cancellationToken = default)
+    public async Task<InteractiveResult<Interaction?>> NextInteractionAsync(Func<Interaction, bool>? filter = null,
+        Func<Interaction, bool, Task>? action = null, TimeSpan? timeout = null, CancellationToken cancellationToken = default)
         => await NextEntityAsync(filter, action, timeout, cancellationToken).ConfigureAwait(false);
 
     /// <summary>
@@ -316,7 +138,7 @@ public class InteractiveService
     /// <param name="filter">A filter which the component interaction has to pass.</param>
     /// <param name="action">
     /// An action which gets executed to incoming interactions,
-    /// where <see cref="SocketMessageComponent"/> is the incoming component interaction and <see cref="bool"/>
+    /// where <see cref="MessageComponentInteraction"/> is the incoming component interaction and <see cref="bool"/>
     /// is whether the component interaction passed the <paramref name="filter"/>.
     /// </param>
     /// <param name="timeout">The time to wait before the methods returns a timeout result.</param>
@@ -326,8 +148,8 @@ public class InteractiveService
     /// The task result contains an <see cref="InteractiveResult{T}"/> with the
     /// component interaction (if successful), the elapsed time and the status.
     /// </returns>
-    public async Task<InteractiveResult<SocketMessageComponent?>> NextMessageComponentAsync(Func<SocketMessageComponent, bool>? filter = null,
-        Func<SocketMessageComponent, bool, Task>? action = null, TimeSpan? timeout = null, CancellationToken cancellationToken = default)
+    public async Task<InteractiveResult<MessageComponentInteraction?>> NextComponentInteractionAsync(Func<MessageComponentInteraction, bool>? filter = null,
+        Func<MessageComponentInteraction, bool, Task>? action = null, TimeSpan? timeout = null, CancellationToken cancellationToken = default)
         => await NextEntityAsync(filter, action, timeout, cancellationToken).ConfigureAwait(false);
 
     /// <summary>
@@ -336,7 +158,7 @@ public class InteractiveService
     /// <param name="filter">A filter which the slash command interaction has to pass.</param>
     /// <param name="action">
     /// An action which gets executed to incoming interactions,
-    /// where <see cref="SocketSlashCommand"/> is the incoming slash command interaction and <see cref="bool"/>
+    /// where <see cref="SlashCommandInteraction"/> is the incoming slash command interaction and <see cref="bool"/>
     /// is whether the slash command interaction passed the <paramref name="filter"/>.
     /// </param>
     /// <param name="timeout">The time to wait before the methods returns a timeout result.</param>
@@ -346,8 +168,8 @@ public class InteractiveService
     /// The task result contains an <see cref="InteractiveResult{T}"/> with the
     /// slash command interaction (if successful), the elapsed time and the status.
     /// </returns>
-    public async Task<InteractiveResult<SocketSlashCommand?>> NextSlashCommandAsync(Func<SocketSlashCommand, bool>? filter = null,
-        Func<SocketSlashCommand, bool, Task>? action = null, TimeSpan? timeout = null, CancellationToken cancellationToken = default)
+    public async Task<InteractiveResult<SlashCommandInteraction?>> NextSlashCommandAsync(Func<SlashCommandInteraction, bool>? filter = null,
+        Func<SlashCommandInteraction, bool, Task>? action = null, TimeSpan? timeout = null, CancellationToken cancellationToken = default)
         => await NextEntityAsync(filter, action, timeout, cancellationToken).ConfigureAwait(false);
 
     /// <summary>
@@ -356,7 +178,7 @@ public class InteractiveService
     /// <param name="filter">A filter which the user command interaction has to pass.</param>
     /// <param name="action">
     /// An action which gets executed to incoming interactions,
-    /// where <see cref="SocketUserCommand"/> is the incoming user command interaction and <see cref="bool"/>
+    /// where <see cref="UserCommandInteraction"/> is the incoming user command interaction and <see cref="bool"/>
     /// is whether the user command interaction passed the <paramref name="filter"/>.
     /// </param>
     /// <param name="timeout">The time to wait before the methods returns a timeout result.</param>
@@ -366,8 +188,8 @@ public class InteractiveService
     /// The task result contains an <see cref="InteractiveResult{T}"/> with the
     /// user command interaction (if successful), the elapsed time and the status.
     /// </returns>
-    public async Task<InteractiveResult<SocketUserCommand?>> NextUserCommandAsync(Func<SocketUserCommand, bool>? filter = null,
-        Func<SocketUserCommand, bool, Task>? action = null, TimeSpan? timeout = null, CancellationToken cancellationToken = default)
+    public async Task<InteractiveResult<UserCommandInteraction?>> NextUserCommandAsync(Func<UserCommandInteraction, bool>? filter = null,
+        Func<UserCommandInteraction, bool, Task>? action = null, TimeSpan? timeout = null, CancellationToken cancellationToken = default)
         => await NextEntityAsync(filter, action, timeout, cancellationToken).ConfigureAwait(false);
 
     /// <summary>
@@ -376,7 +198,7 @@ public class InteractiveService
     /// <param name="filter">A filter which the message command interaction has to pass.</param>
     /// <param name="action">
     /// An action which gets executed to incoming interactions,
-    /// where <see cref="SocketMessageCommand"/> is the incoming message command interaction and <see cref="bool"/>
+    /// where <see cref="MessageCommandInteraction"/> is the incoming message command interaction and <see cref="bool"/>
     /// is whether the message command interaction passed the <paramref name="filter"/>.
     /// </param>
     /// <param name="timeout">The time to wait before the methods returns a timeout result.</param>
@@ -386,8 +208,8 @@ public class InteractiveService
     /// The task result contains an <see cref="InteractiveResult{T}"/> with the
     /// message command interaction (if successful), the elapsed time and the status.
     /// </returns>
-    public async Task<InteractiveResult<SocketMessageCommand?>> NextMessageCommandAsync(Func<SocketMessageCommand, bool>? filter = null,
-        Func<SocketMessageCommand, bool, Task>? action = null, TimeSpan? timeout = null, CancellationToken cancellationToken = default)
+    public async Task<InteractiveResult<MessageCommandInteraction?>> NextMessageCommandAsync(Func<MessageCommandInteraction, bool>? filter = null,
+        Func<MessageCommandInteraction, bool, Task>? action = null, TimeSpan? timeout = null, CancellationToken cancellationToken = default)
         => await NextEntityAsync(filter, action, timeout, cancellationToken).ConfigureAwait(false);
 
     /// <summary>
@@ -396,7 +218,7 @@ public class InteractiveService
     /// <param name="filter">A filter which the autocomplete interaction has to pass.</param>
     /// <param name="action">
     /// An action which gets executed to incoming interactions,
-    /// where <see cref="SocketAutocompleteInteraction"/> is the incoming autocomplete interaction and <see cref="bool"/>
+    /// where <see cref="AutocompleteInteraction"/> is the incoming autocomplete interaction and <see cref="bool"/>
     /// is whether the autocomplete interaction passed the <paramref name="filter"/>.
     /// </param>
     /// <param name="timeout">The time to wait before the methods returns a timeout result.</param>
@@ -406,8 +228,8 @@ public class InteractiveService
     /// The task result contains an <see cref="InteractiveResult{T}"/> with the
     /// autocomplete interaction (if successful), the elapsed time and the status.
     /// </returns>
-    public async Task<InteractiveResult<SocketAutocompleteInteraction?>> NextAutocompleteInteractionAsync(Func<SocketAutocompleteInteraction, bool>? filter = null,
-        Func<SocketAutocompleteInteraction, bool, Task>? action = null, TimeSpan? timeout = null, CancellationToken cancellationToken = default)
+    public async Task<InteractiveResult<AutocompleteInteraction?>> NextAutocompleteInteractionAsync(Func<AutocompleteInteraction, bool>? filter = null,
+        Func<AutocompleteInteraction, bool, Task>? action = null, TimeSpan? timeout = null, CancellationToken cancellationToken = default)
         => await NextEntityAsync(filter, action, timeout, cancellationToken).ConfigureAwait(false);
 
     /// <summary>
@@ -429,8 +251,8 @@ public class InteractiveService
     /// <exception cref="ArgumentException"/>
     /// <exception cref="ArgumentNullException"/>
     /// <exception cref="NotSupportedException"/>
-    public async Task<InteractiveMessageResult> SendPaginatorAsync(Paginator paginator, IMessageChannel channel, TimeSpan? timeout = null,
-        Action<IUserMessage>? messageAction = null, bool resetTimeoutOnInput = false, CancellationToken cancellationToken = default)
+    public async Task<InteractiveMessageResult> SendPaginatorAsync(Paginator paginator, TextChannel channel, TimeSpan? timeout = null,
+        Action<Message>? messageAction = null, bool resetTimeoutOnInput = false, CancellationToken cancellationToken = default)
         => await SendPaginatorInternalAsync(paginator, channel, timeout, message: null, messageAction, resetTimeoutOnInput, cancellationToken).ConfigureAwait(false);
 
     /// <summary>
@@ -452,8 +274,8 @@ public class InteractiveService
     /// <exception cref="ArgumentException"/>
     /// <exception cref="ArgumentNullException"/>
     /// <exception cref="NotSupportedException"/>
-    public async Task<InteractiveMessageResult> SendPaginatorAsync(Paginator paginator, IUserMessage message, TimeSpan? timeout = null,
-        Action<IUserMessage>? messageAction = null, bool resetTimeoutOnInput = false, CancellationToken cancellationToken = default)
+    public async Task<InteractiveMessageResult> SendPaginatorAsync(Paginator paginator, Message message, TimeSpan? timeout = null,
+        Action<Message>? messageAction = null, bool resetTimeoutOnInput = false, CancellationToken cancellationToken = default)
         => await SendPaginatorInternalAsync(paginator, channel: null, timeout, message, messageAction, resetTimeoutOnInput, cancellationToken).ConfigureAwait(false);
 
     /// <summary>
@@ -481,9 +303,9 @@ public class InteractiveService
     /// <exception cref="ArgumentException"/>
     /// <exception cref="ArgumentNullException"/>
     /// <exception cref="NotSupportedException"/>
-    public async Task<InteractiveMessageResult> SendPaginatorAsync(Paginator paginator, IDiscordInteraction interaction, TimeSpan? timeout = null,
-        InteractionResponseType responseType = InteractionResponseType.ChannelMessageWithSource, bool ephemeral = false,
-        Action<IUserMessage>? messageAction = null, bool resetTimeoutOnInput = false, CancellationToken cancellationToken = default)
+    public async Task<InteractiveMessageResult> SendPaginatorAsync(Paginator paginator, Interaction interaction, TimeSpan? timeout = null,
+        InteractionCallbackType responseType = InteractionCallbackType.Message, bool ephemeral = false,
+        Action<RestMessage>? messageAction = null, bool resetTimeoutOnInput = false, CancellationToken cancellationToken = default)
     {
         InteractiveGuards.NotNull(paginator);
         InteractiveGuards.NotNull(interaction);
@@ -495,6 +317,7 @@ public class InteractiveService
 
         var message = await SendOrModifyMessageAsync(paginator, interaction, responseType, ephemeral).ConfigureAwait(false);
         messageAction?.Invoke(message);
+        
 
         if (!_config.ProcessSinglePagePaginators && paginator.MaxPageIndex == 0)
         {
@@ -537,20 +360,20 @@ public class InteractiveService
     /// The response type to use. This is used to determine how the interaction should be responded. Here's a list explaining the available response types:
     /// <list type="bullet">
     ///     <item>
-    ///         <term><see cref="InteractionResponseType.ChannelMessageWithSource"/></term>
-    ///         <description>Sends a new message using <c>IDiscordInteraction.RespondWithFilesAsync</c> (requires a non-deferred interaction).</description>
+    ///         <term><see cref="InteractionCallbackType.Message"/></term>
+    ///         <description>Sends a new message using <c>Interaction.RespondWithFilesAsync</c> (requires a non-deferred interaction).</description>
     ///     </item>
     ///     <item>
-    ///         <term><see cref="InteractionResponseType.DeferredChannelMessageWithSource"/></term>
-    ///         <description>Sends a new message using <c>IDiscordInteraction.FollowupWithFilesAsync</c> (requires a deferred interaction).</description>
+    ///         <term><see cref="InteractionCallbackType.DeferredMessage"/></term>
+    ///         <description>Sends a new message using <c>Interaction.FollowupWithFilesAsync</c> (requires a deferred interaction).</description>
     ///     </item>
     ///     <item>
-    ///         <term><see cref="InteractionResponseType.UpdateMessage"/></term>
-    ///         <description>Updates the message where the interaction comes from using <c>IComponentInteraction.UpdateAsync</c> (requires a non-deferred <see cref="IComponentInteraction"/>).</description>
+    ///         <term><see cref="InteractionCallbackType.ModifyMessage"/></term>
+    ///         <description>Updates the message where the interaction comes from using <c>MessageComponentInteraction.UpdateAsync</c> (requires a non-deferred <see cref="MessageComponentInteraction"/>).</description>
     ///     </item>
     ///     <item>
-    ///         <term><see cref="InteractionResponseType.DeferredUpdateMessage"/></term>
-    ///         <description>Updates the message where the interaction comes from using <c>IComponentInteraction.ModifyOriginalResponseAsync</c> (requires a deferred interaction).</description>
+    ///         <term><see cref="InteractionCallbackType.DeferredModifyMessage"/></term>
+    ///         <description>Updates the message where the interaction comes from using <c>MessageComponentInteraction.ModifyOriginalResponseAsync</c> (requires a deferred interaction).</description>
     ///     </item>
     /// </list>
     /// </param>
@@ -567,9 +390,9 @@ public class InteractiveService
     /// </returns>
     /// <exception cref="ArgumentNullException">Thrown when a required argument is <see langword="null"/>.</exception>
     /// <exception cref="OperationCanceledException">Thrown when <paramref name="cancellationToken"/> is already cancelled.</exception>
-    public async Task<InteractiveMessageResult> SendPaginatorAsync(IComponentPaginator paginator, IDiscordInteraction interaction, TimeSpan? timeout = null,
-        InteractionResponseType responseType = InteractionResponseType.ChannelMessageWithSource, bool ephemeral = false,
-        Func<IUserMessage, Task>? messageAction = null, bool resetTimeoutOnInput = false, CancellationToken cancellationToken = default)
+    public async Task<InteractiveMessageResult> SendPaginatorAsync(IComponentPaginator paginator, Interaction interaction, TimeSpan? timeout = null,
+        InteractionCallbackType responseType = InteractionCallbackType.Message, bool ephemeral = false,
+        Func<Message, Task>? messageAction = null, bool resetTimeoutOnInput = false, CancellationToken cancellationToken = default)
     {
         InteractiveGuards.NotNull(paginator);
         InteractiveGuards.NotNull(interaction);
@@ -598,8 +421,8 @@ public class InteractiveService
     /// </returns>
     /// <exception cref="ArgumentNullException">Thrown when a required argument is <see langword="null"/>.</exception>
     /// <exception cref="OperationCanceledException">Thrown when <paramref name="cancellationToken"/> is already cancelled.</exception>
-    public async Task<InteractiveMessageResult> SendPaginatorAsync(IComponentPaginator paginator, IMessageChannel channel, TimeSpan? timeout = null,
-        Func<IUserMessage, Task>? messageAction = null, bool resetTimeoutOnInput = false, CancellationToken cancellationToken = default)
+    public async Task<InteractiveMessageResult> SendPaginatorAsync(IComponentPaginator paginator, TextChannel channel, TimeSpan? timeout = null,
+        Func<Message, Task>? messageAction = null, bool resetTimeoutOnInput = false, CancellationToken cancellationToken = default)
     {
         InteractiveGuards.NotNull(paginator);
         InteractiveGuards.NotNull(channel);
@@ -629,8 +452,8 @@ public class InteractiveService
     /// <exception cref="ArgumentException">Thrown when <paramref name="message"/> is not owned by the current user.</exception>
     /// <exception cref="ArgumentNullException">Thrown when a required argument is <see langword="null"/>.</exception>
     /// <exception cref="OperationCanceledException">Thrown when <paramref name="cancellationToken"/> is already cancelled.</exception>
-    public async Task<InteractiveMessageResult> SendPaginatorAsync(IComponentPaginator paginator, IUserMessage message, TimeSpan? timeout = null,
-        Func<IUserMessage, Task>? messageAction = null, bool resetTimeoutOnInput = false, CancellationToken cancellationToken = default)
+    public async Task<InteractiveMessageResult> SendPaginatorAsync(IComponentPaginator paginator, Message message, TimeSpan? timeout = null,
+        Func<Message, Task>? messageAction = null, bool resetTimeoutOnInput = false, CancellationToken cancellationToken = default)
     {
         InteractiveGuards.NotNull(paginator);
         InteractiveGuards.NotNull(message);
@@ -658,8 +481,8 @@ public class InteractiveService
     /// <exception cref="ArgumentException"/>
     /// <exception cref="ArgumentNullException"/>
     /// <exception cref="NotSupportedException"/>
-    public async Task<InteractiveMessageResult<TOption>> SendSelectionAsync<TOption>(BaseSelection<TOption> selection, IMessageChannel channel,
-        TimeSpan? timeout = null, Action<IUserMessage>? messageAction = null, CancellationToken cancellationToken = default)
+    public async Task<InteractiveMessageResult<TOption>> SendSelectionAsync<TOption>(BaseSelection<TOption> selection, TextChannel channel,
+        TimeSpan? timeout = null, Action<Message>? messageAction = null, CancellationToken cancellationToken = default)
         => await SendSelectionInternalAsync(selection, channel, timeout, message: null, messageAction, cancellationToken).ConfigureAwait(false);
 
     /// <summary>
@@ -679,8 +502,8 @@ public class InteractiveService
     /// <exception cref="ArgumentException"/>
     /// <exception cref="ArgumentNullException"/>
     /// <exception cref="NotSupportedException"/>
-    public async Task<InteractiveMessageResult<TOption>> SendSelectionAsync<TOption>(BaseSelection<TOption> selection, IUserMessage message,
-        TimeSpan? timeout = null, Action<IUserMessage>? messageAction = null, CancellationToken cancellationToken = default)
+    public async Task<InteractiveMessageResult<TOption>> SendSelectionAsync<TOption>(BaseSelection<TOption> selection, Message message,
+        TimeSpan? timeout = null, Action<Message>? messageAction = null, CancellationToken cancellationToken = default)
         => await SendSelectionInternalAsync(selection, channel: null, timeout, message, messageAction, cancellationToken).ConfigureAwait(false);
 
     /// <summary>
@@ -706,9 +529,9 @@ public class InteractiveService
     /// <exception cref="ArgumentException"/>
     /// <exception cref="ArgumentNullException"/>
     /// <exception cref="NotSupportedException"/>
-    public async Task<InteractiveMessageResult<TOption>> SendSelectionAsync<TOption>(BaseSelection<TOption> selection, IDiscordInteraction interaction,
-        TimeSpan? timeout = null, InteractionResponseType responseType = InteractionResponseType.ChannelMessageWithSource, bool ephemeral = false,
-        Action<IUserMessage>? messageAction = null, CancellationToken cancellationToken = default)
+    public async Task<InteractiveMessageResult<TOption>> SendSelectionAsync<TOption>(BaseSelection<TOption> selection, Interaction interaction,
+        TimeSpan? timeout = null, InteractionCallbackType responseType = InteractionCallbackType.Message, bool ephemeral = false,
+        Action<RestMessage>? messageAction = null, CancellationToken cancellationToken = default)
     {
         InteractiveGuards.NotNull(selection);
         InteractiveGuards.NotNull(interaction);
@@ -736,11 +559,11 @@ public class InteractiveService
     /// <param name="interaction">The incoming interaction.</param>
     /// <returns><see langword="true"/> if the interaction targets a component or modal a paginator or selection owns; otherwise, <see langword="false"/>.</returns>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="interaction"/> is <see langword="null"/>.</exception>
-    public bool IsManaged(SocketInteraction interaction)
+    public bool IsManaged(Interaction interaction)
     {
         InteractiveGuards.NotNull(interaction);
 
-        if (interaction is SocketMessageComponent componentInteraction)
+        if (interaction is MessageComponentInteraction componentInteraction)
         {
             if (TryGetPaginator(componentInteraction.Message, out var paginator) && paginator.TryGetAction(componentInteraction, out _))
             {
@@ -753,7 +576,7 @@ public class InteractiveService
             }
         }
 
-        string? customId = (interaction as SocketModal)?.Data?.CustomId ?? (interaction as SocketMessageComponent)?.Data?.CustomId;
+        string? customId = (interaction as ModalInteraction)?.Data?.CustomId ?? (interaction as MessageComponentInteraction)?.Data?.CustomId;
 
         return ulong.TryParse(customId, out ulong messageId)
             && _callbacks.ContainsKey(messageId);
@@ -765,7 +588,7 @@ public class InteractiveService
     /// <param name="message">The message.</param>
     /// <returns><see langword="true"/> if the message is managed by an active paginator or selection; otherwise, <see langword="false"/>.</returns>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="message"/> is <see langword="null"/>.</exception>
-    public bool IsManaged(IUserMessage message)
+    public bool IsManaged(Message message)
     {
         InteractiveGuards.NotNull(message);
         return IsManaged(message.Id);
@@ -785,7 +608,7 @@ public class InteractiveService
     /// <param name="paginator">The paginator, if found.</param>
     /// <returns><see langword="true"/> if the paginator was found; otherwise, <see langword="false"/>.</returns>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="message"/> is <see langword="null"/>.</exception>
-    public bool TryGetPaginator(IUserMessage message, [MaybeNullWhen(false)] out Paginator paginator)
+    public bool TryGetPaginator(Message message, [MaybeNullWhen(false)] out Paginator paginator)
     {
         InteractiveGuards.NotNull(message);
         return TryGetPaginator(message.Id, out paginator);
@@ -814,7 +637,7 @@ public class InteractiveService
     /// <param name="paginator">The paginator, if found.</param>
     /// <returns><see langword="true"/> if the paginator was found; otherwise, <see langword="false"/>.</returns>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="message"/> is <see langword="null"/>.</exception>
-    public bool TryGetComponentPaginator(IUserMessage message, [MaybeNullWhen(false)] out IComponentPaginator paginator)
+    public bool TryGetComponentPaginator(Message message, [MaybeNullWhen(false)] out IComponentPaginator paginator)
     {
         InteractiveGuards.NotNull(message);
         return TryGetComponentPaginator(message.Id, out paginator);
@@ -828,7 +651,7 @@ public class InteractiveService
     /// <param name="paginator">The paginator, if found.</param>
     /// <returns><see langword="true"/> if the paginator was found and is of type <typeparamref name="TPaginator"/>; otherwise, <see langword="false"/>.</returns>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="message"/> is <see langword="null"/>.</exception>
-    public bool TryGetComponentPaginator<TPaginator>(IUserMessage message, [MaybeNullWhen(false)] out TPaginator paginator)
+    public bool TryGetComponentPaginator<TPaginator>(Message message, [MaybeNullWhen(false)] out TPaginator paginator)
         where TPaginator : class, IComponentPaginator
     {
         InteractiveGuards.NotNull(message);
@@ -877,7 +700,7 @@ public class InteractiveService
     /// <param name="selection">The selection, if found.</param>
     /// <returns><see langword="true"/> if the selection was found; otherwise, <see langword="false"/>.</returns>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="message"/> is <see langword="null"/>.</exception>
-    public bool TryGetSelection<TOption>(IUserMessage message, [MaybeNullWhen(false)] out BaseSelection<TOption> selection)
+    public bool TryGetSelection<TOption>(Message message, [MaybeNullWhen(false)] out BaseSelection<TOption> selection)
     {
         InteractiveGuards.NotNull(message);
         return TryGetSelection(message.Id, out selection);
@@ -908,10 +731,10 @@ public class InteractiveService
     /// <returns><see langword="true"/> if specified object triggers at least one of the filters; otherwise, <see langword="false"/>.</returns>
     public bool TriggersAnyFilter<T>(T obj) => _filteredCallbacks.Values.Any(x => x.TriggersFilter(obj));
 
-    private static async Task ApplyActionOnStopAsync<TOption>(IInteractiveElement<TOption> element, IInteractiveMessageResult result,
-        IDiscordInteraction? lastInteraction, SocketMessageComponent? stopInteraction, bool deferInteraction)
+    private async Task ApplyActionOnStopAsync<TOption>(IInteractiveElement<TOption> element, IInteractiveMessageResult result,
+        Interaction? lastInteraction, ComponentInteraction? stopInteraction, bool deferInteraction)
     {
-        bool ephemeral = result.Message.Flags.GetValueOrDefault().HasFlag(MessageFlags.Ephemeral);
+        bool ephemeral = result.Message.Flags.HasFlag(MessageFlags.Ephemeral);
 
         var action = result.Status switch
         {
@@ -925,7 +748,7 @@ public class InteractiveService
         {
             if (deferInteraction && stopInteraction is not null)
             {
-                await stopInteraction.DeferAsync().ConfigureAwait(false);
+                await stopInteraction.SendResponseAsync(InteractionCallback.DeferredModifyMessage).ConfigureAwait(false);
             }
 
             return;
@@ -937,7 +760,7 @@ public class InteractiveService
             {
                 if (lastInteraction is not null && (DateTimeOffset.UtcNow - lastInteraction.CreatedAt).TotalMinutes <= 15.0)
                 {
-                    await lastInteraction.DeleteOriginalResponseAsync().ConfigureAwait(false);
+                    await lastInteraction.DeleteResponseAsync().ConfigureAwait(false);
                 }
                 else if (!ephemeral)
                 {
@@ -945,10 +768,10 @@ public class InteractiveService
                 }
                 else if (deferInteraction && stopInteraction is not null)
                 {
-                    await stopInteraction.DeferAsync().ConfigureAwait(false);
+                    await stopInteraction.SendResponseAsync(InteractionCallback.DeferredModifyMessage).ConfigureAwait(false);
                 }
             }
-            catch (HttpException ex) when (ex.DiscordCode == DiscordErrorCode.UnknownMessage)
+            catch (RestException ex) when (ex.Error?.Code == 10008)
             {
                 // We want to delete the message so we don't care if the message has been already deleted.
             }
@@ -957,7 +780,7 @@ public class InteractiveService
         }
 
         IPage? page = null;
-        IEnumerable<FileAttachment>? attachments = null;
+        IEnumerable<AttachmentProperties>? attachments = null;
         if (action.HasFlag(ActionOnStop.ModifyMessage))
         {
             page = result.Status switch
@@ -971,16 +794,16 @@ public class InteractiveService
             attachments = page?.AttachmentsFactory is null ? null : await page.AttachmentsFactory().ConfigureAwait(false);
         }
 
-        MessageComponent? components = null;
+        List<IMessageComponentProperties>? components = null;
         if (element.InputType.HasFlag(InputType.Buttons) || element.InputType.HasFlag(InputType.SelectMenus))
         {
             if (action.HasFlag(ActionOnStop.DisableInput))
             {
-                components = element.GetOrAddComponents(disableAll: true).Build();
+                components = element.GetOrAddComponents(disableAll: true);
             }
             else if (action.HasFlag(ActionOnStop.DeleteInput))
             {
-                components = new ComponentBuilder().Build();
+                components = [];
             }
         }
 
@@ -993,12 +816,12 @@ public class InteractiveService
                 if (stopInteraction is not null)
                 {
                     // An interaction to stop the element has been received
-                    await stopInteraction.UpdateAsync(UpdateMessage).ConfigureAwait(false);
+                    await stopInteraction.SendResponseAsync(InteractionCallback.ModifyMessage(UpdateMessage)).ConfigureAwait(false);
                 }
                 else if (lastInteraction is not null && (DateTimeOffset.UtcNow - lastInteraction.CreatedAt).TotalMinutes <= 15.0)
                 {
                     // The element is from a message that was updated using an interaction, and its token is still valid
-                    await lastInteraction.ModifyOriginalResponseAsync(UpdateMessage).ConfigureAwait(false);
+                    await lastInteraction.ModifyResponseAsync(UpdateMessage).ConfigureAwait(false);
                 }
                 else if (!ephemeral)
                 {
@@ -1006,14 +829,14 @@ public class InteractiveService
                     await result.Message.ModifyAsync(UpdateMessage).ConfigureAwait(false);
                 }
             }
-            catch (HttpException ex) when (ex.DiscordCode == DiscordErrorCode.UnknownMessage)
+            catch (RestException ex) when (ex.Error?.Code == 10008)
             {
                 // Ignore 10008 (Unknown Message) error.
             }
         }
         else if (deferInteraction && stopInteraction is not null)
         {
-            await stopInteraction.DeferAsync().ConfigureAwait(false);
+            await stopInteraction.SendResponseAsync(InteractionCallback.DeferredModifyMessage).ConfigureAwait(false);
         }
 
         if (!action.HasFlag(ActionOnStop.DeleteInput) || !element.InputType.HasFlag(InputType.Reactions))
@@ -1021,27 +844,20 @@ public class InteractiveService
 
         Debug.Assert(!ephemeral, "Ephemeral messages cannot have InputType.Reactions");
 
-        bool manageMessages = await result.Message.Channel.CurrentUserHasManageMessagesAsync().ConfigureAwait(false);
-
-        if (manageMessages)
-        {
-            await result.Message.RemoveAllReactionsAsync().ConfigureAwait(false);
-        }
-
         return;
 
-        void UpdateMessage(MessageProperties props)
+        void UpdateMessage(MessageOptions props)
         {
-            props.Content = page?.Text ?? Optional<string>.Unspecified;
-            props.Embeds = page?.GetEmbedArray() ?? Optional<Embed[]>.Unspecified;
-            props.Components = components ?? Optional<MessageComponent>.Unspecified;
-            props.AllowedMentions = page?.AllowedMentions ?? Optional<AllowedMentions>.Unspecified;
-            props.Attachments = attachments.AsOptional();
+            props.Content = page?.Text;
+            props.Embeds = page?.Embeds;
+            props.Components = components;
+            props.AllowedMentions = page?.AllowedMentions;
+            props.Attachments = attachments;
         }
     }
 
-    private async Task<InteractiveMessageResult> SendPaginatorInternalAsync(Paginator paginator, IMessageChannel? channel, TimeSpan? timeout = null,
-        IUserMessage? message = null, Action<IUserMessage>? messageAction = null, bool resetTimeoutOnInput = false, CancellationToken cancellationToken = default)
+    private async Task<InteractiveMessageResult> SendPaginatorInternalAsync(Paginator paginator, TextChannel? channel, TimeSpan? timeout = null,
+        Message? message = null, Action<Message>? messageAction = null, bool resetTimeoutOnInput = false, CancellationToken cancellationToken = default)
     {
         InteractiveGuards.NotNull(paginator);
         InteractiveGuards.MessageFromCurrentUser(_client, message);
@@ -1083,8 +899,8 @@ public class InteractiveService
         }
     }
 
-    private async Task<InteractiveMessageResult> SendPaginatorInternalAsync(IComponentPaginator paginator, IUserMessage message, TimeSpan? timeout = null,
-        Func<IUserMessage, Task>? messageAction = null, bool resetTimeoutOnInput = false, CancellationToken cancellationToken = default)
+    private async Task<InteractiveMessageResult> SendPaginatorInternalAsync(IComponentPaginator paginator, Message message, TimeSpan? timeout = null,
+        Func<Message, Task>? messageAction = null, bool resetTimeoutOnInput = false, CancellationToken cancellationToken = default)
     {
         if (messageAction is not null)
         {
@@ -1113,8 +929,8 @@ public class InteractiveService
         }
     }
 
-    private async Task<InteractiveMessageResult<TOption>> SendSelectionInternalAsync<TOption>(BaseSelection<TOption> selection, IMessageChannel? channel,
-        TimeSpan? timeout = null, IUserMessage? message = null, Action<IUserMessage>? messageAction = null, CancellationToken cancellationToken = default)
+    private async Task<InteractiveMessageResult<TOption>> SendSelectionInternalAsync<TOption>(BaseSelection<TOption> selection, TextChannel? channel,
+        TimeSpan? timeout = null, Message? message = null, Action<Message>? messageAction = null, CancellationToken cancellationToken = default)
     {
         InteractiveGuards.NotNull(selection);
         InteractiveGuards.MessageFromCurrentUser(_client, message);
@@ -1265,15 +1081,15 @@ public class InteractiveService
         return result;
     }
 
-    private async Task<IUserMessage> SendOrModifyMessageAsync<TOption>(IInteractiveElement<TOption> element, IUserMessage? message, IMessageChannel? channel)
+    private async Task<Message> SendOrModifyMessageAsync<TOption>(IInteractiveElement<TOption> element, Message? message, TextChannel? channel)
     {
         var page = await element.GetCurrentPageAsync().ConfigureAwait(false);
 
-        MessageComponent? component = null;
+        List<IMessageComponentProperties>? component = null;
         bool addComponents = element is not Paginator pag || _config.ProcessSinglePagePaginators || pag.MaxPageIndex > 0;
         if ((element.InputType.HasFlag(InputType.Buttons) || element.InputType.HasFlag(InputType.SelectMenus)) && addComponents)
         {
-            component = element.GetOrAddComponents(disableAll: false).Build();
+            component = element.GetOrAddComponents(disableAll: false);
         }
 
         var attachments = page.AttachmentsFactory is null ? null : await page.AttachmentsFactory().ConfigureAwait(false);
@@ -1283,17 +1099,17 @@ public class InteractiveService
             await message.ModifyAsync(x =>
             {
                 x.Content = page.Text;
-                x.Embeds = page.GetEmbedArray();
+                x.Embeds = page.Embeds;
                 x.Components = component;
                 x.AllowedMentions = page.AllowedMentions;
-                x.Attachments = attachments.AsOptional();
+                x.Attachments = attachments;
                 x.Flags = page.MessageFlags;
             }).ConfigureAwait(false);
         }
         else if (channel is not null)
         {
             message = await channel.SendFilesAsync(attachments ?? [], page.Text, page.IsTTS, embed: null, options: null,
-                page.AllowedMentions, page.MessageReference, component, page.Stickers.ToArray(), page.GetEmbedArray(), flags: page.MessageFlags ?? MessageFlags.None).ConfigureAwait(false);
+                page.AllowedMentions, page.MessageReference, component, page.StickerIds.ToArray(), page.Embeds, flags: page.MessageFlags ?? MessageFlags.None).ConfigureAwait(false);
         }
         else
         {
@@ -1303,45 +1119,44 @@ public class InteractiveService
         return message;
     }
 
-    private async Task<IUserMessage> SendOrModifyMessageAsync<TOption>(IInteractiveElement<TOption> element, IDiscordInteraction interaction,
-        InteractionResponseType responseType, bool ephemeral)
+    private async Task<RestMessage> SendOrModifyMessageAsync<TOption>(IInteractiveElement<TOption> element, Interaction interaction,
+        InteractionCallbackType responseType, bool ephemeral)
     {
         var page = await element.GetCurrentPageAsync().ConfigureAwait(false);
 
-        MessageComponent? component = null;
+        List<IMessageComponentProperties>? component = null;
         bool addComponents = element is not Paginator pag || _config.ProcessSinglePagePaginators || pag.MaxPageIndex > 0;
         if ((element.InputType.HasFlag(InputType.Buttons) || element.InputType.HasFlag(InputType.SelectMenus)) && addComponents)
         {
             component = element.GetOrAddComponents(disableAll: false).Build();
         }
 
-        var embeds = page.GetEmbedArray();
+        var embeds = page.Embeds;
         var attachments = page.AttachmentsFactory is null ? null : await page.AttachmentsFactory().ConfigureAwait(false);
 
         switch (responseType)
         {
-            case InteractionResponseType.ChannelMessageWithSource:
+            case InteractionCallbackType.Message:
                 await interaction.RespondWithFilesAsync(attachments ?? [],
                     page.Text, embeds, page.IsTTS, ephemeral, page.AllowedMentions, component, flags: page.MessageFlags ?? MessageFlags.None).ConfigureAwait(false);
                 return await interaction.GetOriginalResponseAsync().ConfigureAwait(false);
 
-            case InteractionResponseType.DeferredChannelMessageWithSource:
+            case InteractionCallbackType.DeferredMessage:
                 return await interaction.FollowupWithFilesAsync(attachments ?? [],
                     page.Text, embeds, page.IsTTS, ephemeral, page.AllowedMentions, component, flags: page.MessageFlags ?? MessageFlags.None).ConfigureAwait(false);
 
-            case InteractionResponseType.DeferredUpdateMessage:
+            case InteractionCallbackType.DeferredModifyMessage:
                 return await interaction.ModifyOriginalResponseAsync(UpdateMessage).ConfigureAwait(false);
 
-            case InteractionResponseType.UpdateMessage:
+            case InteractionCallbackType.ModifyMessage:
                 InteractiveGuards.ValidResponseType(responseType, interaction);
-                await ((IComponentInteraction)interaction).UpdateAsync(UpdateMessage).ConfigureAwait(false);
-                return await interaction.GetOriginalResponseAsync().ConfigureAwait(false);
+                return await ((MessageComponentInteraction)interaction).ModifyResponseAsync(UpdateMessage).ConfigureAwait(false);
 
             default:
                 throw new ArgumentException("Unknown interaction response type.", nameof(responseType));
         }
 
-        void UpdateMessage(MessageProperties props)
+        void UpdateMessage(MessageOptions props)
         {
             props.Content = page.Text;
             props.Embeds = embeds;
@@ -1352,11 +1167,11 @@ public class InteractiveService
         }
     }
 
-    private Task MessageReceived(SocketMessage message)
+    private ValueTask MessageCreated(GatewayClient client, Message message)
     {
-        if (message.Author.Id == _client.CurrentUser.Id)
+        if (message.Author.Id == client.Id)
         {
-            return Task.CompletedTask;
+            return ValueTask.CompletedTask;
         }
 
         foreach (var pair in _filteredCallbacks)
@@ -1371,59 +1186,20 @@ public class InteractiveService
                     }
                     catch (Exception ex)
                     {
-                        LogError("InteractiveService", "Failed to execute filtered message callback", ex);
+                        _logger.LogError(ex, "Failed to execute filtered message callback");
                     }
                 });
             }
         }
 
-        return Task.CompletedTask;
+        return ValueTask.CompletedTask;
     }
 
-    private Task ReactionAdded(Cacheable<IUserMessage, ulong> cachedMessage, Cacheable<IMessageChannel, ulong> cachedChannel, SocketReaction reaction)
+    private Task InteractionCreated(GatewayClient client, Interaction interaction)
     {
-        if (reaction.UserId != _client.CurrentUser.Id
-            && _callbacks.TryGetValue(reaction.MessageId, out var callback))
-        {
-            _ = Task.Run(async () =>
-            {
-                try
-                {
-                    await callback.ExecuteAsync(reaction).ConfigureAwait(false);
-                }
-                catch (Exception ex)
-                {
-                    LogError("InteractiveService", $"Failed to execute reaction callback (message Id: {reaction.MessageId})", ex);
-                }
-            });
-        }
-
-        foreach (var pair in _filteredCallbacks)
-        {
-            if (pair.Value.IsCompatible(reaction))
-            {
-                _ = Task.Run(async () =>
-                {
-                    try
-                    {
-                        await pair.Value.ExecuteAsync(reaction).ConfigureAwait(false);
-                    }
-                    catch (Exception ex)
-                    {
-                        LogError("InteractiveService", "Failed to execute filtered reaction callback", ex);
-                    }
-                });
-            }
-        }
-
-        return Task.CompletedTask;
-    }
-
-    private Task InteractionCreated(SocketInteraction interaction)
-    {
-        if ((interaction is SocketMessageComponent componentInteraction
+        if ((interaction is MessageComponentInteraction componentInteraction
             && _callbacks.TryGetValue(componentInteraction.Message.Id, out var callback))
-            || (interaction is SocketModal { Message: not null } modal
+            || (interaction is ModalInteraction { Message: not null } modal
                 && _callbacks.TryGetValue(modal.Message.Id, out callback)))
         {
             _ = Task.Run(async () =>
@@ -1434,8 +1210,8 @@ public class InteractiveService
                 }
                 catch (Exception ex)
                 {
-                    ulong? messageId = (interaction as SocketMessageComponent)?.Message?.Id ?? (interaction as SocketModal)?.Message?.Id;
-                    LogError("InteractiveService", $"Failed to execute interaction callback (message Id: {messageId?.ToString() ?? "?"})", ex);
+                    ulong? messageId = (interaction as MessageComponentInteraction)?.Message?.Id ?? (interaction as ModalInteraction)?.Message?.Id;
+                    _logger.LogError(ex, "Failed to execute interaction callback (message Id: {MessageId})", messageId?.ToString() ?? "?");
                 }
             });
         }
@@ -1452,7 +1228,7 @@ public class InteractiveService
                     }
                     catch (Exception ex)
                     {
-                        LogError("InteractiveService", "Failed to execute filtered interaction callback", ex);
+                        _logger.LogError(ex, "Failed to execute filtered interaction callback");
                     }
                 });
             }
@@ -1460,12 +1236,14 @@ public class InteractiveService
 
         return Task.CompletedTask;
     }
+}
 
-    private void LogError(string source, string message, Exception? exception = null)
-        => Log?.Invoke(new LogMessage(LogSeverity.Error, source, message, exception));
-
-    private Task LogMessage(LogMessage message)
-        => _config.LogLevel >= message.Severity
-            ? Task.FromResult(message)
-            : Task.CompletedTask;
+internal class InteractionCreateHandler : IInteractionCreateShardedGatewayHandler
+{
+    /// <inheritdoc />
+    public ValueTask HandleAsync(GatewayClient client, Interaction interaction)
+    {
+            
+        return ValueTask.CompletedTask;
+    }
 }

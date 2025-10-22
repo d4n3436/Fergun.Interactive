@@ -1,20 +1,21 @@
 using System.Collections.Generic;
-using Discord;
+using NetCord;
+
 
 namespace Fergun.Interactive.Selection;
 
-internal sealed class EmoteComparer<TValue> : IEqualityComparer<KeyValuePair<IEmote, TValue>>
+internal sealed class EmoteComparer<TValue> : IEqualityComparer<KeyValuePair<EmojiProperties, TValue>>
 {
-    public bool Equals(KeyValuePair<IEmote, TValue> x, KeyValuePair<IEmote, TValue> y)
+    public bool Equals(KeyValuePair<EmojiProperties, TValue> x, KeyValuePair<EmojiProperties, TValue> y)
         => x.Key.ToString() == y.Key.ToString() && Equals(x.Value, y.Value);
 
     // ReSharper disable once UsageOfDefaultStructEquality
-    public int GetHashCode(KeyValuePair<IEmote, TValue> obj) => obj.GetHashCode();
+    public int GetHashCode(KeyValuePair<EmojiProperties, TValue> obj) => obj.GetHashCode();
 }
 
-internal sealed class EmoteComparer : IEqualityComparer<IEmote>
+internal sealed class EmoteComparer : IEqualityComparer<EmojiProperties>
 {
-    public bool Equals(IEmote? x, IEmote? y) => x?.ToString() == y?.ToString();
+    public bool Equals(EmojiProperties? x, EmojiProperties? y) => x?.ToString() == y?.ToString();
 
-    public int GetHashCode(IEmote obj) => obj.ToString()?.GetHashCode() ?? 0;
+    public int GetHashCode(EmojiProperties obj) => obj.ToString()?.GetHashCode() ?? 0;
 }

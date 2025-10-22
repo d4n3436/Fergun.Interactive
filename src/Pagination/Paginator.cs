@@ -5,11 +5,12 @@ using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Discord;
-using Discord.Net;
-using Discord.WebSocket;
+
 using Fergun.Interactive.Extensions;
 using JetBrains.Annotations;
+using NetCord;
+using NetCord.Gateway;
+using NetCord.Rest;
 
 namespace Fergun.Interactive.Pagination;
 
@@ -17,12 +18,12 @@ namespace Fergun.Interactive.Pagination;
 /// Represents an abstract immutable paginator.
 /// </summary>
 [PublicAPI]
-public abstract class Paginator : IInteractiveElement<KeyValuePair<IEmote, PaginatorAction>>
+public abstract class Paginator : IInteractiveElement<KeyValuePair<EmojiProperties, PaginatorAction>>
 {
     private readonly Lazy<string> _lazyJumpInputTextLabel;
     private readonly Lazy<string> _lazyInvalidJumpInputMessage;
-    private readonly Lazy<TimeoutTaskCompletionSource<IMessage?>> _lazyMessageTcs;
-    private readonly Lazy<TimeoutTaskCompletionSource<IModalInteraction?>> _lazyModalTcs;
+    private readonly Lazy<TimeoutTaskCompletionSource<Message?>> _lazyMessageTcs;
+    private readonly Lazy<TimeoutTaskCompletionSource<ModalInteraction?>> _lazyModalTcs;
     private readonly object _waitLock = new();
 
     /// <summary>
@@ -49,8 +50,8 @@ public abstract class Paginator : IInteractiveElement<KeyValuePair<IEmote, Pagin
             InteractiveGuards.NotNull(properties.RestrictedPageFactory);
         }
 
-        Users = new ReadOnlyCollection<IUser>(properties.Users.ToArray());
-        Emotes = new ReadOnlyDictionary<IEmote, PaginatorAction>(new Dictionary<IEmote, PaginatorAction>(properties.Options));
+        Users = new ReadOnlyCollection<NetCord.User>(properties.Users.ToArray());
+        Emotes = new ReadOnlyDictionary<EmojiProperties, PaginatorAction>(new Dictionary<EmojiProperties, PaginatorAction>(properties.Options));
         ButtonFactories = new ReadOnlyCollection<Func<IButtonContext, IPaginatorButton>>(properties.ButtonFactories.ToArray());
         SelectMenuFactories = new ReadOnlyCollection<Func<ISelectMenuContext, IPaginatorSelectMenu>>(properties.SelectMenuFactories.ToArray());
         CanceledPage = properties.CanceledPage?.Build();
@@ -69,12 +70,12 @@ public abstract class Paginator : IInteractiveElement<KeyValuePair<IEmote, Pagin
 
         _lazyJumpInputTextLabel = new Lazy<string>(() => properties.JumpInputTextLabel ?? $"Page number (1-{MaxPageIndex + 1})");
         _lazyInvalidJumpInputMessage = new Lazy<string>(() => properties.InvalidJumpInputMessage ?? $"Invalid input. The number must be in the range of 1 to {MaxPageIndex + 1}, excluding the current page.");
-        _lazyMessageTcs = new Lazy<TimeoutTaskCompletionSource<IMessage?>>(() => new TimeoutTaskCompletionSource<IMessage?>(JumpInputTimeout));
-        _lazyModalTcs = new Lazy<TimeoutTaskCompletionSource<IModalInteraction?>>(() => new TimeoutTaskCompletionSource<IModalInteraction?>(JumpInputTimeout));
+        _lazyMessageTcs = new Lazy<TimeoutTaskCompletionSource<Message?>>(() => new TimeoutTaskCompletionSource<Message?>(JumpInputTimeout));
+        _lazyModalTcs = new Lazy<TimeoutTaskCompletionSource<ModalInteraction?>>(() => new TimeoutTaskCompletionSource<ModalInteraction?>(JumpInputTimeout));
     }
 
     /// <inheritdoc/>
-    IReadOnlyCollection<KeyValuePair<IEmote, PaginatorAction>> IInteractiveElement<KeyValuePair<IEmote, PaginatorAction>>.Options => Emotes;
+    IReadOnlyCollection<KeyValuePair<EmojiProperties, PaginatorAction>> IInteractiveElement<KeyValuePair<EmojiProperties, PaginatorAction>>.Options => Emotes;
 
     /// <summary>
     /// Gets a value indicating whether this paginator is restricted to <see cref="Users"/>.
@@ -94,13 +95,13 @@ public abstract class Paginator : IInteractiveElement<KeyValuePair<IEmote, Pagin
     /// <summary>
     /// Gets a read-only collection of users who can interact with this paginator.
     /// </summary>
-    public IReadOnlyCollection<IUser> Users { get; }
+    public IReadOnlyCollection<NetCord.User> Users { get; }
 
     /// <summary>
     /// Gets the emotes and their related actions of this paginator.
     /// </summary>
     /// <remarks>This property has been replaced by <see cref="ButtonFactories"/> and it shouldn't be used on button-based paginators.</remarks>
-    public IReadOnlyDictionary<IEmote, PaginatorAction> Emotes { get; }
+    public IReadOnlyDictionary<EmojiProperties, PaginatorAction> Emotes { get; }
 
     /// <summary>
     /// Gets the button factories.
@@ -192,14 +193,14 @@ public abstract class Paginator : IInteractiveElement<KeyValuePair<IEmote, Pagin
     protected ulong JumpInputUserId { get; set; }
 
     /// <summary>
-    /// Gets the <see cref="TimeoutTaskCompletionSource{TResult}"/> used to receive modal interactions in <see cref="JumpToPageAsync(SocketReaction)"/>.
+    /// Gets the <see cref="TimeoutTaskCompletionSource{TResult}"/> used to receive modal interactions in <see cref="JumpToPageAsync(MessageReactionAddEventArgs)"/>.
     /// </summary>
-    protected TimeoutTaskCompletionSource<IMessage?> MessageTaskCompletionSource => _lazyMessageTcs.Value;
+    protected TimeoutTaskCompletionSource<Message?> MessageTaskCompletionSource => _lazyMessageTcs.Value;
 
     /// <summary>
-    /// Gets the <see cref="TimeoutTaskCompletionSource{TResult}"/> used to receive modal interactions in <see cref="JumpToPageAsync(SocketMessageComponent)"/>.
+    /// Gets the <see cref="TimeoutTaskCompletionSource{TResult}"/> used to receive modal interactions in <see cref="JumpToPageAsync(MessageComponentInteraction)"/>.
     /// </summary>
-    protected TimeoutTaskCompletionSource<IModalInteraction?> ModalTaskCompletionSource => _lazyModalTcs.Value;
+    protected TimeoutTaskCompletionSource<ModalInteraction?> ModalTaskCompletionSource => _lazyModalTcs.Value;
 
     /// <summary>
     /// Sets the <see cref="CurrentPageIndex"/> of this paginator.
@@ -259,7 +260,7 @@ public abstract class Paginator : IInteractiveElement<KeyValuePair<IEmote, Pagin
     /// </summary>
     /// <param name="reaction">The reaction.</param>
     /// <returns>A task representing the asynchronous operation. The task result contains whether the action succeeded.</returns>
-    public virtual async ValueTask<bool> JumpToPageAsync(SocketReaction reaction)
+    public virtual async ValueTask<bool> JumpToPageAsync(MessageReactionAddEventArgs reaction)
     {
         InteractiveGuards.NotNull(reaction);
 
@@ -275,13 +276,13 @@ public abstract class Paginator : IInteractiveElement<KeyValuePair<IEmote, Pagin
             if (!string.IsNullOrEmpty(JumpInputInUseMessage))
             {
                 await reaction.Channel.SendMessageAsync($"{MentionUtils.MentionUser(reaction.UserId)}, {JumpInputInUseMessage}",
-                    allowedMentions: AllowedMentions.None, messageReference: new MessageReference(reaction.MessageId)).ConfigureAwait(false);
+                    AllowedMentionsProperties: AllowedMentionsProperties.None, messageReference: new MessageReference(reaction.MessageId)).ConfigureAwait(false);
             }
 
             return false;
         }
 
-        var promptMessage = await reaction.Channel.SendMessageAsync($"{MentionUtils.MentionUser(reaction.UserId)}, {JumpInputPrompt}", allowedMentions: AllowedMentions.None, messageReference: new MessageReference(reaction.MessageId)).ConfigureAwait(false);
+        var promptMessage = await reaction.Channel.SendMessageAsync($"{MentionUtils.MentionUser(reaction.UserId)}, {JumpInputPrompt}", AllowedMentionsProperties: AllowedMentionsProperties.None, messageReference: new MessageReference(reaction.MessageId)).ConfigureAwait(false);
 
         lock (_waitLock)
         {
@@ -314,18 +315,11 @@ public abstract class Paginator : IInteractiveElement<KeyValuePair<IEmote, Pagin
         {
             if (!string.IsNullOrEmpty(InvalidJumpInputMessage))
             {
-                await message.Channel.SendMessageAsync(InvalidJumpInputMessage, allowedMentions: AllowedMentions.None,
+                await message.Channel.SendMessageAsync(InvalidJumpInputMessage, AllowedMentionsProperties: AllowedMentionsProperties.None,
                     messageReference: new MessageReference(message.Id)).ConfigureAwait(false);
             }
 
             return false;
-        }
-
-        bool manageMessages = await message.Channel.CurrentUserHasManageMessagesAsync().ConfigureAwait(false);
-
-        if (manageMessages && Deletion.HasFlag(DeletionOptions.Valid))
-        {
-            await message.DeleteAsync().ConfigureAwait(false);
         }
 
         return true;
@@ -336,7 +330,7 @@ public abstract class Paginator : IInteractiveElement<KeyValuePair<IEmote, Pagin
     /// </summary>
     /// <param name="interaction">The component interaction.</param>
     /// <returns>A task representing the asynchronous operation. The task result contains whether the action succeeded.</returns>
-    public virtual async ValueTask<bool> JumpToPageAsync(SocketMessageComponent interaction)
+    public virtual async ValueTask<bool> JumpToPageAsync(MessageComponentInteraction interaction)
     {
         InteractiveGuards.NotNull(interaction);
 
@@ -356,14 +350,14 @@ public abstract class Paginator : IInteractiveElement<KeyValuePair<IEmote, Pagin
                 }
                 else
                 {
-                    await interaction.DeferAsync().ConfigureAwait(false);
+                    await interaction.SendResponseAsync(InteractionCallback.DeferredModifyMessage).ConfigureAwait(false);
                 }
 
                 return false;
             }
         }
 
-        var modal = new ModalBuilder()
+        var modal = new ModalProperties()
             .WithCustomId(interaction.Message.Id.ToString())
             .WithTitle(JumpInputPrompt)
             .AddTextInput(JumpInputTextLabel, "text_input", minLength: 1, maxLength: (int)Math.Floor(Math.Log10(MaxPageIndex + 1) + 1))
@@ -397,21 +391,21 @@ public abstract class Paginator : IInteractiveElement<KeyValuePair<IEmote, Pagin
             }
             else
             {
-                await res.DeferAsync().ConfigureAwait(false);
+                await res.SendResponseAsync(InteractionCallback.DeferredModifyMessage).ConfigureAwait(false);
             }
 
             return false;
         }
 
-        await res.DeferAsync().ConfigureAwait(false);
+        await res.SendResponseAsync(InteractionCallback.DeferredModifyMessage).ConfigureAwait(false);
 
         return true;
     }
 
     /// <inheritdoc/>
-    public virtual ComponentBuilder GetOrAddComponents(bool disableAll, ComponentBuilder? builder = null)
+    public virtual List<IMessageComponentProperties> GetOrAddComponents(bool disableAll, List<IMessageComponentProperties>? builder = null)
     {
-        builder ??= new ComponentBuilder();
+        builder ??= new List<IMessageComponentProperties>();
         for (int i = 0; i < ButtonFactories.Count; i++)
         {
             var context = new ButtonContext(i, CurrentPageIndex, MaxPageIndex, disableAll);
@@ -421,10 +415,11 @@ public abstract class Paginator : IInteractiveElement<KeyValuePair<IEmote, Pagin
                 continue;
 
             var style = properties.Style ?? (properties.Action == PaginatorAction.Exit ? ButtonStyle.Danger : ButtonStyle.Primary);
-            var button = new ButtonBuilder();
+            IButtonProperties button = null;
 
             if (style == ButtonStyle.Link)
             {
+                button = new butonprope
                 button.WithUrl(properties.Url);
             }
             else
@@ -459,9 +454,9 @@ public abstract class Paginator : IInteractiveElement<KeyValuePair<IEmote, Pagin
         return builder;
     }
 
-    /// <inheritdoc cref="IInteractiveInputHandler.HandleMessageAsync(IMessage, IUserMessage)"/>
+    /// <inheritdoc cref="IInteractiveInputHandler.HandleMessageAsync(Message, RestMessage)"/>
     /// <remarks>By default, paginators only accept a message input for the "jump to page" action.</remarks>
-    public virtual Task<InteractiveInputResult> HandleMessageAsync(IMessage input, IUserMessage message)
+    public virtual Task<InteractiveInputResult> HandleMessageAsync(Message input, RestMessage message)
     {
         InteractiveGuards.NotNull(input);
         InteractiveGuards.NotNull(message);
@@ -476,7 +471,7 @@ public abstract class Paginator : IInteractiveElement<KeyValuePair<IEmote, Pagin
     }
 
     /// <inheritdoc cref="IInteractiveInputHandler.HandleReactionAsync"/>
-    public virtual async Task<InteractiveInputResult> HandleReactionAsync(SocketReaction input, IUserMessage message)
+    public virtual async Task<InteractiveInputResult> HandleReactionAsync(MessageReactionAddEventArgs input, RestMessage message)
     {
         InteractiveGuards.NotNull(input);
         InteractiveGuards.NotNull(message);
@@ -523,7 +518,7 @@ public abstract class Paginator : IInteractiveElement<KeyValuePair<IEmote, Pagin
     }
 
     /// <inheritdoc cref="IInteractiveInputHandler.HandleInteractionAsync"/>
-    public virtual async Task<InteractiveInputResult> HandleInteractionAsync(SocketMessageComponent input, IUserMessage message)
+    public virtual async Task<InteractiveInputResult> HandleInteractionAsync(MessageComponentInteraction input, RestMessage message)
     {
         InteractiveGuards.NotNull(input);
         InteractiveGuards.NotNull(message);
@@ -556,11 +551,11 @@ public abstract class Paginator : IInteractiveElement<KeyValuePair<IEmote, Pagin
 
         int previousPageIndex = CurrentPageIndex;
 
-        Func<Action<MessageProperties>, RequestOptions?, Task> updateMethod;
+        Func<Action<MessageOptions>, RequestOptions?, Task> updateMethod;
         if (action == PaginatorAction.Jump && await JumpToPageAsync(input).ConfigureAwait(false))
-            updateMethod = input.ModifyOriginalResponseAsync;
+            updateMethod = input.ModifyResponseAsync;
         else if (await ApplyActionAsync(action).ConfigureAwait(false))
-            updateMethod = input.UpdateAsync;
+            updateMethod = input.SendResponseAsync(InteractionCallback.ModifyMessage);
         else return InteractiveInputStatus.Success;
 
         await TryUpdateMessageAsync(updateMethod, previousPageIndex).ConfigureAwait(false);
@@ -574,7 +569,7 @@ public abstract class Paginator : IInteractiveElement<KeyValuePair<IEmote, Pagin
     /// <param name="input">The modal interaction to handle.</param>
     /// <param name="message">The message containing the interactive element.</param>
     /// <returns>A <see cref="Task{TResult}"/> containing the result.</returns>
-    public virtual async ValueTask<InteractiveInputResult> HandleModalAsync(IModalInteraction input, IUserMessage message)
+    public virtual async ValueTask<InteractiveInputResult> HandleModalAsync(ModalInteraction input, Message message)
     {
         InteractiveGuards.NotNull(input);
         InteractiveGuards.NotNull(message);
@@ -593,7 +588,7 @@ public abstract class Paginator : IInteractiveElement<KeyValuePair<IEmote, Pagin
             }
             else
             {
-                await input.DeferAsync().ConfigureAwait(false);
+                await input.SendResponseAsync(InteractionCallback.DeferredModifyMessage).ConfigureAwait(false);
             }
 
             return new InteractiveInputResult(InteractiveInputStatus.Ignored);
@@ -604,21 +599,19 @@ public abstract class Paginator : IInteractiveElement<KeyValuePair<IEmote, Pagin
     }
 
     /// <inheritdoc />
-    async Task<IInteractiveResult<InteractiveInputStatus>> IInteractiveInputHandler.HandleMessageAsync(IMessage input, IUserMessage message)
+    async Task<IInteractiveResult<InteractiveInputStatus>> IInteractiveInputHandler.HandleMessageAsync(Message input, RestMessage message)
         => await HandleMessageAsync(input, message).ConfigureAwait(false);
 
     /// <inheritdoc />
-    async Task<IInteractiveResult<InteractiveInputStatus>> IInteractiveInputHandler.HandleReactionAsync(IReaction input, IUserMessage message)
+    async Task<IInteractiveResult<InteractiveInputStatus>> IInteractiveInputHandler.HandleReactionAsync(MessageReactionAddEventArgs input, RestMessage message)
     {
-        InteractiveGuards.ExpectedType<IReaction, SocketReaction>(input, out var socketReaction);
-        return await HandleReactionAsync(socketReaction, message).ConfigureAwait(false);
+        return await HandleReactionAsync(input, message).ConfigureAwait(false);
     }
 
     /// <inheritdoc />
-    async Task<IInteractiveResult<InteractiveInputStatus>> IInteractiveInputHandler.HandleInteractionAsync(IComponentInteraction input, IUserMessage message)
+    async Task<IInteractiveResult<InteractiveInputStatus>> IInteractiveInputHandler.HandleInteractionAsync(MessageComponentInteraction input, RestMessage message)
     {
-        InteractiveGuards.ExpectedType<IComponentInteraction, SocketMessageComponent>(input, out var socketMessageComponent);
-        return await HandleInteractionAsync(socketMessageComponent, message).ConfigureAwait(false);
+        return await HandleInteractionAsync(input, message).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -628,10 +621,13 @@ public abstract class Paginator : IInteractiveElement<KeyValuePair<IEmote, Pagin
     /// <param name="message">The message to initialize.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to cancel this request.</param>
     /// <returns>A task representing the asynchronous operation.</returns>
-    internal virtual async Task InitializeMessageAsync(IUserMessage message, CancellationToken cancellationToken = default)
+    internal virtual async Task InitializeMessageAsync(Message message, CancellationToken cancellationToken = default)
     {
         if (!InputType.HasFlag(InputType.Reactions)) return;
 
+        await Task.CompletedTask;
+        // TODO: Fix?
+        /*
         foreach (var emote in Emotes.Keys)
         {
             if (cancellationToken.IsCancellationRequested)
@@ -641,9 +637,10 @@ public abstract class Paginator : IInteractiveElement<KeyValuePair<IEmote, Pagin
 
             await message.AddReactionAsync(emote).ConfigureAwait(false);
         }
+        */
     }
 
-    internal bool TryGetAction(SocketMessageComponent input, out PaginatorAction action)
+    internal bool TryGetAction(MessageComponentInteraction input, out PaginatorAction action)
     {
         // Get last character of custom ID, convert it to a number and cast it to PaginatorAction
         action = (PaginatorAction)(input.Data.CustomId?[^1] - '0' ?? -1);
@@ -652,26 +649,17 @@ public abstract class Paginator : IInteractiveElement<KeyValuePair<IEmote, Pagin
             return true;
         }
 
-        // Old way to get the action for backward compatibility
-        var emote = (input
-                .Message
-                .Components
-                .OfType<ActionRowComponent>()
-                .SelectMany(x => x.Components)
-                .FirstOrDefault(x => x is ButtonComponent button && button.CustomId == input.Data.CustomId) as ButtonComponent)?
-            .Emote;
-
-        return emote is not null && Emotes.TryGetValue(emote, out action);
+        return false;
     }
 
-    private static async Task<InteractiveInputResult> DeferInteractionAsync(SocketMessageComponent input)
+    private static async Task<InteractiveInputResult> DeferInteractionAsync(MessageComponentInteraction input)
     {
-        await input.DeferAsync().ConfigureAwait(false);
+        await input.SendResponseAsync(InteractionCallback.DeferredModifyMessage).ConfigureAwait(false);
         return InteractiveInputStatus.Success;
     }
 
     // Attempts to update the message and reverts the page index to the previous one if an exception occurs
-    private async Task TryUpdateMessageAsync(Func<Action<MessageProperties>, RequestOptions?, Task> updateMethod, int previousPageIndex, bool includeComponents = true)
+    private async Task TryUpdateMessageAsync(Func<Action<MessageOptions>, RequestOptions?, Task> updateMethod, int previousPageIndex, bool includeComponents = true)
     {
         var currentPage = await GetOrLoadCurrentPageAsync().ConfigureAwait(false);
         var attachments = currentPage.AttachmentsFactory is null ? null : await currentPage.AttachmentsFactory().ConfigureAwait(false);
@@ -681,9 +669,9 @@ public abstract class Paginator : IInteractiveElement<KeyValuePair<IEmote, Pagin
         {
             await updateMethod(x =>
             {
-                x.Content = currentPage.Text ?? string.Empty; // workaround for d.net bug
-                x.Embeds = currentPage.GetEmbedArray();
-                x.Components = includeComponents ? components : Optional<MessageComponent>.Unspecified;
+                x.Content = currentPage.Text;
+                x.Embeds = currentPage.Embeds;
+                x.Components = includeComponents ? components : null;
                 x.AllowedMentions = currentPage.AllowedMentions;
                 x.Attachments = attachments.AsOptional();
                 x.Flags = currentPage.MessageFlags;
@@ -696,11 +684,11 @@ public abstract class Paginator : IInteractiveElement<KeyValuePair<IEmote, Pagin
         }
     }
 
-    private async Task<InteractiveInputResult> SendRestrictedMessageAsync(SocketMessageComponent input)
+    private async Task<InteractiveInputResult> SendRestrictedMessageAsync(MessageComponentInteraction input)
     {
         var page = RestrictedPage ?? throw new InvalidOperationException($"Expected {nameof(RestrictedPage)} to be non-null.");
         var attachments = page.AttachmentsFactory is null ? null : await page.AttachmentsFactory().ConfigureAwait(false);
-        await input.RespondWithFilesAsync(attachments ?? [], page.Text, page.GetEmbedArray(), page.IsTTS,
+        await input.RespondWithFilesAsync(attachments ?? [], page.Text, page.Embeds, page.IsTTS,
             ephemeral: true, page.AllowedMentions, flags: page.MessageFlags ?? MessageFlags.None).ConfigureAwait(false);
 
         return InteractiveInputStatus.Success;

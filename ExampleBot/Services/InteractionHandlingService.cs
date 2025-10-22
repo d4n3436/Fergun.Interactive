@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Reflection;
 using System.Threading.Tasks;
-using Discord.Interactions;
-using Discord.WebSocket;
+
+
 using Fergun.Interactive;
 
 namespace ExampleBot.Services;
@@ -38,12 +38,12 @@ public class InteractionHandlingService
         await _commands.AddModulesAsync(Assembly.GetEntryAssembly(), _services);
     }
 
-    private async Task HandleInteractionAsync(SocketInteraction interaction)
+    private async Task HandleInteractionAsync(Interaction interaction)
     {
         if (_interactive.IsManaged(interaction))
             return;
 
-        var context = new SocketInteractionContext(_client, interaction);
+        var context = new InteractionContext(_client, interaction);
         await _commands.ExecuteCommandAsync(context, _services);
     }
 }

@@ -1,6 +1,7 @@
 using System.Collections.Generic;
-using Discord;
+
 using JetBrains.Annotations;
+using NetCord.Rest;
 
 namespace Fergun.Interactive;
 
@@ -14,7 +15,7 @@ public interface IInteractiveElement<out TOption> : IInteractiveInputHandler
     /// <summary>
     /// Gets a read-only collection of users who can interact with this element.
     /// </summary>
-    IReadOnlyCollection<IUser> Users { get; }
+    IReadOnlyCollection<NetCord.User> Users { get; }
 
     /// <summary>
     /// Gets a read-only collection of options.
@@ -62,12 +63,12 @@ public interface IInteractiveElement<out TOption> : IInteractiveInputHandler
     RestrictedInputBehavior RestrictedInputBehavior { get; }
 
     /// <summary>
-    /// Gets a <see cref="ComponentBuilder"/> containing the components that a message that represents this element would have.<br/>
+    /// Gets a <see cref="List{T}"/> containing the components that a message that represents this element would have.<br/>
     /// If <paramref name="builder"/> is not <see langword="null"/>, it will be used to populate the components.
     /// </summary>
     /// <remarks>This is only used when <see cref="InputType"/> has <see cref="InputType.Buttons"/> or <see cref="InputType.SelectMenus"/>.</remarks>
     /// <param name="disableAll">Whether to disable all the components.</param>
     /// <param name="builder">An existing builder to populate the components to.</param>
-    /// <returns>A builder containing the components of this element. This can be either a new <see cref="ComponentBuilder"/> or <paramref name="builder"/>.</returns>
-    ComponentBuilder GetOrAddComponents(bool disableAll, ComponentBuilder? builder = null);
+    /// <returns>A builder containing the components of this element. This can be either a new <see cref="List{T}"/> or <paramref name="builder"/>.</returns>
+    List<IMessageComponentProperties> GetOrAddComponents(bool disableAll, List<IMessageComponentProperties>? builder = null);
 }

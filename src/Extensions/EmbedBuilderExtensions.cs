@@ -1,15 +1,17 @@
 ﻿using System;
 using System.Linq;
-using Discord;
+
 using JetBrains.Annotations;
+using NetCord;
+using NetCord.Rest;
 
 namespace Fergun.Interactive.Pagination;
 
 /// <summary>
-/// Provides extension methods for <see cref="EmbedBuilder"/>.
+/// Provides extension methods for <see cref="EmbedProperties"/>.
 /// </summary>
 [PublicAPI]
-public static class EmbedBuilderExtensions
+public static class EmbedPropertiesExtensions
 {
     /// <summary>
     /// Applies the standard paginator footer to this embed builder.
@@ -17,9 +19,9 @@ public static class EmbedBuilderExtensions
     /// <param name="builder">The embed builder.</param>
     /// <param name="paginator">The component paginator, used to get the required information.</param>
     /// <param name="style">The footer style.</param>
-    /// <returns>This <see cref="EmbedBuilder"/>.</returns>
+    /// <returns>This <see cref="EmbedProperties"/>.</returns>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="builder"/> or <paramref name="paginator"/> are <see langword="null"/>.</exception>
-    public static EmbedBuilder WithPaginatorFooter(this EmbedBuilder builder, IComponentPaginator paginator, PaginatorFooter style = PaginatorFooter.PageNumber)
+    public static EmbedProperties WithPaginatorFooter(this EmbedProperties builder, IComponentPaginator paginator, PaginatorFooter style = PaginatorFooter.PageNumber)
     {
         InteractiveGuards.NotNull(builder);
         InteractiveGuards.NotNull(paginator);
@@ -27,7 +29,7 @@ public static class EmbedBuilderExtensions
         if (style == PaginatorFooter.None)
             return builder;
 
-        builder.Footer = new EmbedFooterBuilder();
+        builder.Footer = new EmbedFooterProperties();
 
         if (style.HasFlag(PaginatorFooter.Users))
         {
@@ -40,7 +42,7 @@ public static class EmbedBuilderExtensions
                 var user = paginator.Users.Single();
 
                 builder.Footer.Text += $"Interactor: {user}";
-                builder.Footer.IconUrl = user.GetDisplayAvatarUrl();
+                builder.Footer.IconUrl = ((user as GuildUser)?.GetGuildAvatarUrl() ?? user.GetAvatarUrl() ?? user.DefaultAvatarUrl).ToString();
             }
             else
             {

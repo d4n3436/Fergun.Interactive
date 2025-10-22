@@ -1,6 +1,6 @@
 using System;
 using System.Threading.Tasks;
-using Discord;
+
 using Fergun.Interactive.Pagination;
 using Fergun.Interactive.Selection;
 using JetBrains.Annotations;
@@ -20,7 +20,7 @@ public static class InteractiveElementExtensions
     /// <param name="element">The interactive element.</param>
     /// <param name="user">The user.</param>
     /// <returns><see langword="true"/> the user can interact with this element; otherwise, <see langword="false"/>.</returns>
-    public static bool CanInteract<TOption>(this IInteractiveElement<TOption> element, IUser user)
+    public static bool CanInteract<TOption>(this IInteractiveElement<TOption> element, NetCord.User user)
     {
         InteractiveGuards.NotNull(element);
         InteractiveGuards.NotNull(user);

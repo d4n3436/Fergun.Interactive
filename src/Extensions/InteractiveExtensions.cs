@@ -1,23 +1,16 @@
 using System;
 using System.Threading.Tasks;
-using Discord;
+
 using Fergun.Interactive.Pagination;
 using Fergun.Interactive.Selection;
 using JetBrains.Annotations;
+using NetCord;
+using NetCord.Gateway;
 
 namespace Fergun.Interactive.Extensions;
 
 internal static class InteractiveExtensions
 {
-    public static async ValueTask<bool> CurrentUserHasManageMessagesAsync(this IMessageChannel channel)
-    {
-        if (channel is not ITextChannel textChannel)
-            return false;
-
-        var currentUser = await textChannel.Guild.GetCurrentUserAsync(CacheMode.CacheOnly).ConfigureAwait(false);
-        return currentUser?.GetPermissions(textChannel).ManageMessages == true;
-    }
-
     public static TimeSpan GetElapsedTime(this PaginatorCallback callback, InteractiveStatus status)
         => status.GetElapsedTime(callback.StartTime, callback.TimeoutTaskSource.Delay);
 

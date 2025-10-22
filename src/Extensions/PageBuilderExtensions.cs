@@ -22,7 +22,7 @@ public static class PageBuilderExtensions
         InteractiveGuards.NotNull(builder);
         InteractiveGuards.NotNull(paginator);
 
-        builder.GetEmbedBuilder().WithPaginatorFooter(paginator, style);
+        builder.GetEmbedProperties().WithPaginatorFooter(paginator, style);
 
         return builder;
     }

@@ -2,8 +2,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Discord;
+
 using JetBrains.Annotations;
+using NetCord;
+using NetCord.Rest;
 
 namespace Fergun.Interactive;
 
@@ -13,12 +15,12 @@ namespace Fergun.Interactive;
 [PublicAPI]
 public class MultiEmbedPage : IPage
 {
-    private readonly Embed[] _embedArray;
+    private readonly EmbedProperties[] _embedArray;
 
     internal MultiEmbedPage(MultiEmbedPageBuilder builder)
     {
         InteractiveGuards.NotNull(builder);
-        InteractiveGuards.NotNull(builder.Stickers);
+        InteractiveGuards.NotNull(builder.StickerIds);
         InteractiveGuards.NotNull(builder.Builders);
         InteractiveGuards.EmbedCountInRange(builder.Builders);
         if (string.IsNullOrEmpty(builder.Text) && builder.Builders.Count == 0 && builder.AttachmentsFactory is null)
@@ -30,11 +32,11 @@ public class MultiEmbedPage : IPage
         IsTTS = builder.IsTTS;
         AllowedMentions = builder.AllowedMentions;
         MessageReference = builder.MessageReference;
-        Stickers = builder.Stickers;
+        StickerIds = builder.StickerIds;
         AttachmentsFactory = builder.AttachmentsFactory;
         Components = builder.Components;
         MessageFlags = builder.MessageFlags;
-        _embedArray = builder.Builders.Select(x => x.Build()).ToArray();
+        _embedArray = builder.Builders.ToArray();
     }
 
     /// <inheritdoc/>
@@ -44,22 +46,22 @@ public class MultiEmbedPage : IPage
     public bool IsTTS { get; }
 
     /// <inheritdoc/>
-    public AllowedMentions? AllowedMentions { get; }
+    public AllowedMentionsProperties? AllowedMentions { get; }
 
     /// <inheritdoc/>
-    public MessageReference? MessageReference { get; }
+    public MessageReferenceProperties? MessageReference { get; }
 
     /// <inheritdoc/>
-    public IReadOnlyCollection<ISticker> Stickers { get; }
+    public IReadOnlyCollection<ulong> StickerIds { get; }
 
     /// <inheritdoc/>
-    public IReadOnlyCollection<Embed> Embeds => _embedArray;
+    public IReadOnlyCollection<EmbedProperties> Embeds => _embedArray;
 
     /// <inheritdoc/>
-    public Func<ValueTask<IEnumerable<FileAttachment>?>>? AttachmentsFactory { get; }
+    public Func<ValueTask<IEnumerable<AttachmentProperties>?>>? AttachmentsFactory { get; }
 
     /// <inheritdoc/>
-    public MessageComponent? Components { get; }
+    public List<IMessageComponentProperties>? Components { get; }
 
     /// <inheritdoc/>
     public MessageFlags? MessageFlags { get; }
@@ -74,12 +76,12 @@ public class MultiEmbedPage : IPage
         .WithIsTTS(IsTTS)
         .WithAllowedMentions(AllowedMentions)
         .WithMessageReference(MessageReference)
-        .WithStickers(Stickers)
+        .WithStickerIds(StickerIds)
         .WithBuilders(Embeds)
         .WithAttachmentsFactory(AttachmentsFactory)
         .WithComponents(Components)
         .WithMessageFlags(MessageFlags);
 
     /// <inheritdoc />
-    Embed[] IPage.GetEmbedArray() => _embedArray;
+    Embed[] IPage.Embeds => _embedArray;
 }

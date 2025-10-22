@@ -1,8 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Discord;
+
 using JetBrains.Annotations;
+using NetCord;
+using NetCord.Gateway;
+using NetCord.Rest;
 
 namespace Fergun.Interactive.Pagination;
 
@@ -42,7 +45,7 @@ public interface IComponentPaginator
     /// <summary>
     /// Gets a read-only collection of users who can interact with this paginator.
     /// </summary>
-    IReadOnlyCollection<IUser> Users { get; }
+    IReadOnlyCollection<NetCord.User> Users { get; }
 
     /// <summary>
     /// Gets the action that will be done after a cancellation.
@@ -72,7 +75,7 @@ public interface IComponentPaginator
     /// <summary>
     /// Gets the factory of the modal that will be displayed when the user clicks the jump button.
     /// </summary>
-    Func<IComponentPaginator, ModalBuilder>? JumpModalFactory { get; }
+    Func<IComponentPaginator, ModalProperties>? JumpModalFactory { get; }
 
     /// <summary>
     /// Gets the factory of the <see cref="IPage"/> that will be displayed ephemerally to a user when they are not allowed to interact with the paginator.
@@ -118,7 +121,7 @@ public interface IComponentPaginator
     /// <param name="interaction">The interaction.</param>
     /// <returns>A <see cref="ValueTask{TResult}"/> representing the operation. The result contains the status of the input.</returns>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="interaction"/> is <see langword="null"/>.</exception>
-    ValueTask<InteractiveInputStatus> HandleInteractionAsync(IComponentInteraction interaction);
+    ValueTask<InteractiveInputStatus> HandleInteractionAsync(MessageComponentInteraction interaction);
 
     /// <summary>
     /// Renders the specified <paramref name="page"/> or the current page of the paginator by responding to the interaction based on the given <paramref name="responseType"/>.
@@ -128,38 +131,38 @@ public interface IComponentPaginator
     /// The response type to use. This is used to determine how the interaction should be responded. Here's a list explaining the available response types:
     /// <list type="bullet">
     ///     <item>
-    ///         <term><see cref="InteractionResponseType.ChannelMessageWithSource"/></term>
-    ///         <description>Sends a new message using <c>IDiscordInteraction.RespondWithFilesAsync</c> (requires a non-deferred interaction).</description>
+    ///         <term><see cref="Message"/></term>
+    ///         <description>Sends a new message using <c>Interaction.RespondWithFilesAsync</c> (requires a non-deferred interaction).</description>
     ///     </item>
     ///     <item>
-    ///         <term><see cref="InteractionResponseType.DeferredChannelMessageWithSource"/></term>
-    ///         <description>Sends a new message using <c>IDiscordInteraction.FollowupWithFilesAsync</c> (requires a deferred interaction).</description>
+    ///         <term><see cref="InteractionCallbackType.DeferredMessage"/></term>
+    ///         <description>Sends a new message using <c>Interaction.FollowupWithFilesAsync</c> (requires a deferred interaction).</description>
     ///     </item>
     ///     <item>
-    ///         <term><see cref="InteractionResponseType.UpdateMessage"/></term>
-    ///         <description>Updates the message where the interaction comes from using <c>IComponentInteraction.UpdateAsync</c> (requires a non-deferred <see cref="IComponentInteraction"/>).</description>
+    ///         <term><see cref="InteractionCallbackType.ModifyMessage"/></term>
+    ///         <description>Updates the message where the interaction comes from using <c>MessageComponentInteraction.UpdateAsync</c> (requires a non-deferred <see cref="MessageComponentInteraction"/>).</description>
     ///     </item>
     ///     <item>
-    ///         <term><see cref="InteractionResponseType.DeferredUpdateMessage"/></term>
-    ///         <description>Updates the message where the interaction comes from using <c>IComponentInteraction.ModifyOriginalResponseAsync</c> (requires a deferred interaction).</description>
+    ///         <term><see cref="InteractionCallbackType.DeferredModifyMessage"/></term>
+    ///         <description>Updates the message where the interaction comes from using <c>MessageComponentInteraction.ModifyOriginalResponseAsync</c> (requires a deferred interaction).</description>
     ///     </item>
     /// </list>
     /// </param>
     /// <param name="isEphemeral">Whether the response message should be ephemeral. Ignored if responding to a non-ephemeral interaction.</param>
     /// <param name="page">A specific page to render.</param>
-    /// <returns>A <see cref="Task{TResult}"/> representing the operation. The result contains an <see cref="IUserMessage"/> object with the current page.</returns>
+    /// <returns>A <see cref="Task{TResult}"/> representing the operation. The result contains an <see cref="Message"/> object with the current page.</returns>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="interaction"/> is <see langword="null"/>.</exception>
     /// <exception cref="ArgumentException">Thrown when the value of <paramref name="responseType"/> is not supported.</exception>
-    Task<IUserMessage> RenderPageAsync(IDiscordInteraction interaction, InteractionResponseType responseType, bool isEphemeral, IPage? page = null);
+    Task<Message> RenderPageAsync(Interaction interaction, InteractionCallbackType responseType, bool isEphemeral, IPage? page = null);
 
     /// <summary>
     /// Renders the specified <paramref name="page"/> or the current page of the paginator by sending a new message.
     /// </summary>
     /// <param name="channel">The channel where the new message will be sent.</param>
     /// <param name="page">A specific page to render.</param>
-    /// <returns>A <see cref="Task{TResult}"/> representing the operation. The result contains an <see cref="IUserMessage"/> object with the current page.</returns>
+    /// <returns>A <see cref="Task{TResult}"/> representing the operation. The result contains an <see cref="Message"/> object with the current page.</returns>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="channel"/> is <see langword="null"/>.</exception>
-    Task<IUserMessage> RenderPageAsync(IMessageChannel channel, IPage? page = null);
+    Task<Message> RenderPageAsync(TextChannel channel, IPage? page = null);
 
     /// <summary>
     /// Renders the specified <paramref name="page"/> or the current page of the paginator by modifying an existing message.
@@ -168,7 +171,7 @@ public interface IComponentPaginator
     /// <param name="page">A specific page to render.</param>
     /// <returns>A <see cref="Task"/> representing the operation.</returns>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="message"/> is <see langword="null"/>.</exception>
-    Task RenderPageAsync(IUserMessage message, IPage? page = null);
+    Task RenderPageAsync(Message message, IPage? page = null);
 
     /// <summary>
     /// Responds to the interaction with a modal that allows the user to jump to a specific page of the paginator.
@@ -176,7 +179,7 @@ public interface IComponentPaginator
     /// <param name="interaction">The interaction that triggered the prompt.</param>
     /// <returns>A <see cref="Task"/> representing the operation.</returns>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="interaction"/> is <see langword="null"/>.</exception>
-    Task SendJumpPromptAsync(IComponentInteraction interaction);
+    Task SendJumpPromptAsync(MessageComponentInteraction interaction);
 
     /// <summary>
     /// Handles an incoming modal interaction and applies an action on the message of the interaction.
@@ -185,7 +188,7 @@ public interface IComponentPaginator
     /// <param name="interaction">The interaction.to respond to.</param>
     /// <returns>A <see cref="ValueTask{TResult}"/> representing the operation. The result contains the status of the input.</returns>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="interaction"/> is <see langword="null"/>.</exception>
-    ValueTask<InteractiveInputStatus> HandleModalInteractionAsync(IModalInteraction interaction);
+    ValueTask<InteractiveInputStatus> HandleModalInteractionAsync(ModalInteraction interaction);
 
     /// <summary>
     /// Applies an <see cref="ActionOnStop"/> on the message of the paginator based on the <see cref="Status"/>.
@@ -195,5 +198,5 @@ public interface IComponentPaginator
     /// <param name="deferInteraction">Whether to defer the interaction if the message isn't getting modified.</param>
     /// <returns>A <see cref="ValueTask"/> representing the operation.</returns>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="message"/> is <see langword="null"/>.</exception>
-    ValueTask ApplyActionOnStopAsync(IUserMessage message, IComponentInteraction? stopInteraction, bool deferInteraction);
+    ValueTask ApplyActionOnStopAsync(Message message, MessageComponentInteraction? stopInteraction, bool deferInteraction);
 }

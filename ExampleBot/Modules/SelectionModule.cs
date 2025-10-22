@@ -2,8 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Discord;
-using Discord.Interactions;
+
+
 using ExampleBot.Extensions;
 using Fergun.Interactive;
 using Fergun.Interactive.Extensions;
@@ -28,7 +28,7 @@ public class SelectionModule : InteractionModuleBase
     {
         string[] options = ["C", "C++", "C#", "Java", "Python", "JavaScript", "PHP"];
 
-        var pageBuilder = new PageBuilder() // A PageBuilder is just an EmbedBuilder with a Text property (content).
+        var pageBuilder = new PageBuilder() // A PageBuilder is just an EmbedProperties with a Text property (content).
             .WithTitle("Selection Example")
             .WithDescription($"Select a programming language:\n{string.Join('\n', options.Select(x => $"- **{x}**"))}")
             .WithRandomColor(); // Random embed color.
@@ -51,7 +51,7 @@ public class SelectionModule : InteractionModuleBase
         // You can also use the IsSuccess, IsCanceled and IsTimeout properties.
         bool isSuccess = result.IsSuccess;
 
-        var builder = new EmbedBuilder()
+        var builder = new EmbedProperties()
             .WithDescription(isSuccess ? $"You selected: {selected}" : "Timeout!")
             .WithRandomColor();
 
@@ -65,9 +65,9 @@ public class SelectionModule : InteractionModuleBase
     {
         var emotes = new[]
         {
-            new Emoji("📱"),
-            new Emoji("🖥"),
-            new Emoji("💻")
+            EmojiPropertiesProperties.Standard("📱"),
+            EmojiPropertiesProperties.Standard("🖥"),
+            EmojiPropertiesProperties.Standard("💻")
         };
 
         var pageBuilder = new PageBuilder()
@@ -87,7 +87,7 @@ public class SelectionModule : InteractionModuleBase
 
         var result = await _interactive.SendSelectionAsync(selection, Context.Interaction, TimeSpan.FromMinutes(1));
 
-        var builder = new EmbedBuilder()
+        var builder = new EmbedProperties()
             .WithDescription(result.IsSuccess ? $"You selected: {result.Value}" : "Timeout!")
             .WithRandomColor();
 
@@ -97,13 +97,13 @@ public class SelectionModule : InteractionModuleBase
     [SlashCommand("emote2", "Sends an emote selection, where each emote represents a specific value.")]
     public async Task Emote2Async()
     {
-        var emotes = new Dictionary<IEmote, string>
+        var emotes = new Dictionary<EmojiProperties, string>
         {
-            [new Emoji("\u0031\u20E3")] = "one",
-            [new Emoji("\u0032\u20E3")] = "two",
-            [new Emoji("\u0033\u20E3")] = "three",
-            [new Emoji("\u0034\u20E3")] = "four",
-            [new Emoji("\u0035\u20E3")] = "five"
+            [EmojiPropertiesProperties.Standard("\u0031\u20E3")] = "one",
+            [EmojiPropertiesProperties.Standard("\u0032\u20E3")] = "two",
+            [EmojiPropertiesProperties.Standard("\u0033\u20E3")] = "three",
+            [EmojiPropertiesProperties.Standard("\u0034\u20E3")] = "four",
+            [EmojiPropertiesProperties.Standard("\u0035\u20E3")] = "five"
         };
 
         var pageBuilder = new PageBuilder()
@@ -118,11 +118,11 @@ public class SelectionModule : InteractionModuleBase
 
         var result = await _interactive.SendSelectionAsync(selection, Context.Interaction, TimeSpan.FromMinutes(1));
 
-        // In this case the result's value will be a KeyValuePair<IEmote, int>
+        // In this case the result's value will be a KeyValuePair<EmojiProperties, int>
         var emote = result.Value.Key; // Selected emote
         string selected = result.Value.Value; // Selected option
 
-        var builder = new EmbedBuilder()
+        var builder = new EmbedProperties()
             .WithDescription(result.IsSuccess ? $"You selected: {emote} ({selected})" : "Timeout!")
             .WithRandomColor();
 
@@ -134,11 +134,11 @@ public class SelectionModule : InteractionModuleBase
     {
         var colors = new Item[]
         {
-            new("Red", new Emoji("\ud83d\udd34")),
-            new("Green", new Emoji("\ud83d\udfe2")),
-            new("Blue", new Emoji("\ud83d\udd35")),
-            new("Yellow", new Emoji("\ud83d\udfe1")),
-            new("Purple", new Emoji("\ud83d\udfe3"))
+            new("Red", EmojiPropertiesProperties.Standard("\ud83d\udd34")),
+            new("Green", EmojiPropertiesProperties.Standard("\ud83d\udfe2")),
+            new("Blue", EmojiPropertiesProperties.Standard("\ud83d\udd35")),
+            new("Yellow", EmojiPropertiesProperties.Standard("\ud83d\udfe1")),
+            new("Purple", EmojiPropertiesProperties.Standard("\ud83d\udfe3"))
         };
 
         var color = Utils.GetRandomColor();
@@ -165,7 +165,7 @@ public class SelectionModule : InteractionModuleBase
         {
             var selected = result.Values;
 
-            var embed = new EmbedBuilder()
+            var embed = new EmbedProperties()
                 .WithDescription($"You selected the color(s): {string.Join(", ", selected.Select(x => $"{x.Emote} {x.Name}"))}")
                 .WithColor(color)
                 .Build();
@@ -181,13 +181,13 @@ public class SelectionModule : InteractionModuleBase
     {
         var items = new Item[]
         {
-            new("Fruit", new Emoji("🍎")),
-            new("Vegetable", new Emoji("🥦")),
-            new("Fast food", new Emoji("🍔")),
-            new("Dessert", new Emoji("🍰")),
-            new("Dairy", new Emoji("🧀")),
+            new("Fruit", EmojiPropertiesProperties.Standard("🍎")),
+            new("Vegetable", EmojiPropertiesProperties.Standard("🥦")),
+            new("Fast food", EmojiPropertiesProperties.Standard("🍔")),
+            new("Dessert", EmojiPropertiesProperties.Standard("🍰")),
+            new("Dairy", EmojiPropertiesProperties.Standard("🧀")),
             // Important: When using an option for cancellation (with WithAllowCancel(), shown below), the last option will be used to cancel the selection.
-            new("Cancel", new Emoji("❌"))
+            new("Cancel", EmojiPropertiesProperties.Standard("❌"))
         };
 
         var color = Utils.GetRandomColor();
@@ -245,12 +245,12 @@ public class SelectionModule : InteractionModuleBase
 
         // Dynamically create the number emotes
         var emotes = Enumerable.Range(1, options.Length)
-            .ToDictionary(x => new Emoji($"{x}\ufe0f\u20e3"), y => y);
+            .ToDictionary(x => EmojiPropertiesProperties.Standard($"{x}\ufe0f\u20e3"), y => y);
 
         // Add the cancel emote at the end of the dictionary
-        emotes.Add(new Emoji("❌"), -1);
+        emotes.Add(EmojiPropertiesProperties.Standard("❌"), -1);
 
-        var selection = new MenuSelectionBuilder<KeyValuePair<Emoji, int>>()
+        var selection = new MenuSelectionBuilder<KeyValuePair<EmojiProperties, int>>()
             .AddUser(Context.User)
             .WithSelectionPage(GeneratePage())
             .WithInputHandler(HandleResult) // We use a method that handles the result and returns a page.
@@ -272,7 +272,7 @@ public class SelectionModule : InteractionModuleBase
                 .AddField("Value", string.Join('\n', values), inline: true)
                 .WithColor(Color.Blue);
 
-        Page HandleResult(KeyValuePair<Emoji, int> input)
+        Page HandleResult(KeyValuePair<EmojiProperties, int> input)
         {
             int selected = input.Value;
             // Invert the value of the selected option
@@ -283,5 +283,5 @@ public class SelectionModule : InteractionModuleBase
         }
     }
 
-    private sealed record Item(string Name, Emoji Emote);
+    private sealed record Item(string Name, EmojiProperties Emote);
 }

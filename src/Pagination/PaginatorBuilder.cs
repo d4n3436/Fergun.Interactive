@@ -1,8 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Discord;
+
 using JetBrains.Annotations;
+using NetCord;
 
 namespace Fergun.Interactive.Pagination;
 
@@ -13,7 +14,7 @@ namespace Fergun.Interactive.Pagination;
 /// <typeparam name="TBuilder">The type of the builder.</typeparam>
 [PublicAPI]
 public abstract class PaginatorBuilder<TPaginator, TBuilder>
-    : IInteractiveBuilder<TPaginator, KeyValuePair<IEmote, PaginatorAction>, TBuilder>, IBasePaginatorBuilderProperties
+    : IInteractiveBuilder<TPaginator, KeyValuePair<EmojiProperties, PaginatorAction>, TBuilder>, IBasePaginatorBuilderProperties
     where TPaginator : Paginator
     where TBuilder : PaginatorBuilder<TPaginator, TBuilder>
 {
@@ -41,10 +42,10 @@ public abstract class PaginatorBuilder<TPaginator, TBuilder>
     /// <summary>
     /// Gets or sets the users who can interact with the paginator.
     /// </summary>
-    public virtual ICollection<IUser> Users { get; set; } = [];
+    public virtual ICollection<NetCord.User> Users { get; set; } = [];
 
     /// <inheritdoc/>
-    public virtual IDictionary<IEmote, PaginatorAction> Options
+    public virtual IDictionary<EmojiProperties, PaginatorAction> Options
     {
         get;
         [Obsolete($"The library no longer uses this property for button-based paginators and it will add any values added here into {nameof(ButtonFactories)}, unless this value is changed.")]
@@ -89,7 +90,7 @@ public abstract class PaginatorBuilder<TPaginator, TBuilder>
     /// Gets or sets the factory of the <see cref="IPage"/> that will be displayed ephemerally to a user when they are not allowed to interact with the <typeparamref name="TPaginator"/>.
     /// </summary>
     /// <remarks>The first argument of the factory is a read-only collection of users who are allowed to interact with the paginator.</remarks>
-    public virtual Func<IReadOnlyCollection<IUser>, IPage>? RestrictedPageFactory { get; set; }
+    public virtual Func<IReadOnlyCollection<NetCord.User>, IPage>? RestrictedPageFactory { get; set; }
 
     /// <inheritdoc/>
     /// <remarks>The default value is 30 seconds.</remarks>
@@ -111,7 +112,7 @@ public abstract class PaginatorBuilder<TPaginator, TBuilder>
     public string? ExpiredJumpInputMessage { get; set; }
 
     /// <inheritdoc/>
-    ICollection<KeyValuePair<IEmote, PaginatorAction>> IInteractiveBuilderProperties<KeyValuePair<IEmote, PaginatorAction>>.Options
+    ICollection<KeyValuePair<EmojiProperties, PaginatorAction>> IInteractiveBuilderProperties<KeyValuePair<EmojiProperties, PaginatorAction>>.Options
     {
         get => Options;
         set => WithOptions(value.ToDictionary(x => x.Key, x => x.Value));
@@ -151,7 +152,7 @@ public abstract class PaginatorBuilder<TPaginator, TBuilder>
     /// </summary>
     /// <param name="users">The users.</param>
     /// <returns>This builder.</returns>
-    public virtual TBuilder WithUsers(params IUser[] users)
+    public virtual TBuilder WithUsers(params NetCord.User[] users)
     {
         InteractiveGuards.NotNull(users);
         Users = users.ToList();
@@ -163,7 +164,7 @@ public abstract class PaginatorBuilder<TPaginator, TBuilder>
     /// </summary>
     /// <param name="users">The users.</param>
     /// <returns>This builder.</returns>
-    public virtual TBuilder WithUsers(IEnumerable<IUser> users)
+    public virtual TBuilder WithUsers(IEnumerable<NetCord.User> users)
     {
         InteractiveGuards.NotNull(users);
         Users = users.ToList();
@@ -175,7 +176,7 @@ public abstract class PaginatorBuilder<TPaginator, TBuilder>
     /// </summary>
     /// <param name="user">The user.</param>
     /// <returns>This builder.</returns>
-    public virtual TBuilder AddUser(IUser user)
+    public virtual TBuilder AddUser(NetCord.User user)
     {
         InteractiveGuards.NotNull(user);
         Users.Add(user);
@@ -187,7 +188,7 @@ public abstract class PaginatorBuilder<TPaginator, TBuilder>
     /// </summary>
     /// <param name="emotes">A dictionary of emotes and paginator actions.</param>
     /// <returns>This builder.</returns>
-    public virtual TBuilder WithOptions(IDictionary<IEmote, PaginatorAction> emotes)
+    public virtual TBuilder WithOptions(IDictionary<EmojiProperties, PaginatorAction> emotes)
     {
         InteractiveGuards.NotNull(emotes);
 
@@ -241,7 +242,7 @@ public abstract class PaginatorBuilder<TPaginator, TBuilder>
     /// <remarks>If you want to customize your buttons, use the other overloads instead.</remarks>
     /// <param name="option">The pair of emote and action.</param>
     /// <returns>This builder.</returns>
-    public virtual TBuilder AddOption(KeyValuePair<IEmote, PaginatorAction> option)
+    public virtual TBuilder AddOption(KeyValuePair<EmojiProperties, PaginatorAction> option)
         => AddOption(option.Key, option.Value);
 
     /// <summary>
@@ -251,7 +252,7 @@ public abstract class PaginatorBuilder<TPaginator, TBuilder>
     /// <param name="emote">The emote.</param>
     /// <param name="action">The paginator action.</param>
     /// <returns>This builder.</returns>
-    public virtual TBuilder AddOption(IEmote emote, PaginatorAction action)
+    public virtual TBuilder AddOption(EmojiProperties emote, PaginatorAction action)
     {
         InteractiveGuards.NotNull(emote);
 
@@ -282,7 +283,7 @@ public abstract class PaginatorBuilder<TPaginator, TBuilder>
     /// <param name="action">The paginator action.</param>
     /// <param name="style">The button style. If the value is null, the library will decide the style of the button.</param>
     /// <returns>This builder.</returns>
-    public virtual TBuilder AddOption(IEmote emote, PaginatorAction action, ButtonStyle? style)
+    public virtual TBuilder AddOption(EmojiProperties emote, PaginatorAction action, ButtonStyle? style)
         => AddOption(action, emote, text: null, style);
 
     /// <summary>
@@ -295,7 +296,7 @@ public abstract class PaginatorBuilder<TPaginator, TBuilder>
     /// <exception cref="ArgumentException">Thrown when <paramref name="url"/> is <see langword="null"/> or empty.</exception>
     /// <exception cref="InvalidOperationException">Thrown when <paramref name="emote"/> or <paramref name="text"/> do not have valid values.</exception>
     /// <returns>This builder.</returns>
-    public virtual TBuilder AddOption(string url, IEmote? emote, string? text, bool? isDisabled = null)
+    public virtual TBuilder AddOption(string url, EmojiProperties? emote, string? text, bool? isDisabled = null)
     {
         if (string.IsNullOrEmpty(url))
             throw new ArgumentException("Url cannot be null or empty.", nameof(url));
@@ -318,7 +319,7 @@ public abstract class PaginatorBuilder<TPaginator, TBuilder>
     /// <exception cref="ArgumentException">Thrown when <paramref name="customId"/> is <see langword="null"/> or empty.</exception>
     /// <exception cref="InvalidOperationException">Thrown when <paramref name="emote"/> or <paramref name="text"/> do not have valid values.</exception>
     /// <returns>This builder.</returns>
-    public virtual TBuilder AddOption(string customId, IEmote? emote, string? text, ButtonStyle? style, bool? isDisabled = null)
+    public virtual TBuilder AddOption(string customId, EmojiProperties? emote, string? text, ButtonStyle? style, bool? isDisabled = null)
     {
         if (string.IsNullOrEmpty(customId))
             throw new ArgumentException("CustomId cannot be null or empty.", nameof(customId));
@@ -339,7 +340,7 @@ public abstract class PaginatorBuilder<TPaginator, TBuilder>
     /// <param name="isDisabled">A value indicating whether to disable the button. If the value is null, the library will decide its status.</param>
     /// <exception cref="InvalidOperationException">Thrown when <paramref name="emote"/> or <paramref name="text"/> do not have valid values.</exception>
     /// <returns>This builder.</returns>
-    public virtual TBuilder AddOption(PaginatorAction action, IEmote? emote, string? text, ButtonStyle? style = null, bool? isDisabled = null)
+    public virtual TBuilder AddOption(PaginatorAction action, EmojiProperties? emote, string? text, ButtonStyle? style = null, bool? isDisabled = null)
     {
         if (emote is null && string.IsNullOrEmpty(text))
             throw new InvalidOperationException($"Either {nameof(emote)} or {nameof(text)} must have a valid value.");
@@ -556,7 +557,7 @@ public abstract class PaginatorBuilder<TPaginator, TBuilder>
     /// <remarks>The first argument of the factory is a read-only collection of users who are allowed to interact with the paginator.</remarks>
     /// <param name="pageFactory">The restricted page factory. The first argument is a read-only collection of users who are allowed to interact with the paginator.</param>
     /// <returns>This builder.</returns>
-    public virtual TBuilder WithRestrictedPageFactory(Func<IReadOnlyCollection<IUser>, IPage> pageFactory)
+    public virtual TBuilder WithRestrictedPageFactory(Func<IReadOnlyCollection<NetCord.User>, IPage> pageFactory)
     {
         InteractiveGuards.NotNull(pageFactory);
         RestrictedPageFactory = pageFactory;
@@ -649,11 +650,11 @@ public abstract class PaginatorBuilder<TPaginator, TBuilder>
         Options.Clear();
         ButtonFactories.Clear();
 
-        AddOption(new Emoji("◀"), PaginatorAction.Backward);
-        AddOption(new Emoji("▶"), PaginatorAction.Forward);
-        AddOption(new Emoji("⏮"), PaginatorAction.SkipToStart);
-        AddOption(new Emoji("⏭"), PaginatorAction.SkipToEnd);
-        AddOption(new Emoji("🛑"), PaginatorAction.Exit);
+        AddOption(EmojiPropertiesProperties.Standard("◀"), PaginatorAction.Backward);
+        AddOption(EmojiPropertiesProperties.Standard("▶"), PaginatorAction.Forward);
+        AddOption(EmojiPropertiesProperties.Standard("⏮"), PaginatorAction.SkipToStart);
+        AddOption(EmojiPropertiesProperties.Standard("⏭"), PaginatorAction.SkipToEnd);
+        AddOption(EmojiPropertiesProperties.Standard("🛑"), PaginatorAction.Exit);
 
         return (TBuilder)this;
     }
@@ -673,9 +674,9 @@ public abstract class PaginatorBuilder<TPaginator, TBuilder>
         => WithTimeoutPage(new PageBuilder().WithColor(Color.Red).WithTitle("Timed out! ⏰"));
 
     /// <inheritdoc/>
-    TPaginator IInteractiveBuilderMethods<TPaginator, KeyValuePair<IEmote, PaginatorAction>, TBuilder>.Build() => Build();
+    TPaginator IInteractiveBuilderMethods<TPaginator, KeyValuePair<EmojiProperties, PaginatorAction>, TBuilder>.Build() => Build();
 
     /// <inheritdoc/>
-    TBuilder IInteractiveBuilderMethods<TPaginator, KeyValuePair<IEmote, PaginatorAction>, TBuilder>.WithOptions(ICollection<KeyValuePair<IEmote, PaginatorAction>> options)
+    TBuilder IInteractiveBuilderMethods<TPaginator, KeyValuePair<EmojiProperties, PaginatorAction>, TBuilder>.WithOptions(ICollection<KeyValuePair<EmojiProperties, PaginatorAction>> options)
         => WithOptions(options.ToDictionary(x => x.Key, x => x.Value));
 }

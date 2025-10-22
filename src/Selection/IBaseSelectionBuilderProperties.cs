@@ -1,7 +1,8 @@
 using System;
 using System.Collections.Generic;
-using Discord;
+
 using JetBrains.Annotations;
+using NetCord;
 
 namespace Fergun.Interactive.Selection;
 
@@ -18,7 +19,7 @@ public interface IBaseSelectionBuilderProperties<TOption> : IInteractiveBuilderP
     bool IsUserRestricted { get; }
 
     /// <summary>
-    /// Gets or sets a function that returns an <see cref="IEmote"/> representation of a <typeparamref name="TOption"/>.
+    /// Gets or sets a function that returns an <see cref="EmojiProperties"/> representation of a <typeparamref name="TOption"/>.
     /// </summary>
     /// <remarks>
     /// Requirements for each input type:<br/><br/>
@@ -27,7 +28,7 @@ public interface IBaseSelectionBuilderProperties<TOption> : IInteractiveBuilderP
     /// Buttons: Required (for emotes) unless a <see cref="StringConverter"/> is provided (for labels).<br/>
     /// Select menus: Optional.
     /// </remarks>
-    Func<TOption, IEmote>? EmoteConverter { get; set; }
+    Func<TOption, EmojiProperties>? EmoteConverter { get; set; }
 
     /// <summary>
     /// Gets or sets a function that returns a <see cref="string"/> representation of a <typeparamref name="TOption"/>.

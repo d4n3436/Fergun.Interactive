@@ -2,8 +2,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Discord;
+
 using JetBrains.Annotations;
+using NetCord;
+using NetCord.Rest;
 
 namespace Fergun.Interactive.Pagination;
 
@@ -109,7 +111,7 @@ public static class PaginatorBuilderExtensions
     /// <param name="users">The users.</param>
     /// <returns>This builder.</returns>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="builder"/> or <paramref name="users"/> are <see langword="null"/>.</exception>
-    public static TBuilder WithUsers<TBuilder>(this TBuilder builder, params IUser[] users)
+    public static TBuilder WithUsers<TBuilder>(this TBuilder builder, params NetCord.User[] users)
         where TBuilder : class, IComponentPaginatorBuilder
     {
         InteractiveGuards.NotNull(builder);
@@ -127,7 +129,7 @@ public static class PaginatorBuilderExtensions
     /// <param name="users">The users.</param>
     /// <returns>This builder.</returns>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="builder"/> or <paramref name="users"/> are <see langword="null"/>.</exception>
-    public static TBuilder WithUsers<TBuilder>(this TBuilder builder, IEnumerable<IUser> users)
+    public static TBuilder WithUsers<TBuilder>(this TBuilder builder, IEnumerable<NetCord.User> users)
         where TBuilder : class, IComponentPaginatorBuilder
     {
         InteractiveGuards.NotNull(builder);
@@ -145,7 +147,7 @@ public static class PaginatorBuilderExtensions
     /// <param name="user">The user.</param>
     /// <returns>This builder.</returns>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="builder"/> or <paramref name="user"/> are <see langword="null"/>.</exception>
-    public static TBuilder AddUser<TBuilder>(this TBuilder builder, IUser user)
+    public static TBuilder AddUser<TBuilder>(this TBuilder builder, NetCord.User user)
         where TBuilder : class, IComponentPaginatorBuilder
     {
         InteractiveGuards.NotNull(builder);
@@ -253,7 +255,7 @@ public static class PaginatorBuilderExtensions
     /// <param name="modalFactory">The jump modal factory. The first argument is the current paginator.</param>
     /// <returns>This builder.</returns>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="builder"/> or <paramref name="modalFactory"/> are <see langword="null"/>.</exception>
-    public static TBuilder WithJumpModalFactory<TBuilder>(this TBuilder builder, Func<IComponentPaginator, ModalBuilder> modalFactory)
+    public static TBuilder WithJumpModalFactory<TBuilder>(this TBuilder builder, Func<IComponentPaginator, ModalProperties> modalFactory)
         where TBuilder : class, IComponentPaginatorBuilder
     {
         InteractiveGuards.NotNull(builder);

@@ -2,9 +2,11 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Discord;
+
 using Fergun.Interactive.Pagination;
 using JetBrains.Annotations;
+using NetCord;
+using NetCord.Rest;
 
 namespace Fergun.Interactive;
 
@@ -14,29 +16,29 @@ namespace Fergun.Interactive;
 [PublicAPI]
 public class PageBuilder : IPageBuilder<Page>, IPageBuilder
 {
-    private readonly EmbedBuilder _builder;
+    private readonly EmbedProperties _builder;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="PageBuilder"/> class.
     /// </summary>
     public PageBuilder()
     {
-        _builder = new EmbedBuilder();
+        _builder = new EmbedProperties();
     }
 
-    internal PageBuilder(EmbedBuilder? builder)
+    internal PageBuilder(EmbedProperties? builder)
     {
-        _builder = builder ?? new EmbedBuilder();
+        _builder = builder ?? new EmbedProperties();
     }
 
     internal PageBuilder(Page page)
-        : this(page.Embed?.ToEmbedBuilder())
+        : this()
     {
         Text = page.Text;
         IsTTS = page.IsTTS;
         AllowedMentions = page.AllowedMentions;
         MessageReference = page.MessageReference;
-        Stickers = page.Stickers;
+        StickerIds = page.StickerIds;
         AttachmentsFactory = page.AttachmentsFactory;
         Components = page.Components;
         MessageFlags = page.MessageFlags;
@@ -56,34 +58,35 @@ public class PageBuilder : IPageBuilder<Page>, IPageBuilder
     /// <summary>
     /// Gets or sets the allowed mentions of the <see cref="Page"/>.
     /// </summary>
-    public AllowedMentions? AllowedMentions { get; set; }
+    public AllowedMentionsProperties? AllowedMentions { get; set; }
 
     /// <summary>
     /// Gets or sets the message reference of the <see cref="Page"/>.
     /// </summary>
-    public MessageReference? MessageReference { get; set; }
+    public MessageReferenceProperties? MessageReference { get; set; }
 
     /// <summary>
     /// Gets or sets the stickers of the <see cref="Page"/>.
     /// </summary>
-    public IReadOnlyCollection<ISticker> Stickers { get; set; } = [];
+    public IReadOnlyCollection<ulong> StickerIds { get; set; } = [];
 
     /// <summary>
     /// Gets or sets the factory of attachments.
     /// </summary>
-    public Func<ValueTask<IEnumerable<FileAttachment>?>>? AttachmentsFactory { get; set; }
+    public Func<ValueTask<IEnumerable<AttachmentProperties>?>>? AttachmentsFactory { get; set; }
 
     /// <summary>
     /// Gets or sets the components of this page.
     /// </summary>
-    /// <remarks>This property is only used on component paginators. Using the new components (components V2) requires not using <see cref="Text"/>, <see cref="Stickers"/> or any embed property.</remarks>
-    public MessageComponent? Components { get; set; }
+    /// <remarks>This property is only used on component paginators. Using the new components (components V2) requires not using <see cref="Text"/>, <see cref="StickerIds"/> or any embed property.</remarks>
+    public List<IMessageComponentProperties>? Components { get; set; }
 
     /// <summary>
     /// Gets or sets the message flags.
     /// </summary>
     public MessageFlags? MessageFlags { get; set; }
 
+#nullable disable
     /// <summary>
     /// Gets or sets the title of the <see cref="Page"/>.
     /// </summary>
@@ -115,30 +118,30 @@ public class PageBuilder : IPageBuilder<Page>, IPageBuilder
     }
 
     /// <summary>
-    /// Gets or sets the thumbnail URL of the <see cref="Page"/>.
+    /// Gets or sets the thumbnail of the <see cref="Page"/>.
     /// </summary>
-    /// <returns>The thumbnail URL of the page.</returns>
-    public string ThumbnailUrl
+    /// <returns>The thumbnail of the page.</returns>
+    public EmbedThumbnailProperties Thumbnail
     {
-        get => _builder.ThumbnailUrl;
-        set => _builder.ThumbnailUrl = value;
+        get => _builder.Thumbnail;
+        set => _builder.Thumbnail = value;
     }
 
     /// <summary>
-    /// Gets or sets the image URL of the <see cref="Page"/>.
+    /// Gets or sets the image of the <see cref="Page"/>.
     /// </summary>
-    /// <returns>The image URL of the page.</returns>
-    public string ImageUrl
+    /// <returns>The image of the page.</returns>
+    public EmbedImageProperties ImageUrl
     {
-        get => _builder.ImageUrl;
-        set => _builder.ImageUrl = value;
+        get => _builder.Image;
+        set => _builder.Image = value;
     }
 
     /// <summary>
     /// Gets or sets the list of <see cref="PageBuilder"/> of the <see cref="Page"/>.
     /// </summary>
-    /// <returns>The list of existing <see cref="EmbedFieldBuilder"/>.</returns>
-    public List<EmbedFieldBuilder> Fields
+    /// <returns>The list of existing <see cref="EmbedFieldProperties"/>.</returns>
+    public IEnumerable<EmbedFieldProperties> Fields
     {
         get => _builder.Fields;
         set => _builder.Fields = value;
@@ -158,55 +161,39 @@ public class PageBuilder : IPageBuilder<Page>, IPageBuilder
     /// Gets or sets the sidebar color of the <see cref="Page"/>.
     /// </summary>
     /// <returns>The color of the page, or <see langword="null"/> if none is set.</returns>
-    public Color? Color
+    public Color Color
     {
         get => _builder.Color;
         set => _builder.Color = value;
     }
 
     /// <summary>
-    /// Gets or sets the <see cref="EmbedAuthorBuilder"/> of the <see cref="Page"/>.
+    /// Gets or sets the <see cref="EmbedAuthorProperties"/> of the <see cref="Page"/>.
     /// </summary>
     /// <returns>The author field builder of the page, or <see langword="null"/> if none is set.</returns>
-    public EmbedAuthorBuilder Author
+    public EmbedAuthorProperties Author
     {
         get => _builder.Author;
         set => _builder.Author = value;
     }
 
     /// <summary>
-    /// Gets or sets the <see cref="EmbedFooterBuilder"/> of the <see cref="Page"/>.
+    /// Gets or sets the <see cref="EmbedFooterProperties"/> of the <see cref="Page"/>.
     /// </summary>
     /// <returns>The footer field builder of the page, or <see langword="null"/> if none is set.</returns>
-    public EmbedFooterBuilder Footer
+    public EmbedFooterProperties Footer
     {
         get => _builder.Footer;
         set => _builder.Footer = value;
     }
+#nullable restore
 
     /// <summary>
-    /// Gets the total length of all embed properties.
+    /// Creates a new <see cref="PageBuilder"/> from an <see cref="EmbedProperties"/>.
     /// </summary>
-    /// <returns>
-    /// The combined length of <see cref="Title"/>, <see cref="EmbedAuthor.Name"/>,
-    /// <see cref="Description"/>, <see cref="EmbedFooter.Text"/>, <see cref="EmbedField.Name"/>, and <see cref="EmbedField.Value"/>.
-    /// </returns>
-    public int Length => _builder.Length;
-
-    /// <summary>
-    /// Creates a new <see cref="PageBuilder"/> from an <see cref="IEmbed"/>.
-    /// </summary>
-    /// <param name="embed">The <see cref="IEmbed"/>.</param>
+    /// <param name="builder">The <see cref="EmbedProperties"/>.</param>
     /// <returns>A <see cref="PageBuilder"/>.</returns>
-    public static PageBuilder FromEmbed(IEmbed embed)
-        => FromEmbedBuilder(embed.ToEmbedBuilder());
-
-    /// <summary>
-    /// Creates a new <see cref="PageBuilder"/> from an <see cref="EmbedBuilder"/>.
-    /// </summary>
-    /// <param name="builder">The <see cref="EmbedBuilder"/>.</param>
-    /// <returns>A <see cref="PageBuilder"/>.</returns>
-    public static PageBuilder FromEmbedBuilder(EmbedBuilder builder)
+    public static PageBuilder FromEmbedProperties(EmbedProperties builder)
         => new(builder);
 
     /// <summary>
@@ -217,10 +204,10 @@ public class PageBuilder : IPageBuilder<Page>, IPageBuilder
         => new(this);
 
     /// <summary>
-    /// Gets the inner <see cref="EmbedBuilder"/> used by this builder.
+    /// Gets the inner <see cref="EmbedProperties"/> used by this builder.
     /// </summary>
-    /// <returns>The inner <see cref="EmbedBuilder"/>.</returns>
-    public EmbedBuilder GetEmbedBuilder() => _builder;
+    /// <returns>The inner <see cref="EmbedProperties"/>.</returns>
+    public EmbedProperties GetEmbedProperties() => _builder;
 
     /// <summary>
     /// Sets the text of the <see cref="Page"/>.
@@ -273,7 +260,18 @@ public class PageBuilder : IPageBuilder<Page>, IPageBuilder
     /// <returns>The current builder.</returns>
     public PageBuilder WithThumbnailUrl(string thumbnailUrl)
     {
-        _builder.WithThumbnailUrl(thumbnailUrl);
+        _builder.WithThumbnail(thumbnailUrl);
+        return this;
+    }
+
+    /// <summary>
+    /// Sets the thumbnail of the <see cref="Page"/>.
+    /// </summary>
+    /// <param name="thumbnail"> The thumbnail to be set.</param>
+    /// <returns>The current builder.</returns>
+    public PageBuilder WithThumbnailUrl(EmbedThumbnailProperties thumbnail)
+    {
+        _builder.WithThumbnail(thumbnail);
         return this;
     }
 
@@ -284,7 +282,19 @@ public class PageBuilder : IPageBuilder<Page>, IPageBuilder
     /// <returns>The current builder.</returns>
     public PageBuilder WithImageUrl(string imageUrl)
     {
-        _builder.WithImageUrl(imageUrl);
+        _builder.WithImage(imageUrl);
+        return this;
+    }
+
+    
+    /// <summary>
+    /// Sets the image of the <see cref="Page"/>.
+    /// </summary>
+    /// <param name="image">The image to be set.</param>
+    /// <returns>The current builder.</returns>
+    public PageBuilder WithImage(EmbedImageProperties image)
+    {
+        _builder.WithImage(image);
         return this;
     }
 
@@ -294,7 +304,7 @@ public class PageBuilder : IPageBuilder<Page>, IPageBuilder
     /// <returns>The current builder.</returns>
     public PageBuilder WithCurrentTimestamp()
     {
-        _builder.WithCurrentTimestamp();
+        _builder.WithTimestamp(DateTimeOffset.UtcNow);
         return this;
     }
 
@@ -321,11 +331,11 @@ public class PageBuilder : IPageBuilder<Page>, IPageBuilder
     }
 
     /// <summary>
-    /// Sets the <see cref="EmbedAuthorBuilder"/> of the <see cref="Page"/>.
+    /// Sets the <see cref="EmbedAuthorProperties"/> of the <see cref="Page"/>.
     /// </summary>
     /// <param name="author">The author builder class containing the author field properties.</param>
     /// <returns>The current builder.</returns>
-    public PageBuilder WithAuthor(EmbedAuthorBuilder author)
+    public PageBuilder WithAuthor(EmbedAuthorProperties author)
     {
         _builder.WithAuthor(author);
         return this;
@@ -336,9 +346,12 @@ public class PageBuilder : IPageBuilder<Page>, IPageBuilder
     /// </summary>
     /// <param name="action">The delegate containing the author field properties.</param>
     /// <returns>The current builder.</returns>
-    public PageBuilder WithAuthor(Action<EmbedAuthorBuilder> action)
+    public PageBuilder WithAuthor(Action<EmbedAuthorProperties> action)
     {
-        _builder.WithAuthor(action);
+        var author = new EmbedAuthorProperties();
+        action(author);
+
+        _builder.WithAuthor(author);
         return this;
     }
 
@@ -352,7 +365,12 @@ public class PageBuilder : IPageBuilder<Page>, IPageBuilder
     public PageBuilder WithAuthor(string name, string? iconUrl = null, string? url = null)
     {
         InteractiveGuards.NotNull(name);
-        _builder.WithAuthor(name, iconUrl, url);
+        var author = new EmbedAuthorProperties()
+            .WithName(name)
+            .WithIconUrl(iconUrl)
+            .WithUrl(url);
+
+        _builder.WithAuthor(author);
         return this;
     }
 
@@ -361,18 +379,18 @@ public class PageBuilder : IPageBuilder<Page>, IPageBuilder
     /// </summary>
     /// <param name="user">The user to put into the author.</param>
     /// <returns>The current builder.</returns>
-    public PageBuilder WithAuthor(IUser user)
+    public PageBuilder WithAuthor(User user)
     {
         InteractiveGuards.NotNull(user);
-        return WithAuthor(user.ToString()!, user.GetAvatarUrl() ?? user.GetDefaultAvatarUrl());
+        return WithAuthor(user.ToString()!, (user.GetAvatarUrl() ?? user.DefaultAvatarUrl).ToString());
     }
 
     /// <summary>
-    /// Sets the <see cref="EmbedFooterBuilder"/> of the <see cref="Page"/>.
+    /// Sets the <see cref="EmbedFooterProperties"/> of the <see cref="Page"/>.
     /// </summary>
     /// <param name="footer">The footer builder class containing the footer field properties.</param>
     /// <returns>The current builder.</returns>
-    public PageBuilder WithFooter(EmbedFooterBuilder footer)
+    public PageBuilder WithFooter(EmbedFooterProperties footer)
     {
         _builder.WithFooter(footer);
         return this;
@@ -383,9 +401,12 @@ public class PageBuilder : IPageBuilder<Page>, IPageBuilder
     /// </summary>
     /// <param name="action">The delegate containing the footer field properties.</param>
     /// <returns>The current builder.</returns>
-    public PageBuilder WithFooter(Action<EmbedFooterBuilder> action)
+    public PageBuilder WithFooter(Action<EmbedFooterProperties> action)
     {
-        _builder.WithFooter(action);
+        var footer = new EmbedFooterProperties();
+        action(footer);
+
+        _builder.WithFooter(footer);
         return this;
     }
 
@@ -395,7 +416,11 @@ public class PageBuilder : IPageBuilder<Page>, IPageBuilder
     /// <returns>The current builder.</returns>
     public PageBuilder WithFooter(string text, string? iconUrl = null)
     {
-        _builder.WithFooter(text, iconUrl);
+        var footer = new EmbedFooterProperties()
+            .WithText(text)
+            .WithIconUrl(iconUrl);
+
+        _builder.WithFooter(footer);
         return this;
     }
 
@@ -404,7 +429,7 @@ public class PageBuilder : IPageBuilder<Page>, IPageBuilder
     /// </summary>
     /// <param name="fields">The fields.</param>
     /// <returns>The current builder.</returns>
-    public PageBuilder WithFields(params EmbedFieldBuilder[] fields)
+    public PageBuilder WithFields(params EmbedFieldProperties[] fields)
     {
         _builder.WithFields(fields);
         return this;
@@ -415,7 +440,7 @@ public class PageBuilder : IPageBuilder<Page>, IPageBuilder
     /// </summary>
     /// <param name="fields">The fields.</param>
     /// <returns>The current builder.</returns>
-    public PageBuilder WithFields(IEnumerable<EmbedFieldBuilder> fields)
+    public PageBuilder WithFields(IEnumerable<EmbedFieldProperties> fields)
     {
         _builder.WithFields(fields);
         return this;
@@ -430,7 +455,12 @@ public class PageBuilder : IPageBuilder<Page>, IPageBuilder
     /// <returns>The current builder.</returns>
     public PageBuilder AddField(string name, object value, bool inline = false)
     {
-        _builder.AddField(name, value, inline);
+        var field = new EmbedFieldProperties()
+            .WithName(name)
+            .WithValue(value.ToString()!)
+            .WithInline(inline);
+
+        _builder.AddFields(field);
         return this;
     }
 
@@ -439,9 +469,9 @@ public class PageBuilder : IPageBuilder<Page>, IPageBuilder
     /// </summary>
     /// <param name="field">The field builder class containing the field properties.</param>
     /// <returns>The current builder.</returns>
-    public PageBuilder AddField(EmbedFieldBuilder field)
+    public PageBuilder AddField(EmbedFieldProperties field)
     {
-        _builder.AddField(field);
+        _builder.AddFields(field);
         return this;
     }
 
@@ -450,9 +480,12 @@ public class PageBuilder : IPageBuilder<Page>, IPageBuilder
     /// </summary>
     /// <param name="action">The delegate containing the field properties.</param>
     /// <returns>The current builder.</returns>
-    public PageBuilder AddField(Action<EmbedFieldBuilder> action)
+    public PageBuilder AddField(Action<EmbedFieldProperties> action)
     {
-        _builder.AddField(action);
+        var field = new EmbedFieldProperties();
+        action(field);
+
+        _builder.AddFields(field);
         return this;
     }
 
@@ -472,7 +505,7 @@ public class PageBuilder : IPageBuilder<Page>, IPageBuilder
     /// </summary>
     /// <param name="allowedMentions">The allowed mentions.</param>
     /// <returns>The current builder.</returns>
-    public PageBuilder WithAllowedMentions(AllowedMentions? allowedMentions)
+    public PageBuilder WithAllowedMentions(AllowedMentionsProperties? allowedMentions)
     {
         AllowedMentions = allowedMentions;
         return this;
@@ -483,7 +516,7 @@ public class PageBuilder : IPageBuilder<Page>, IPageBuilder
     /// </summary>
     /// <param name="messageReference">The message reference.</param>
     /// <returns>The current builder.</returns>
-    public PageBuilder WithMessageReference(MessageReference? messageReference)
+    public PageBuilder WithMessageReference(MessageReferenceProperties? messageReference)
     {
         MessageReference = messageReference;
         return this;
@@ -492,66 +525,66 @@ public class PageBuilder : IPageBuilder<Page>, IPageBuilder
     /// <summary>
     /// Sets the stickers of the <see cref="Page"/>.
     /// </summary>
-    /// <param name="stickers">The stickers.</param>
+    /// <param name="stickerIds">The stickers.</param>
     /// <returns>The current builder.</returns>
-    public PageBuilder WithStickers(IReadOnlyCollection<ISticker> stickers)
+    public PageBuilder WithStickerIds(IReadOnlyCollection<ulong> stickerIds)
     {
-        InteractiveGuards.NotNull(stickers);
-        Stickers = stickers;
+        InteractiveGuards.NotNull(stickerIds);
+        StickerIds = stickerIds;
         return this;
     }
 
     /// <summary>
     /// Sets the function that generates the attachment.
     /// </summary>
-    /// <remarks>To leave the attachment in the message unmodified, <paramref name="attachmentFactory"/> must return <see langword="null"/> instead of a <see cref="FileAttachment"/> object.</remarks>
-    /// <param name="attachmentFactory">The attachment factory. To leave the attachment in the message unmodified, <paramref name="attachmentFactory"/> must return <see langword="null"/> instead of a <see cref="FileAttachment"/> object.</param>
+    /// <remarks>To leave the attachment in the message unmodified, <paramref name="attachmentFactory"/> must return <see langword="null"/> instead of a <see cref="AttachmentProperties"/> object.</remarks>
+    /// <param name="attachmentFactory">The attachment factory. To leave the attachment in the message unmodified, <paramref name="attachmentFactory"/> must return <see langword="null"/> instead of a <see cref="AttachmentProperties"/> object.</param>
     /// <returns>The current builder.</returns>
-    public PageBuilder WithAttachmentFactory(Func<FileAttachment?> attachmentFactory)
+    public PageBuilder WithAttachmentFactory(Func<AttachmentProperties?> attachmentFactory)
     {
         InteractiveGuards.NotNull(attachmentFactory);
         return WithAttachmentsFactory(() =>
         {
             var attachment = attachmentFactory();
-            return new ValueTask<IEnumerable<FileAttachment>?>(attachment is null ? null : new[] { attachment.Value });
+            return new ValueTask<IEnumerable<AttachmentProperties>?>(attachment is null ? null : new[] { attachment });
         });
     }
 
     /// <summary>
     /// Sets the function that generates the attachment.
     /// </summary>
-    /// <remarks>To leave the attachment in the message unmodified, <paramref name="attachmentFactory"/> must return <see langword="null"/> instead of a <see cref="FileAttachment"/> object.</remarks>
-    /// <param name="attachmentFactory">The attachment factory. To leave the attachment in the message unmodified, <paramref name="attachmentFactory"/> must return <see langword="null"/> instead of a <see cref="FileAttachment"/> object.</param>
+    /// <remarks>To leave the attachment in the message unmodified, <paramref name="attachmentFactory"/> must return <see langword="null"/> instead of a <see cref="AttachmentProperties"/> object.</remarks>
+    /// <param name="attachmentFactory">The attachment factory. To leave the attachment in the message unmodified, <paramref name="attachmentFactory"/> must return <see langword="null"/> instead of a <see cref="AttachmentProperties"/> object.</param>
     /// <returns>The current builder.</returns>
-    public PageBuilder WithAttachmentFactory(Func<ValueTask<FileAttachment?>> attachmentFactory)
+    public PageBuilder WithAttachmentFactory(Func<ValueTask<AttachmentProperties?>> attachmentFactory)
     {
         InteractiveGuards.NotNull(attachmentFactory);
         return WithAttachmentsFactory(async () =>
         {
             var attachment = await attachmentFactory().ConfigureAwait(false);
-            return attachment is null ? null : new[] { attachment.Value };
+            return attachment is null ? null : new[] { attachment };
         });
     }
 
     /// <summary>
     /// Sets the function that generates the attachments.
     /// </summary>
-    /// <remarks>To leave the attachments in the message unmodified, <paramref name="attachmentsFactory"/> must return <see langword="null"/> instead of a <see cref="FileAttachment"/> object.</remarks>
-    /// <param name="attachmentsFactory">The attachments factory. To leave the attachments in the message unmodified, <paramref name="attachmentsFactory"/> must return <see langword="null"/> instead of a <see cref="FileAttachment"/> object.</param>
+    /// <remarks>To leave the attachments in the message unmodified, <paramref name="attachmentsFactory"/> must return <see langword="null"/> instead of a <see cref="AttachmentProperties"/> object.</remarks>
+    /// <param name="attachmentsFactory">The attachments factory. To leave the attachments in the message unmodified, <paramref name="attachmentsFactory"/> must return <see langword="null"/> instead of a <see cref="AttachmentProperties"/> object.</param>
     /// <returns>The current builder.</returns>
-    public PageBuilder WithAttachmentsFactory(Func<IEnumerable<FileAttachment>?> attachmentsFactory)
+    public PageBuilder WithAttachmentsFactory(Func<IEnumerable<AttachmentProperties>?> attachmentsFactory)
     {
         InteractiveGuards.NotNull(attachmentsFactory);
-        return WithAttachmentsFactory(() => new ValueTask<IEnumerable<FileAttachment>?>(attachmentsFactory()));
+        return WithAttachmentsFactory(() => new ValueTask<IEnumerable<AttachmentProperties>?>(attachmentsFactory()));
     }
 
     /// <summary>
     /// Sets the function that generates the attachments.
     /// </summary>
-    /// <remarks>To leave the attachments in the message unmodified, <paramref name="attachmentsFactory"/> must return <see langword="null"/> instead of a <see cref="FileAttachment"/> object.</remarks>
-    /// <param name="attachmentsFactory">The attachments factory. To leave the attachments in the message unmodified, <paramref name="attachmentsFactory"/> must return <see langword="null"/> instead of a <see cref="FileAttachment"/> object.</param>
+    /// <remarks>To leave the attachments in the message unmodified, <paramref name="attachmentsFactory"/> must return <see langword="null"/> instead of a <see cref="AttachmentProperties"/> object.</remarks>
+    /// <param name="attachmentsFactory">The attachments factory. To leave the attachments in the message unmodified, <paramref name="attachmentsFactory"/> must return <see langword="null"/> instead of a <see cref="AttachmentProperties"/> object.</param>
     /// <returns>The current builder.</returns>
-    public PageBuilder WithAttachmentsFactory(Func<ValueTask<IEnumerable<FileAttachment>?>>? attachmentsFactory)
+    public PageBuilder WithAttachmentsFactory(Func<ValueTask<IEnumerable<AttachmentProperties>?>>? attachmentsFactory)
     {
         AttachmentsFactory = attachmentsFactory;
         return this;
@@ -560,10 +593,10 @@ public class PageBuilder : IPageBuilder<Page>, IPageBuilder
     /// <summary>
     /// Sets the components of the <see cref="Page"/>.
     /// </summary>
-    /// <remarks>The <see cref="Components"/> property is only used on component paginators. Using the new components (components V2) requires not setting <see cref="Text"/>, <see cref="Stickers"/> or any embed property.</remarks>
+    /// <remarks>The <see cref="Components"/> property is only used on component paginators. Using the new components (components V2) requires not setting <see cref="Text"/>, <see cref="StickerIds"/> or any embed property.</remarks>
     /// <param name="components">The components.</param>
     /// <returns>The current builder.</returns>
-    public PageBuilder WithComponents(MessageComponent? components)
+    public PageBuilder WithComponents(List<IMessageComponentProperties>? components)
     {
         Components = components;
         return this;
@@ -583,12 +616,12 @@ public class PageBuilder : IPageBuilder<Page>, IPageBuilder
     /// <inheritdoc/>
     IPage IPageBuilder<IPage>.Build() => Build();
 
-    internal PageBuilder WithPaginatorFooter(PaginatorFooter footer, int currentPageIndex, int maxPageIndex, ICollection<IUser>? users)
+    internal PageBuilder WithPaginatorFooter(PaginatorFooter footer, int currentPageIndex, int maxPageIndex, ICollection<NetCord.User>? users)
     {
         if (footer == PaginatorFooter.None)
             return this;
 
-        Footer = new EmbedFooterBuilder();
+        Footer = new EmbedFooterProperties();
 
         if (footer.HasFlag(PaginatorFooter.Users))
         {
@@ -601,7 +634,7 @@ public class PageBuilder : IPageBuilder<Page>, IPageBuilder
                 var user = users.Single();
 
                 Footer.Text += $"Interactor: {user}";
-                Footer.IconUrl = user.GetDisplayAvatarUrl();
+                Footer.IconUrl =  ((user as GuildUser)?.GetGuildAvatarUrl() ?? user.GetAvatarUrl() ?? user.DefaultAvatarUrl).ToString();
             }
             else
             {

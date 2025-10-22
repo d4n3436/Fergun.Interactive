@@ -2,9 +2,12 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Discord;
-using Discord.WebSocket;
+
+
 using JetBrains.Annotations;
+using NetCord;
+using NetCord.Gateway;
+using NetCord.Rest;
 
 namespace Fergun.Interactive.Selection;
 
@@ -36,17 +39,17 @@ public sealed class MenuSelection<TOption> : BaseSelection<TOption>
     public Func<IReadOnlyList<TOption>, ValueTask<IPage?>> InputHandler { get; }
 
     /// <inheritdoc/>
-    public override ComponentBuilder GetOrAddComponents(bool disableAll, ComponentBuilder? builder = null)
+    public override List<IMessageComponentProperties> GetOrAddComponents(bool disableAll, List<IMessageComponentProperties>? builder = null)
     {
         if (!(InputType.HasFlag(InputType.Buttons) || InputType.HasFlag(InputType.SelectMenus)))
         {
             throw new InvalidOperationException($"{nameof(InputType)} must have either {nameof(InputType.Buttons)} or {nameof(InputType.SelectMenus)}.");
         }
 
-        builder ??= new ComponentBuilder();
+        builder ??= new List<IMessageComponentProperties>();
         if (InputType.HasFlag(InputType.SelectMenus))
         {
-            var options = new List<SelectMenuOptionBuilder>();
+            var options = new List<StringMenuSelectOptionProperties>();
 
             foreach (var selection in Options)
             {
@@ -57,17 +60,13 @@ public sealed class MenuSelection<TOption> : BaseSelection<TOption>
                     throw new InvalidOperationException($"Neither {nameof(EmoteConverter)} nor {nameof(StringConverter)} returned a valid emote or string.");
                 }
 
-                var option = new SelectMenuOptionBuilder()
-                    .WithLabel(label)
-                    .WithEmote(emote)
-                    .WithDefault(SetDefaultValues && _lastSelectedOptions.Contains(selection, EqualityComparer))
-                    .WithValue(emote?.ToString() ?? label);
+                var option = new StringMenuSelectOptionProperties(label!, emote?.ToString() ?? label!)
+                    .WithEmoji(emote);
 
                 options.Add(option);
             }
 
-            var selectMenu = new SelectMenuBuilder()
-                .WithCustomId("foobar")
+            var selectMenu = new StringMenuProperties("foobar")
                 .WithOptions(options)
                 .WithDisabled(disableAll)
                 .WithMinValues(MinValues)
@@ -76,7 +75,7 @@ public sealed class MenuSelection<TOption> : BaseSelection<TOption>
             if (!string.IsNullOrEmpty(Placeholder))
                 selectMenu.WithPlaceholder(Placeholder);
 
-            builder.WithSelectMenu(selectMenu);
+            builder.Add(selectMenu);
         }
 
         if (!InputType.HasFlag(InputType.Buttons))
@@ -91,23 +90,20 @@ public sealed class MenuSelection<TOption> : BaseSelection<TOption>
                 throw new InvalidOperationException($"Neither {nameof(EmoteConverter)} nor {nameof(StringConverter)} returned a valid emote or string.");
             }
 
-            var button = new ButtonBuilder()
-                .WithCustomId(emote?.ToString() ?? label)
-                .WithStyle(ButtonStyle.Primary)
-                .WithEmote(emote)
+            var button = new ButtonProperties(emote?.ToString() ?? label!, emote!, ButtonStyle.Primary)
                 .WithDisabled(disableAll);
 
             if (label is not null)
                 button.Label = label;
 
-            builder.WithButton(button);
+            builder.Add(new ActionRowProperties([button]));
         }
 
         return builder;
     }
 
     /// <inheritdoc/>
-    public override async Task<InteractiveInputResult<TOption>> HandleMessageAsync(IMessage input, IUserMessage message)
+    public override async Task<InteractiveInputResult<TOption>> HandleMessageAsync(Message input, RestMessage message)
     {
         var result = await base.HandleMessageAsync(input, message).ConfigureAwait(false);
         if (result.Status is not InteractiveInputStatus.Success)
@@ -119,8 +115,8 @@ public sealed class MenuSelection<TOption> : BaseSelection<TOption>
         {
             await message.ModifyAsync(x =>
             {
-                x.Content = page.Text ?? Optional<string>.Unspecified;
-                x.Embeds = page.GetEmbedArray();
+                x.Content = page.Text;
+                x.Embeds = page.Embeds;
             }).ConfigureAwait(false);
         }
 
@@ -128,7 +124,7 @@ public sealed class MenuSelection<TOption> : BaseSelection<TOption>
     }
 
     /// <inheritdoc/>
-    public override async Task<InteractiveInputResult<TOption>> HandleReactionAsync(SocketReaction input, IUserMessage message)
+    public override async Task<InteractiveInputResult<TOption>> HandleReactionAsync(MessageReactionAddEventArgs input, RestMessage message)
     {
         var result = await base.HandleReactionAsync(input, message).ConfigureAwait(false);
         if (result.Status is not InteractiveInputStatus.Success)
@@ -140,8 +136,8 @@ public sealed class MenuSelection<TOption> : BaseSelection<TOption>
         {
             await message.ModifyAsync(x =>
             {
-                x.Content = page.Text ?? Optional<string>.Unspecified;
-                x.Embeds = page.GetEmbedArray();
+                x.Content = page.Text;
+                x.Embeds = page.Embeds;
             }).ConfigureAwait(false);
         }
 
@@ -149,7 +145,7 @@ public sealed class MenuSelection<TOption> : BaseSelection<TOption>
     }
 
     /// <inheritdoc/>
-    public override async Task<InteractiveInputResult<TOption>> HandleInteractionAsync(SocketMessageComponent input, IUserMessage message)
+    public override async Task<InteractiveInputResult<TOption>> HandleInteractionAsync(MessageComponentInteraction input, RestMessage message)
     {
         var result = await base.HandleInteractionAsync(input, message).ConfigureAwait(false);
         if (result.Status is not InteractiveInputStatus.Success)
@@ -162,16 +158,16 @@ public sealed class MenuSelection<TOption> : BaseSelection<TOption>
 
         if (page is not null)
         {
-            await input.UpdateAsync(x =>
+            await input.SendResponseAsync(InteractionCallback.ModifyMessage(x =>
             {
-                x.Content = page.Text ?? Optional<string>.Unspecified;
-                x.Embeds = page.GetEmbedArray();
-                x.Components = GetOrAddComponents(disableAll: false).Build();
-            }).ConfigureAwait(false);
+                x.Content = page.Text;
+                x.Embeds = page.Embeds;
+                x.Components = GetOrAddComponents(disableAll: false);
+            })).ConfigureAwait(false);
         }
         else
         {
-            await input.DeferAsync().ConfigureAwait(false);
+            await input.SendResponseAsync(InteractionCallback.DeferredModifyMessage).ConfigureAwait(false);
         }
 
         return new InteractiveInputResult<TOption>(InteractiveInputStatus.Ignored, result.SelectedOptions);

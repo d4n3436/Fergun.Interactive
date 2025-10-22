@@ -1,7 +1,8 @@
 using System;
 using System.Threading.Tasks;
-using Discord.WebSocket;
 using JetBrains.Annotations;
+using NetCord;
+using NetCord.Gateway;
 
 namespace Fergun.Interactive;
 
@@ -41,19 +42,19 @@ public interface IInteractiveCallback : IDisposable
     /// </summary>
     /// <param name="message">The incoming message.</param>
     /// <returns>A task that represents the operation.</returns>
-    Task ExecuteAsync(SocketMessage message);
+    Task ExecuteAsync(Message message);
 
     /// <summary>
     /// Executes this event.
     /// </summary>
     /// <param name="reaction">The incoming reaction.</param>
     /// <returns>A task that represents the operation.</returns>
-    Task ExecuteAsync(SocketReaction reaction);
+    Task ExecuteAsync(MessageReactionAddEventArgs reaction);
 
     /// <summary>
     /// Executes this event.
     /// </summary>
     /// <param name="interaction">The incoming interaction.</param>
     /// <returns>A task that represents the operation.</returns>
-    Task ExecuteAsync(SocketInteraction interaction);
+    Task ExecuteAsync(Interaction interaction);
 }

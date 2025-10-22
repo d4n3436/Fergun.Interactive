@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
-using Discord;
-using Discord.Interactions;
-using Discord.WebSocket;
+
+
+
 using ExampleBot.Services;
 using Fergun.Interactive;
 using GScraper.DuckDuckGo;
