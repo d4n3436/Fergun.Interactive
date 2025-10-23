@@ -23,6 +23,7 @@ Port of Fergun.Interactive to NetCord.
     <EnableNETAnalyzers>true</EnableNETAnalyzers>
     <PackageIcon>logo.png</PackageIcon>
     <RootNamespace>Fergun.Interactive</RootNamespace>
+	<NoWarn>NU5104</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
