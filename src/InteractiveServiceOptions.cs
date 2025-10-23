@@ -4,10 +4,10 @@ using JetBrains.Annotations;
 namespace Fergun.Interactive;
 
 /// <summary>
-/// Represents a configuration for <see cref="InteractiveService"/>.
+/// Represents the configuration for <see cref="InteractiveService"/>.
 /// </summary>
 [PublicAPI]
-public class InteractiveConfig
+public class InteractiveServiceOptions
 {
     /// <summary>
     /// Gets or sets the default timeout for the interactive actions.

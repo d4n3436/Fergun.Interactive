@@ -57,16 +57,8 @@ public class PaginatorModule : ApplicationCommandModule<ApplicationCommandContex
 
         // By default, SendPaginatorAsync sends the paginator and waits for a timeout or a cancellation.
         // If you want the method to return after sending the paginator, you can set the
-        // ReturnAfterSendingPaginator option to true in the InteractiveService configuration, InteractiveConfig.
+        // ReturnAfterSendingPaginator option to true in the InteractiveService configuration, InteractiveServiceOptions.
 
-        // Example in ServiceCollection:
-        /*
-        var collection = new ServiceCollection()
-            .AddSingleton<DiscordSocketClient>()
-            .AddSingleton(new InteractiveConfig { ReturnAfterSendingPaginator = true })
-            .AddSingleton<InteractiveService>()
-            ...
-        */
     }
 
     [SlashCommand("paginator-lazy", "Sends a lazy-loaded paginator. The pages are generated using a page factory.")]

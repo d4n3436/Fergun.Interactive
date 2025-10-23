@@ -1,6 +1,7 @@
 ﻿using ExampleBot;
 using ExampleBot.Modules;
 using Fergun.Interactive;
+using Fergun.Interactive.Extensions;
 using GScraper.DuckDuckGo;
 using GScraper.Google;
 using Microsoft.Extensions.DependencyInjection;
@@ -17,6 +18,7 @@ var builder = Host.CreateApplicationBuilder(args);
 builder.Services.AddDiscordShardedGateway(options => options.Intents = GatewayIntents.AllNonPrivileged | GatewayIntents.MessageContent);
 builder.Services.AddApplicationCommands();
 builder.Services.AddComponentInteractions<StringMenuInteraction, StringMenuInteractionContext>(options => options.ResultHandler = new EmptyResultHandler<StringMenuInteractionContext>());
+builder.Services.AddInteractiveService();
 
 builder.Services.AddSingleton<InteractiveService>();
 builder.Services.AddSingleton<GoogleScraper>();

@@ -11,6 +11,7 @@ using Fergun.Interactive.Pagination;
 using Fergun.Interactive.Selection;
 using JetBrains.Annotations;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using NetCord;
 using NetCord.Gateway;
 using NetCord.Rest;
@@ -27,7 +28,7 @@ public class InteractiveService
     private readonly ILogger<InteractiveService> _logger;
     private readonly ConcurrentDictionary<ulong, IInteractiveCallback> _callbacks = new();
     private readonly ConcurrentDictionary<Guid, IFilteredCallback> _filteredCallbacks = new();
-    private readonly InteractiveConfig _config;
+    private readonly InteractiveServiceOptions _options;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="InteractiveService"/> class using the default configuration.
@@ -35,7 +36,7 @@ public class InteractiveService
     /// <param name="client">An instance of <see cref="ShardedGatewayClient"/>.</param>
     /// <param name="logger">The logger.</param>
     public InteractiveService(ShardedGatewayClient client, ILogger<InteractiveService> logger)
-        : this(client, logger, new InteractiveConfig())
+        : this(client, logger, Options.Create(new InteractiveServiceOptions()))
     {
     }
 
@@ -44,15 +45,15 @@ public class InteractiveService
     /// </summary>
     /// <param name="client">An instance of <see cref="ShardedGatewayClient"/>.</param>
     /// <param name="logger">The logger.</param>
-    /// <param name="config">The configuration.</param>
-    public InteractiveService(ShardedGatewayClient client, ILogger<InteractiveService> logger, InteractiveConfig config)
+    /// <param name="options">The configuration.</param>
+    public InteractiveService(ShardedGatewayClient client, ILogger<InteractiveService> logger, IOptions<InteractiveServiceOptions> options)
     {
         InteractiveGuards.NotNull(client);
-        InteractiveGuards.NotNull(config);
+        InteractiveGuards.NotNull(options);
 
         _client = client;
         _logger = logger;
-        _config = config;
+        _options = options.Value;
 
         _client.MessageCreate += MessageCreated;
         _client.MessageReactionAdd += ReactionAdded;
@@ -319,16 +320,16 @@ public class InteractiveService
         messageAction?.Invoke(message);
         
 
-        if (!_config.ProcessSinglePagePaginators && paginator.MaxPageIndex == 0)
+        if (!_options.ProcessSinglePagePaginators && paginator.MaxPageIndex == 0)
         {
             return new InteractiveMessageResultBuilder()
                 .WithMessage(message)
                 .Build();
         }
 
-        timeout ??= _config.DefaultTimeout;
+        timeout ??= _options.DefaultTimeout;
 
-        if (!_config.ReturnAfterSendingPaginator)
+        if (!_options.ReturnAfterSendingPaginator)
         {
             return await WaitForPaginatorResultUsingCallbackAsync().ConfigureAwait(false);
         }
@@ -545,7 +546,7 @@ public class InteractiveService
         var message = await SendOrModifyMessageAsync(selection, interaction, responseType, ephemeral).ConfigureAwait(false);
         messageAction?.Invoke(message);
 
-        var timeoutTaskSource = new TimeoutTaskCompletionSource<(IReadOnlyList<TOption>, InteractiveStatus)>(timeout ?? _config.DefaultTimeout,
+        var timeoutTaskSource = new TimeoutTaskCompletionSource<(IReadOnlyList<TOption>, InteractiveStatus)>(timeout ?? _options.DefaultTimeout,
             canReset: false, ([], InteractiveStatus.Timeout), ([], InteractiveStatus.Canceled), cancellationToken);
 
         using var callback = new SelectionCallback<TOption>(selection, message, timeoutTaskSource, DateTimeOffset.UtcNow, interaction);
@@ -869,16 +870,16 @@ public class InteractiveService
         message = await SendOrModifyMessageAsync(paginator, message, channel).ConfigureAwait(false);
         messageAction?.Invoke(message);
 
-        if (!_config.ProcessSinglePagePaginators && paginator.MaxPageIndex == 0)
+        if (!_options.ProcessSinglePagePaginators && paginator.MaxPageIndex == 0)
         {
             return new InteractiveMessageResultBuilder()
                 .WithMessage(message)
                 .Build();
         }
 
-        timeout ??= _config.DefaultTimeout;
+        timeout ??= _options.DefaultTimeout;
 
-        if (!_config.ReturnAfterSendingPaginator)
+        if (!_options.ReturnAfterSendingPaginator)
         {
             return await WaitForPaginatorResultUsingCallbackAsync().ConfigureAwait(false);
         }
@@ -907,9 +908,9 @@ public class InteractiveService
             await messageAction(message).ConfigureAwait(false);
         }
 
-        timeout ??= _config.DefaultTimeout;
+        timeout ??= _options.DefaultTimeout;
 
-        if (!_config.ReturnAfterSendingPaginator)
+        if (!_options.ReturnAfterSendingPaginator)
         {
             return await WaitForPaginatorResultUsingCallbackAsync().ConfigureAwait(false);
         }
@@ -943,7 +944,7 @@ public class InteractiveService
         message = await SendOrModifyMessageAsync(selection, message, channel).ConfigureAwait(false);
         messageAction?.Invoke(message);
 
-        using var timeoutTaskSource = new TimeoutTaskCompletionSource<(IReadOnlyList<TOption>, InteractiveStatus)>(timeout ?? _config.DefaultTimeout,
+        using var timeoutTaskSource = new TimeoutTaskCompletionSource<(IReadOnlyList<TOption>, InteractiveStatus)>(timeout ?? _options.DefaultTimeout,
             canReset: false, ([], InteractiveStatus.Timeout), ([], InteractiveStatus.Canceled), cancellationToken);
 
         using var callback = new SelectionCallback<TOption>(selection, message, timeoutTaskSource, DateTimeOffset.UtcNow);
@@ -961,7 +962,7 @@ public class InteractiveService
 
         var guid = Guid.NewGuid();
 
-        var timeoutTaskSource = new TimeoutTaskCompletionSource<(T?, InteractiveStatus)>(timeout ?? _config.DefaultTimeout,
+        var timeoutTaskSource = new TimeoutTaskCompletionSource<(T?, InteractiveStatus)>(timeout ?? _options.DefaultTimeout,
             canReset: false, (default, InteractiveStatus.Timeout), (default, InteractiveStatus.Canceled), cancellationToken);
 
         var callback = new FilteredCallback<T>(filter, action, timeoutTaskSource, DateTimeOffset.UtcNow);
@@ -1002,7 +1003,7 @@ public class InteractiveService
 
         if (_callbacks.TryRemove(callback.Message.Id, out _))
         {
-            await ApplyActionOnStopAsync(callback.Paginator, result, callback.LastInteraction, callback.StopInteraction, _config.DeferStopPaginatorInteractions).ConfigureAwait(false);
+            await ApplyActionOnStopAsync(callback.Paginator, result, callback.LastInteraction, callback.StopInteraction, _options.DeferStopPaginatorInteractions).ConfigureAwait(false);
         }
 
         return result;
@@ -1039,7 +1040,7 @@ public class InteractiveService
             _ => throw new InvalidOperationException($"Invalid {nameof(InteractiveStatus)} {result.Status}.")
         };
 
-        await callback.Paginator.ApplyActionOnStopAsync(result.Message, result.StopInteraction, _config.DeferStopPaginatorInteractions).ConfigureAwait(false);
+        await callback.Paginator.ApplyActionOnStopAsync(result.Message, result.StopInteraction, _options.DeferStopPaginatorInteractions).ConfigureAwait(false);
 
         return result;
     }
@@ -1075,7 +1076,7 @@ public class InteractiveService
 
         if (_callbacks.TryRemove(callback.Message.Id, out _))
         {
-            await ApplyActionOnStopAsync(callback.Selection, result, callback.LastInteraction, callback.StopInteraction, _config.DeferStopSelectionInteractions).ConfigureAwait(false);
+            await ApplyActionOnStopAsync(callback.Selection, result, callback.LastInteraction, callback.StopInteraction, _options.DeferStopSelectionInteractions).ConfigureAwait(false);
         }
 
         return result;
@@ -1086,7 +1087,7 @@ public class InteractiveService
         var page = await element.GetCurrentPageAsync().ConfigureAwait(false);
 
         List<IMessageComponentProperties>? component = null;
-        bool addComponents = element is not Paginator pag || _config.ProcessSinglePagePaginators || pag.MaxPageIndex > 0;
+        bool addComponents = element is not Paginator pag || _options.ProcessSinglePagePaginators || pag.MaxPageIndex > 0;
         if ((element.InputType.HasFlag(InputType.Buttons) || element.InputType.HasFlag(InputType.SelectMenus)) && addComponents)
         {
             component = element.GetOrAddComponents(disableAll: false);
@@ -1137,7 +1138,7 @@ public class InteractiveService
         var page = await element.GetCurrentPageAsync().ConfigureAwait(false);
 
         List<IMessageComponentProperties>? component = null;
-        bool addComponents = element is not Paginator pag || _config.ProcessSinglePagePaginators || pag.MaxPageIndex > 0;
+        bool addComponents = element is not Paginator pag || _options.ProcessSinglePagePaginators || pag.MaxPageIndex > 0;
         if ((element.InputType.HasFlag(InputType.Buttons) || element.InputType.HasFlag(InputType.SelectMenus)) && addComponents)
         {
             component = element.GetOrAddComponents(disableAll: false);
