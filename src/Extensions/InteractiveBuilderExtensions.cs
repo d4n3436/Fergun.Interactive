@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Linq;
-
 using JetBrains.Annotations;
+using NetCord;
 
 namespace Fergun.Interactive.Extensions;
 

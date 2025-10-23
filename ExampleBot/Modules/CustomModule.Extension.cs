@@ -2,17 +2,17 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-
-
 using ExampleBot.Extensions;
 using Fergun.Interactive;
 using Fergun.Interactive.Pagination;
+using NetCord;
+using NetCord.Services.ApplicationCommands;
 
 namespace ExampleBot.Modules;
 
 public partial class CustomModule
 {
-    [SlashCommand("extension", "Sends a simple paginator that uses extension methods.")]
+    [SlashCommand("custom-extension", "Sends a simple paginator that uses extension methods.")]
     public async Task CustomExtensionAsync()
     {
         string[] texts =
@@ -96,11 +96,11 @@ public static class BuilderExtensions
     {
         builder.Options.Clear();
 
-        builder.AddOption(EmojiProperties.Parse("⏮️"), PaginatorAction.SkipToStart);
-        builder.AddOption(EmojiProperties.Parse("◀️"), PaginatorAction.Backward);
-        builder.AddOption(EmojiProperties.Parse("▶️"), PaginatorAction.Forward);
-        builder.AddOption(EmojiProperties.Parse("⏭️"), PaginatorAction.SkipToEnd);
-        builder.AddOption(EmojiProperties.Parse("🛑"), PaginatorAction.Exit);
+        builder.AddOption(EmojiProperties.Standard("⏮️"), PaginatorAction.SkipToStart);
+        builder.AddOption(EmojiProperties.Standard("◀️"), PaginatorAction.Backward);
+        builder.AddOption(EmojiProperties.Standard("▶️"), PaginatorAction.Forward);
+        builder.AddOption(EmojiProperties.Standard("⏭️"), PaginatorAction.SkipToEnd);
+        builder.AddOption(EmojiProperties.Standard("🛑"), PaginatorAction.Exit);
 
         return (TBuilder)builder;
     }

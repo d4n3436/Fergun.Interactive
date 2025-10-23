@@ -9,7 +9,7 @@ internal sealed class InteractiveMessageResultBuilder<T> : BaseInteractiveMessag
 {
     public static InteractiveMessageResultBuilder<T> FromCallback<TOption>(SelectionCallback<TOption> callback, IReadOnlyList<T> options, InteractiveStatus status)
     {
-        var user = callback.StopMessage?.Author ?? callback.StopReaction?.User.GetValueOrDefault() ?? callback.StopInteraction?.User;
+        var user = callback.StopMessage?.Author ?? callback.StopReaction?.User ?? callback.StopInteraction?.User;
 
         return new InteractiveMessageResultBuilder<T>()
             .WithValues(options)
@@ -29,7 +29,7 @@ internal sealed class InteractiveMessageResultBuilder : BaseInteractiveMessageRe
 {
     public static InteractiveMessageResultBuilder FromCallback(PaginatorCallback callback, InteractiveStatus status)
     {
-        var user = callback.StopMessage?.Author ?? callback.StopReaction?.User.GetValueOrDefault() ?? callback.StopInteraction?.User;
+        var user = callback.StopMessage?.Author ?? callback.StopReaction?.User ?? callback.StopInteraction?.User;
 
         return new InteractiveMessageResultBuilder()
             .WithElapsed(callback.GetElapsedTime(status))

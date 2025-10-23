@@ -1,69 +1,33 @@
-﻿using System;
-using System.Threading;
-using System.Threading.Tasks;
-
-
-
-using ExampleBot.Services;
+﻿using ExampleBot;
+using ExampleBot.Modules;
 using Fergun.Interactive;
 using GScraper.DuckDuckGo;
 using GScraper.Google;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using NetCord;
+using NetCord.Gateway;
+using NetCord.Hosting.Gateway;
+using NetCord.Hosting.Services.ApplicationCommands;
+using NetCord.Hosting.Services.ComponentInteractions;
+using NetCord.Services.ComponentInteractions;
 
-namespace ExampleBot;
+var builder = Host.CreateApplicationBuilder(args);
 
-internal static class Program
-{
-    private static async Task Main()
-    {
-        var config = new ConfigurationBuilder()
-            .AddJsonFile("appsettings.json")
-            .Build();
+builder.Services.AddDiscordShardedGateway(options => options.Intents = GatewayIntents.AllNonPrivileged | GatewayIntents.MessageContent);
+builder.Services.AddApplicationCommands();
+builder.Services.AddComponentInteractions<StringMenuInteraction, StringMenuInteractionContext>(options => options.ResultHandler = new EmptyResultHandler<StringMenuInteractionContext>());
 
-        await using var services = ConfigureServices();
-        var client = services.GetRequiredService<DiscordSocketClient>();
+builder.Services.AddSingleton<InteractiveService>();
+builder.Services.AddSingleton<GoogleScraper>();
+builder.Services.AddSingleton<DuckDuckGoScraper>();
 
-        services.GetRequiredService<InteractionService>().Log += LogAsync;
-        services.GetRequiredService<InteractiveService>().Log += LogAsync;
-        client.Log += LogAsync;
+var host = builder.Build();
 
-        string? token = config["Token"];
+host.AddApplicationCommandModule<PaginatorModule>();
+host.AddApplicationCommandModule<SelectionModule>();
+host.AddApplicationCommandModule<WaitModule>();
+host.AddApplicationCommandModule<CustomModule>();
+host.AddComponentInteractionModule<SelectMenuModule>();
 
-        try
-        {
-            TokenUtils.ValidateToken(TokenType.Bot, token);
-        }
-        catch (ArgumentException ex)
-        {
-            await LogAsync(new LogMessage(LogSeverity.Critical, "Bot", "Token is invalid, cannot continue. Make sure to put your bot token in appsettings.json", ex));
-            throw;
-        }
-
-        await client.LoginAsync(TokenType.Bot, token);
-        await client.StartAsync();
-
-        await services.GetRequiredService<InteractionHandlingService>().InitializeAsync();
-
-        await Task.Delay(Timeout.Infinite);
-    }
-
-    private static Task LogAsync(LogMessage log)
-    {
-        Console.WriteLine(log.ToString());
-
-        return Task.CompletedTask;
-    }
-
-    private static ServiceProvider ConfigureServices()
-        => new ServiceCollection()
-            .AddSingleton(new DiscordSocketConfig { LogLevel = LogSeverity.Verbose, GatewayIntents = GatewayIntents.AllUnprivileged | GatewayIntents.MessageContent })
-            .AddSingleton(new InteractionServiceConfig { LogLevel = LogSeverity.Verbose })
-            .AddSingleton<DiscordSocketClient>()
-            .AddSingleton(x => new InteractionService(x.GetRequiredService<DiscordSocketClient>().Rest))
-            .AddSingleton<InteractionHandlingService>()
-            .AddSingleton<InteractiveService>()
-            .AddSingleton<GoogleScraper>()
-            .AddSingleton<DuckDuckGoScraper>()
-            .BuildServiceProvider();
-}
+await host.RunAsync();

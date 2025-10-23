@@ -1,9 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-
+using Fergun.Interactive.Extensions;
 using JetBrains.Annotations;
 using NetCord;
+using NetCord.Rest;
 
 namespace Fergun.Interactive.Pagination;
 
@@ -42,7 +43,7 @@ public abstract class PaginatorBuilder<TPaginator, TBuilder>
     /// <summary>
     /// Gets or sets the users who can interact with the paginator.
     /// </summary>
-    public virtual ICollection<NetCord.User> Users { get; set; } = [];
+    public virtual ICollection<User> Users { get; set; } = [];
 
     /// <inheritdoc/>
     public virtual IDictionary<EmojiProperties, PaginatorAction> Options
@@ -90,7 +91,7 @@ public abstract class PaginatorBuilder<TPaginator, TBuilder>
     /// Gets or sets the factory of the <see cref="IPage"/> that will be displayed ephemerally to a user when they are not allowed to interact with the <typeparamref name="TPaginator"/>.
     /// </summary>
     /// <remarks>The first argument of the factory is a read-only collection of users who are allowed to interact with the paginator.</remarks>
-    public virtual Func<IReadOnlyCollection<NetCord.User>, IPage>? RestrictedPageFactory { get; set; }
+    public virtual Func<IReadOnlyCollection<User>, IPage>? RestrictedPageFactory { get; set; }
 
     /// <inheritdoc/>
     /// <remarks>The default value is 30 seconds.</remarks>
@@ -152,7 +153,7 @@ public abstract class PaginatorBuilder<TPaginator, TBuilder>
     /// </summary>
     /// <param name="users">The users.</param>
     /// <returns>This builder.</returns>
-    public virtual TBuilder WithUsers(params NetCord.User[] users)
+    public virtual TBuilder WithUsers(params User[] users)
     {
         InteractiveGuards.NotNull(users);
         Users = users.ToList();
@@ -164,7 +165,7 @@ public abstract class PaginatorBuilder<TPaginator, TBuilder>
     /// </summary>
     /// <param name="users">The users.</param>
     /// <returns>This builder.</returns>
-    public virtual TBuilder WithUsers(IEnumerable<NetCord.User> users)
+    public virtual TBuilder WithUsers(IEnumerable<User> users)
     {
         InteractiveGuards.NotNull(users);
         Users = users.ToList();
@@ -176,7 +177,7 @@ public abstract class PaginatorBuilder<TPaginator, TBuilder>
     /// </summary>
     /// <param name="user">The user.</param>
     /// <returns>This builder.</returns>
-    public virtual TBuilder AddUser(NetCord.User user)
+    public virtual TBuilder AddUser(User user)
     {
         InteractiveGuards.NotNull(user);
         Users.Add(user);
@@ -287,27 +288,6 @@ public abstract class PaginatorBuilder<TPaginator, TBuilder>
         => AddOption(action, emote, text: null, style);
 
     /// <summary>
-    /// Adds a link-style paginator button with the specified properties.
-    /// </summary>
-    /// <param name="url">The url of the button.</param>
-    /// <param name="emote">The emote.</param>
-    /// <param name="text">The text (label) that will be displayed in the button.</param>
-    /// <param name="isDisabled">A value indicating whether to disable the button. If the value is null, the library will decide its status.</param>
-    /// <exception cref="ArgumentException">Thrown when <paramref name="url"/> is <see langword="null"/> or empty.</exception>
-    /// <exception cref="InvalidOperationException">Thrown when <paramref name="emote"/> or <paramref name="text"/> do not have valid values.</exception>
-    /// <returns>This builder.</returns>
-    public virtual TBuilder AddOption(string url, EmojiProperties? emote, string? text, bool? isDisabled = null)
-    {
-        if (string.IsNullOrEmpty(url))
-            throw new ArgumentException("Url cannot be null or empty.", nameof(url));
-
-        if (emote is null && string.IsNullOrEmpty(text))
-            throw new InvalidOperationException($"Either {nameof(emote)} or {nameof(text)} must have a valid value.");
-
-        return AddOption(new PaginatorButton(url, emote, text, isDisabled));
-    }
-
-    /// <summary>
     /// Adds a detached paginator button with the specified properties.
     /// </summary>
     /// <remarks>Detached paginator buttons are not managed by a paginator and must be manually handled.</remarks>
@@ -381,7 +361,7 @@ public abstract class PaginatorBuilder<TPaginator, TBuilder>
     /// </remarks>
     /// <param name="builders">The select menu builders.</param>
     /// <returns>This builder.</returns>
-    public virtual TBuilder WithSelectMenus(IEnumerable<SelectMenuBuilder> builders)
+    public virtual TBuilder WithSelectMenus(IEnumerable<StringMenuProperties> builders)
     {
         InteractiveGuards.NotNull(builders);
         return WithSelectMenus(builders.Select(x => new PaginatorSelectMenu(x)));
@@ -413,31 +393,13 @@ public abstract class PaginatorBuilder<TPaginator, TBuilder>
     }
 
     /// <summary>
-    /// Adds a paginator select menu with the specified properties.
-    /// </summary>
-    /// <remarks>Paginator select menus are detached from the paginator and their interactions must be manually handled.</remarks>
-    /// <param name="customId">The custom ID.</param>
-    /// <param name="options">The options.</param>
-    /// <param name="placeholder">The placeholder of this select menu.</param>
-    /// <param name="maxValues">The max values of this select menu.</param>
-    /// <param name="minValues">The min values of this select menu.</param>
-    /// <param name="isDisabled">A value indicating whether to disable the select menu. If the value is null, the library will decide its status.</param>
-    /// <param name="type">The <see cref="ComponentType"/> of this select menu.</param>
-    /// <param name="channelTypes">The types of channels this menu can select (only valid on select menus of type <see cref="ComponentType.ChannelSelect"/>).</param>
-    /// <param name="defaultValues">The default values of the select menu.</param>
-    /// <returns>This builder.</returns>
-    public virtual TBuilder AddSelectMenu(string customId, List<SelectMenuOptionBuilder>? options = null, string? placeholder = null, int maxValues = 1, int minValues = 1,
-        bool? isDisabled = null, ComponentType type = ComponentType.SelectMenu, List<ChannelType>? channelTypes = null, List<SelectMenuDefaultValue>? defaultValues = null)
-        => AddSelectMenu(new SelectMenuBuilder(customId, options, placeholder, maxValues, minValues, isDisabled ?? false, type, channelTypes, defaultValues), isDisabled);
-
-    /// <summary>
     /// Adds a paginator select menu from a select menu builder.
     /// </summary>
     /// <remarks>Paginator select menus are detached from the paginator and their interactions must be manually handled.</remarks>
     /// <param name="builder">The select menu builder.</param>
     /// <param name="isDisabled">A value indicating whether to disable the select menu. If the value is null, the library will decide its status. This value overrides the one in <paramref name="builder"/>.</param>
     /// <returns>This builder.</returns>
-    public virtual TBuilder AddSelectMenu(SelectMenuBuilder builder, bool? isDisabled = null)
+    public virtual TBuilder AddSelectMenu(StringMenuProperties builder, bool? isDisabled = null)
     {
         InteractiveGuards.NotNull(builder);
         return AddSelectMenu(new PaginatorSelectMenu(builder, isDisabled));
@@ -557,7 +519,7 @@ public abstract class PaginatorBuilder<TPaginator, TBuilder>
     /// <remarks>The first argument of the factory is a read-only collection of users who are allowed to interact with the paginator.</remarks>
     /// <param name="pageFactory">The restricted page factory. The first argument is a read-only collection of users who are allowed to interact with the paginator.</param>
     /// <returns>This builder.</returns>
-    public virtual TBuilder WithRestrictedPageFactory(Func<IReadOnlyCollection<NetCord.User>, IPage> pageFactory)
+    public virtual TBuilder WithRestrictedPageFactory(Func<IReadOnlyCollection<User>, IPage> pageFactory)
     {
         InteractiveGuards.NotNull(pageFactory);
         RestrictedPageFactory = pageFactory;
@@ -650,11 +612,11 @@ public abstract class PaginatorBuilder<TPaginator, TBuilder>
         Options.Clear();
         ButtonFactories.Clear();
 
-        AddOption(EmojiPropertiesProperties.Standard("◀"), PaginatorAction.Backward);
-        AddOption(EmojiPropertiesProperties.Standard("▶"), PaginatorAction.Forward);
-        AddOption(EmojiPropertiesProperties.Standard("⏮"), PaginatorAction.SkipToStart);
-        AddOption(EmojiPropertiesProperties.Standard("⏭"), PaginatorAction.SkipToEnd);
-        AddOption(EmojiPropertiesProperties.Standard("🛑"), PaginatorAction.Exit);
+        AddOption(EmojiProperties.Standard("◀"), PaginatorAction.Backward);
+        AddOption(EmojiProperties.Standard("▶"), PaginatorAction.Forward);
+        AddOption(EmojiProperties.Standard("⏮"), PaginatorAction.SkipToStart);
+        AddOption(EmojiProperties.Standard("⏭"), PaginatorAction.SkipToEnd);
+        AddOption(EmojiProperties.Standard("🛑"), PaginatorAction.Exit);
 
         return (TBuilder)this;
     }
@@ -671,7 +633,7 @@ public abstract class PaginatorBuilder<TPaginator, TBuilder>
     /// </summary>
     /// <returns>This builder.</returns>
     public virtual TBuilder WithDefaultTimeoutPage()
-        => WithTimeoutPage(new PageBuilder().WithColor(Color.Red).WithTitle("Timed out! ⏰"));
+        => WithTimeoutPage(new PageBuilder().WithColor(ColorExtensions.get_Red()).WithTitle("Timed out! ⏰"));
 
     /// <inheritdoc/>
     TPaginator IInteractiveBuilderMethods<TPaginator, KeyValuePair<EmojiProperties, PaginatorAction>, TBuilder>.Build() => Build();

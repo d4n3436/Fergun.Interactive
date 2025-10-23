@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Linq;
-
 using JetBrains.Annotations;
 using NetCord;
 using NetCord.Rest;

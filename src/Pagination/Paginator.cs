@@ -5,7 +5,6 @@ using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-
 using Fergun.Interactive.Extensions;
 using JetBrains.Annotations;
 using NetCord;
@@ -24,7 +23,7 @@ public abstract class Paginator : IInteractiveElement<KeyValuePair<EmojiProperti
     private readonly Lazy<string> _lazyInvalidJumpInputMessage;
     private readonly Lazy<TimeoutTaskCompletionSource<Message?>> _lazyMessageTcs;
     private readonly Lazy<TimeoutTaskCompletionSource<ModalInteraction?>> _lazyModalTcs;
-    private readonly object _waitLock = new();
+    private readonly Lock _waitLock = new();
 
     /// <summary>
     /// Initializes a new instance of the <see cref="Paginator"/> class.
@@ -50,7 +49,7 @@ public abstract class Paginator : IInteractiveElement<KeyValuePair<EmojiProperti
             InteractiveGuards.NotNull(properties.RestrictedPageFactory);
         }
 
-        Users = new ReadOnlyCollection<NetCord.User>(properties.Users.ToArray());
+        Users = new ReadOnlyCollection<User>(properties.Users.ToArray());
         Emotes = new ReadOnlyDictionary<EmojiProperties, PaginatorAction>(new Dictionary<EmojiProperties, PaginatorAction>(properties.Options));
         ButtonFactories = new ReadOnlyCollection<Func<IButtonContext, IPaginatorButton>>(properties.ButtonFactories.ToArray());
         SelectMenuFactories = new ReadOnlyCollection<Func<ISelectMenuContext, IPaginatorSelectMenu>>(properties.SelectMenuFactories.ToArray());
@@ -95,7 +94,7 @@ public abstract class Paginator : IInteractiveElement<KeyValuePair<EmojiProperti
     /// <summary>
     /// Gets a read-only collection of users who can interact with this paginator.
     /// </summary>
-    public IReadOnlyCollection<NetCord.User> Users { get; }
+    public IReadOnlyCollection<User> Users { get; }
 
     /// <summary>
     /// Gets the emotes and their related actions of this paginator.
@@ -193,7 +192,7 @@ public abstract class Paginator : IInteractiveElement<KeyValuePair<EmojiProperti
     protected ulong JumpInputUserId { get; set; }
 
     /// <summary>
-    /// Gets the <see cref="TimeoutTaskCompletionSource{TResult}"/> used to receive modal interactions in <see cref="JumpToPageAsync(MessageReactionAddEventArgs)"/>.
+    /// Gets the <see cref="TimeoutTaskCompletionSource{TResult}"/> used to receive modal interactions in <see cref="JumpToPageAsync(MessageReactionAddEventArgs, RestMessage)"/>.
     /// </summary>
     protected TimeoutTaskCompletionSource<Message?> MessageTaskCompletionSource => _lazyMessageTcs.Value;
 
@@ -259,8 +258,9 @@ public abstract class Paginator : IInteractiveElement<KeyValuePair<EmojiProperti
     /// Responds <paramref name="reaction"/> with a message, waits for a message with a valid page number and jumps (skips) to that page.
     /// </summary>
     /// <param name="reaction">The reaction.</param>
+    /// <param name="message"></param>
     /// <returns>A task representing the asynchronous operation. The task result contains whether the action succeeded.</returns>
-    public virtual async ValueTask<bool> JumpToPageAsync(MessageReactionAddEventArgs reaction)
+    public virtual async ValueTask<bool> JumpToPageAsync(MessageReactionAddEventArgs reaction, RestMessage message)
     {
         InteractiveGuards.NotNull(reaction);
 
@@ -275,14 +275,21 @@ public abstract class Paginator : IInteractiveElement<KeyValuePair<EmojiProperti
 
             if (!string.IsNullOrEmpty(JumpInputInUseMessage))
             {
-                await reaction.Channel.SendMessageAsync($"{MentionUtils.MentionUser(reaction.UserId)}, {JumpInputInUseMessage}",
-                    AllowedMentionsProperties: AllowedMentionsProperties.None, messageReference: new MessageReference(reaction.MessageId)).ConfigureAwait(false);
+                var props = new ReplyMessageProperties()
+                    .WithContent($"{reaction.UserId.Mention}, {JumpInputInUseMessage}")
+                    .WithAllowedMentions(AllowedMentionsProperties.None);
+
+                await message.ReplyAsync(props).ConfigureAwait(false);
             }
 
             return false;
         }
 
-        var promptMessage = await reaction.Channel.SendMessageAsync($"{MentionUtils.MentionUser(reaction.UserId)}, {JumpInputPrompt}", AllowedMentionsProperties: AllowedMentionsProperties.None, messageReference: new MessageReference(reaction.MessageId)).ConfigureAwait(false);
+        var promptProperties = new ReplyMessageProperties()
+            .WithContent($"{reaction.UserId.Mention}, {JumpInputPrompt}")
+            .WithAllowedMentions(AllowedMentionsProperties.None);
+
+        var promptMessage = await message.ReplyAsync(promptProperties).ConfigureAwait(false);
 
         lock (_waitLock)
         {
@@ -291,7 +298,7 @@ public abstract class Paginator : IInteractiveElement<KeyValuePair<EmojiProperti
 
         MessageTaskCompletionSource.ResetTaskSource();
         MessageTaskCompletionSource.TryReset();
-        var message = await MessageTaskCompletionSource.Task.ConfigureAwait(false);
+        var response = await MessageTaskCompletionSource.Task.ConfigureAwait(false);
 
         lock (_waitLock)
         {
@@ -302,21 +309,24 @@ public abstract class Paginator : IInteractiveElement<KeyValuePair<EmojiProperti
         {
             await promptMessage.DeleteAsync().ConfigureAwait(false);
         }
-        catch (HttpException ex) when (ex.DiscordCode == DiscordErrorCode.UnknownMessage)
+        catch (RestException ex) when (ex.Error?.Code == 10008)
         {
             // We want to delete the message so we don't care if the message has been already deleted.
         }
 
-        if (message is null)
+        if (response is null)
             return false;
 
-        string? rawInput = message.Content;
+        string? rawInput = response.Content;
         if (rawInput is null || !int.TryParse(rawInput, NumberStyles.Integer, CultureInfo.InvariantCulture, out int pageNumber) || !await SetPageAsync(pageNumber - 1).ConfigureAwait(false))
         {
             if (!string.IsNullOrEmpty(InvalidJumpInputMessage))
             {
-                await message.Channel.SendMessageAsync(InvalidJumpInputMessage, AllowedMentionsProperties: AllowedMentionsProperties.None,
-                    messageReference: new MessageReference(message.Id)).ConfigureAwait(false);
+                var props = new ReplyMessageProperties()
+                    .WithContent(InvalidJumpInputMessage)
+                    .WithAllowedMentions(AllowedMentionsProperties.None);
+
+                await response.ReplyAsync(props).ConfigureAwait(false);
             }
 
             return false;
@@ -346,7 +356,11 @@ public abstract class Paginator : IInteractiveElement<KeyValuePair<EmojiProperti
                 // We don't know if the user is viewing the modal, or they just dismissed it, the former is assumed
                 if (!string.IsNullOrEmpty(JumpInputInUseMessage))
                 {
-                    await interaction.RespondAsync(JumpInputInUseMessage, ephemeral: true).ConfigureAwait(false);
+                    var props = new InteractionMessageProperties()
+                        .WithContent(JumpInputInUseMessage)
+                        .WithFlags(MessageFlags.Ephemeral);
+
+                    await interaction.SendResponseAsync(InteractionCallback.Message(props)).ConfigureAwait(false);
                 }
                 else
                 {
@@ -357,13 +371,17 @@ public abstract class Paginator : IInteractiveElement<KeyValuePair<EmojiProperti
             }
         }
 
-        var modal = new ModalProperties()
-            .WithCustomId(interaction.Message.Id.ToString())
-            .WithTitle(JumpInputPrompt)
-            .AddTextInput(JumpInputTextLabel, "text_input", minLength: 1, maxLength: (int)Math.Floor(Math.Log10(MaxPageIndex + 1) + 1))
-            .Build();
+        var label = new LabelProperties(JumpInputTextLabel, new TextInputProperties("text_input", TextInputStyle.Short)
+        {
+            MinLength = 1,
+            MaxLength = (int)Math.Floor(Math.Log10(MaxPageIndex + 1) + 1),
+            Required = true
+        });
 
-        await interaction.RespondWithModalAsync(modal).ConfigureAwait(false);
+        var modal = new ModalProperties(interaction.Message.Id.ToString(), JumpInputPrompt)
+            .AddComponents(label);
+
+        await interaction.SendResponseAsync(InteractionCallback.Modal(modal)).ConfigureAwait(false);
 
         lock (_waitLock)
         {
@@ -382,12 +400,22 @@ public abstract class Paginator : IInteractiveElement<KeyValuePair<EmojiProperti
         if (res is null)
             return false;
 
-        string? rawInput = res.Data.Components.FirstOrDefault(x => x.CustomId == "text_input")?.Value;
+        string? rawInput = res.Data.Components
+            .OfType<Label>()
+            .Select(x => x.Component)
+            .OfType<TextInput>()
+            .FirstOrDefault(x => x.CustomId == "text_input")?
+            .Value;
+
         if (rawInput is null || !int.TryParse(rawInput, NumberStyles.Integer, CultureInfo.InvariantCulture, out int pageNumber) || !await SetPageAsync(pageNumber - 1).ConfigureAwait(false))
         {
             if (!string.IsNullOrEmpty(InvalidJumpInputMessage))
             {
-                await res.RespondAsync(InvalidJumpInputMessage, ephemeral: true).ConfigureAwait(false);
+                var props = new InteractionMessageProperties()
+                    .WithContent(InvalidJumpInputMessage)
+                    .WithFlags(MessageFlags.Ephemeral);
+
+                await res.SendResponseAsync(InteractionCallback.Message(props)).ConfigureAwait(false);
             }
             else
             {
@@ -405,7 +433,9 @@ public abstract class Paginator : IInteractiveElement<KeyValuePair<EmojiProperti
     /// <inheritdoc/>
     public virtual List<IMessageComponentProperties> GetOrAddComponents(bool disableAll, List<IMessageComponentProperties>? builder = null)
     {
-        builder ??= new List<IMessageComponentProperties>();
+        builder ??= [];
+
+        var buttons = new List<ButtonProperties>();
         for (int i = 0; i < ButtonFactories.Count; i++)
         {
             var context = new ButtonContext(i, CurrentPageIndex, MaxPageIndex, disableAll);
@@ -415,27 +445,13 @@ public abstract class Paginator : IInteractiveElement<KeyValuePair<EmojiProperti
                 continue;
 
             var style = properties.Style ?? (properties.Action == PaginatorAction.Exit ? ButtonStyle.Danger : ButtonStyle.Primary);
-            IButtonProperties button = null;
-
-            if (style == ButtonStyle.Link)
-            {
-                button = new butonprope
-                button.WithUrl(properties.Url);
-            }
-            else
-            {
-                button.WithCustomId(string.IsNullOrEmpty(properties.CustomId) ? $"{i}_{(int)properties.Action}" : properties.CustomId);
-            }
-
-            button.WithStyle(style)
-                .WithEmote(properties.Emote)
+            var button = new ButtonProperties(string.IsNullOrEmpty(properties.CustomId) ? $"{i}_{(int)properties.Action}" : properties.CustomId, properties.Text!, properties.Emote!, style)
                 .WithDisabled(properties.IsDisabled ?? context.ShouldDisable(properties.Action));
 
-            if (!string.IsNullOrEmpty(properties.Text))
-                button.WithLabel(properties.Text);
-
-            builder.WithButton(button);
+            buttons.Add(button);
         }
+
+        builder.AddRange(buttons.Chunk(5).Select(x => new ActionRowProperties(x)));
 
         for (int i = 0; i < SelectMenuFactories.Count; i++)
         {
@@ -445,10 +461,10 @@ public abstract class Paginator : IInteractiveElement<KeyValuePair<EmojiProperti
             if (properties?.IsHidden is not false)
                 continue;
 
-            var selectMenu = new SelectMenuBuilder(properties.CustomId, properties.Options, properties.Placeholder, properties.MaxValues,
-                properties.MinValues, properties.IsDisabled ?? context.ShouldDisable(), properties.Type, properties.ChannelTypes, properties.DefaultValues);
+            var selectMenu = new StringMenuProperties(properties.CustomId).WithOptions(properties.Options).WithPlaceholder(properties.Placeholder).WithMaxValues(properties.MaxValues)
+                .WithMinValues(properties.MinValues).WithDisabled(properties.IsDisabled ?? context.ShouldDisable());
 
-            builder.WithSelectMenu(selectMenu);
+            builder.Add(selectMenu);
         }
 
         return builder;
@@ -481,21 +497,8 @@ public abstract class Paginator : IInteractiveElement<KeyValuePair<EmojiProperti
             return InteractiveInputStatus.Ignored;
         }
 
-        bool valid = Emotes.TryGetValue(input.Emote, out var action)
+        bool valid = Emotes.TryGetValue(input.Emoji.ToEmojiProperties(), out var action)
                      && this.CanInteract(input.UserId);
-
-        bool manageMessages = await message.Channel.CurrentUserHasManageMessagesAsync().ConfigureAwait(false);
-
-        if (manageMessages)
-        {
-            switch (valid)
-            {
-                case false when Deletion.HasFlag(DeletionOptions.Invalid):
-                case true when Deletion.HasFlag(DeletionOptions.Valid):
-                    await message.RemoveReactionAsync(input.Emote, input.UserId).ConfigureAwait(false);
-                    break;
-            }
-        }
 
         if (!valid)
         {
@@ -509,7 +512,7 @@ public abstract class Paginator : IInteractiveElement<KeyValuePair<EmojiProperti
 
         int previousPageIndex = CurrentPageIndex;
 
-        if ((action == PaginatorAction.Jump && await JumpToPageAsync(input).ConfigureAwait(false)) || await ApplyActionAsync(action).ConfigureAwait(false))
+        if ((action == PaginatorAction.Jump && await JumpToPageAsync(input, message).ConfigureAwait(false)) || await ApplyActionAsync(action).ConfigureAwait(false))
         {
             await TryUpdateMessageAsync(message.ModifyAsync, previousPageIndex, includeComponents: false).ConfigureAwait(false);
         }
@@ -551,16 +554,20 @@ public abstract class Paginator : IInteractiveElement<KeyValuePair<EmojiProperti
 
         int previousPageIndex = CurrentPageIndex;
 
-        Func<Action<MessageOptions>, RequestOptions?, Task> updateMethod;
+        Func<Action<MessageOptions>, RestRequestProperties?, CancellationToken, Task> updateMethod;
         if (action == PaginatorAction.Jump && await JumpToPageAsync(input).ConfigureAwait(false))
             updateMethod = input.ModifyResponseAsync;
         else if (await ApplyActionAsync(action).ConfigureAwait(false))
-            updateMethod = input.SendResponseAsync(InteractionCallback.ModifyMessage);
+            updateMethod = SendResponseAsync;
         else return InteractiveInputStatus.Success;
 
         await TryUpdateMessageAsync(updateMethod, previousPageIndex).ConfigureAwait(false);
 
         return InteractiveInputStatus.Success;
+
+        
+        async Task SendResponseAsync(Action<MessageOptions> messageAction, RestRequestProperties? properties, CancellationToken cancellationToken)
+            => await input.SendResponseAsync(InteractionCallback.ModifyMessage(messageAction), false, properties, cancellationToken);
     }
 
     /// <summary>
@@ -569,7 +576,7 @@ public abstract class Paginator : IInteractiveElement<KeyValuePair<EmojiProperti
     /// <param name="input">The modal interaction to handle.</param>
     /// <param name="message">The message containing the interactive element.</param>
     /// <returns>A <see cref="Task{TResult}"/> containing the result.</returns>
-    public virtual async ValueTask<InteractiveInputResult> HandleModalAsync(ModalInteraction input, Message message)
+    public virtual async ValueTask<InteractiveInputResult> HandleModalAsync(ModalInteraction input, RestMessage message)
     {
         InteractiveGuards.NotNull(input);
         InteractiveGuards.NotNull(message);
@@ -584,7 +591,11 @@ public abstract class Paginator : IInteractiveElement<KeyValuePair<EmojiProperti
         {
             if (!string.IsNullOrEmpty(ExpiredJumpInputMessage))
             {
-                await input.RespondAsync(ExpiredJumpInputMessage, ephemeral: true).ConfigureAwait(false);
+                var props = new InteractionMessageProperties()
+                    .WithContent(ExpiredJumpInputMessage)
+                    .WithFlags(MessageFlags.Ephemeral);
+
+                await input.SendResponseAsync(InteractionCallback.Message(props)).ConfigureAwait(false);
             }
             else
             {
@@ -621,13 +632,10 @@ public abstract class Paginator : IInteractiveElement<KeyValuePair<EmojiProperti
     /// <param name="message">The message to initialize.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to cancel this request.</param>
     /// <returns>A task representing the asynchronous operation.</returns>
-    internal virtual async Task InitializeMessageAsync(Message message, CancellationToken cancellationToken = default)
+    internal virtual async Task InitializeMessageAsync(RestMessage message, CancellationToken cancellationToken = default)
     {
         if (!InputType.HasFlag(InputType.Reactions)) return;
 
-        await Task.CompletedTask;
-        // TODO: Fix?
-        /*
         foreach (var emote in Emotes.Keys)
         {
             if (cancellationToken.IsCancellationRequested)
@@ -635,21 +643,16 @@ public abstract class Paginator : IInteractiveElement<KeyValuePair<EmojiProperti
                 break;
             }
 
-            await message.AddReactionAsync(emote).ConfigureAwait(false);
+            await message.AddReactionAsync(emote.ToReactionEmojiProperties(), null, cancellationToken).ConfigureAwait(false);
         }
-        */
     }
 
-    internal bool TryGetAction(MessageComponentInteraction input, out PaginatorAction action)
+    internal static bool TryGetAction(MessageComponentInteraction input, out PaginatorAction action)
     {
         // Get last character of custom ID, convert it to a number and cast it to PaginatorAction
         action = (PaginatorAction)(input.Data.CustomId?[^1] - '0' ?? -1);
-        if (Enum.IsDefined(typeof(PaginatorAction), action))
-        {
-            return true;
-        }
 
-        return false;
+        return Enum.IsDefined(action);
     }
 
     private static async Task<InteractiveInputResult> DeferInteractionAsync(MessageComponentInteraction input)
@@ -659,11 +662,11 @@ public abstract class Paginator : IInteractiveElement<KeyValuePair<EmojiProperti
     }
 
     // Attempts to update the message and reverts the page index to the previous one if an exception occurs
-    private async Task TryUpdateMessageAsync(Func<Action<MessageOptions>, RequestOptions?, Task> updateMethod, int previousPageIndex, bool includeComponents = true)
+    private async Task TryUpdateMessageAsync(Func<Action<MessageOptions>, RestRequestProperties?, CancellationToken, Task> updateMethod, int previousPageIndex, bool includeComponents = true)
     {
         var currentPage = await GetOrLoadCurrentPageAsync().ConfigureAwait(false);
         var attachments = currentPage.AttachmentsFactory is null ? null : await currentPage.AttachmentsFactory().ConfigureAwait(false);
-        var components = GetOrAddComponents(disableAll: false).Build();
+        var components = GetOrAddComponents(disableAll: false);
 
         try
         {
@@ -673,9 +676,9 @@ public abstract class Paginator : IInteractiveElement<KeyValuePair<EmojiProperti
                 x.Embeds = currentPage.Embeds;
                 x.Components = includeComponents ? components : null;
                 x.AllowedMentions = currentPage.AllowedMentions;
-                x.Attachments = attachments.AsOptional();
+                x.Attachments = attachments;
                 x.Flags = currentPage.MessageFlags;
-            }, arg2: null).ConfigureAwait(false);
+            }, null, CancellationToken.None).ConfigureAwait(false);
         }
         catch
         {
@@ -688,8 +691,19 @@ public abstract class Paginator : IInteractiveElement<KeyValuePair<EmojiProperti
     {
         var page = RestrictedPage ?? throw new InvalidOperationException($"Expected {nameof(RestrictedPage)} to be non-null.");
         var attachments = page.AttachmentsFactory is null ? null : await page.AttachmentsFactory().ConfigureAwait(false);
-        await input.RespondWithFilesAsync(attachments ?? [], page.Text, page.Embeds, page.IsTTS,
-            ephemeral: true, page.AllowedMentions, flags: page.MessageFlags ?? MessageFlags.None).ConfigureAwait(false);
+
+        var message = new InteractionMessageProperties
+        {
+            Content = page.Text,
+            Tts = page.IsTTS,
+            Embeds = page.Embeds,
+            Components = GetOrAddComponents(false),
+            AllowedMentions = page.AllowedMentions,
+            Attachments = attachments,
+            Flags = page.MessageFlags
+        };
+
+        await input.SendResponseAsync(InteractionCallback.Message(message)).ConfigureAwait(false);
 
         return InteractiveInputStatus.Success;
     }

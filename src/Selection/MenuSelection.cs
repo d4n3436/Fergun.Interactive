@@ -2,8 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-
-
+using Fergun.Interactive.Extensions;
 using JetBrains.Annotations;
 using NetCord;
 using NetCord.Gateway;
@@ -46,7 +45,7 @@ public sealed class MenuSelection<TOption> : BaseSelection<TOption>
             throw new InvalidOperationException($"{nameof(InputType)} must have either {nameof(InputType.Buttons)} or {nameof(InputType.SelectMenus)}.");
         }
 
-        builder ??= new List<IMessageComponentProperties>();
+        builder ??= [];
         if (InputType.HasFlag(InputType.SelectMenus))
         {
             var options = new List<StringMenuSelectOptionProperties>();
@@ -60,7 +59,7 @@ public sealed class MenuSelection<TOption> : BaseSelection<TOption>
                     throw new InvalidOperationException($"Neither {nameof(EmoteConverter)} nor {nameof(StringConverter)} returned a valid emote or string.");
                 }
 
-                var option = new StringMenuSelectOptionProperties(label!, emote?.ToString() ?? label!)
+                var option = new StringMenuSelectOptionProperties(label!, emote?.GetValue() ?? label!)
                     .WithEmoji(emote);
 
                 options.Add(option);
@@ -81,6 +80,7 @@ public sealed class MenuSelection<TOption> : BaseSelection<TOption>
         if (!InputType.HasFlag(InputType.Buttons))
             return builder;
 
+        var buttons = new List<ButtonProperties>();
         foreach (var selection in Options)
         {
             var emote = EmoteConverter?.Invoke(selection);
@@ -90,14 +90,16 @@ public sealed class MenuSelection<TOption> : BaseSelection<TOption>
                 throw new InvalidOperationException($"Neither {nameof(EmoteConverter)} nor {nameof(StringConverter)} returned a valid emote or string.");
             }
 
-            var button = new ButtonProperties(emote?.ToString() ?? label!, emote!, ButtonStyle.Primary)
+            var button = new ButtonProperties(emote?.GetValue() ?? label!, emote!, ButtonStyle.Primary)
                 .WithDisabled(disableAll);
 
             if (label is not null)
                 button.Label = label;
 
-            builder.Add(new ActionRowProperties([button]));
+            buttons.Add(button);
         }
+
+        builder.AddRange(buttons.Chunk(5).Select(x => new ActionRowProperties(x)));
 
         return builder;
     }

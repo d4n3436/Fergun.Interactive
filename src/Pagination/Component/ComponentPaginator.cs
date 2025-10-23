@@ -4,11 +4,8 @@ using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
-
-using Fergun.Interactive.Extensions;
 using JetBrains.Annotations;
 using NetCord;
-using NetCord.Gateway;
 using NetCord.Rest;
 
 namespace Fergun.Interactive.Pagination;
@@ -61,7 +58,7 @@ public class ComponentPaginator : IComponentPaginator
         CurrentPageIndex = builder.InitialPageIndex;
         PageFactory = builder.PageFactory;
         UserState = builder.UserState;
-        Users = new ReadOnlyCollection<NetCord.User>(builder.Users.ToArray());
+        Users = new ReadOnlyCollection<User>(builder.Users.ToArray());
         ActionOnCancellation = builder.ActionOnCancellation;
         ActionOnTimeout = builder.ActionOnTimeout;
         RestrictedInputBehavior = builder.RestrictedInputBehavior;
@@ -91,7 +88,7 @@ public class ComponentPaginator : IComponentPaginator
     public object? UserState { get; set; }
 
     /// <inheritdoc />
-    public IReadOnlyCollection<NetCord.User> Users { get; }
+    public IReadOnlyCollection<User> Users { get; }
 
     /// <inheritdoc />
     public ActionOnStop ActionOnCancellation { get; }
@@ -242,7 +239,6 @@ public class ComponentPaginator : IComponentPaginator
         {
             case InteractionCallbackType.Message:
                 await interaction.SendResponseAsync(props).ConfigureAwait(false);
-
                 return await interaction.GetResponseAsync().ConfigureAwait(false);
 
             case InteractionCallbackType.DeferredMessage:
@@ -331,12 +327,22 @@ public class ComponentPaginator : IComponentPaginator
 
         var builder = JumpModalFactory?
             .Invoke(this)?
-            .WithCustomId(JumpModalId) ?? new ModalProperties()
-            .WithTitle("Enter a page number")
-            .AddTextInput($"Page number (1-{PageCount})", "jump_modal_text_input", minLength: 1, maxLength: (int)Math.Floor(Math.Log10(PageCount) + 1), required: true)
             .WithCustomId(JumpModalId);
 
-        await interaction.RespondWithModalAsync(builder.Build()).ConfigureAwait(false);
+        if (builder is null)
+        {
+            var label = new LabelProperties($"Page number (1-{PageCount})", new TextInputProperties("jump_modal_text_input", TextInputStyle.Short)
+            {
+                MinLength = 1,
+                MaxLength = (int)Math.Floor(Math.Log10(PageCount) + 1),
+                Required = true
+            });
+
+            builder = new ModalProperties(JumpModalId, "Enter a page number")
+                .AddComponents(label);
+        }
+
+        await interaction.SendResponseAsync(InteractionCallback.Modal(builder)).ConfigureAwait(false);
     }
 
     /// <inheritdoc/>
@@ -358,7 +364,13 @@ public class ComponentPaginator : IComponentPaginator
         if (interaction.Data.CustomId != JumpModalId)
             return InteractiveInputStatus.Ignored;
 
-        string? rawInput = interaction.Data.Components.FirstOrDefault(x => x.Type == ComponentType.TextInput)?.Value;
+        string? rawInput = interaction.Data.Components
+            .OfType<Label>()
+            .Select(x => x.Component)
+            .OfType<TextInput>()
+            .FirstOrDefault()?
+            .Value;
+
         if (rawInput is null || !int.TryParse(rawInput, NumberStyles.Integer, CultureInfo.InvariantCulture, out int pageNumber) || !SetPage(Clamp(pageNumber - 1, 0, PageCount - 1)))
         {
             return await DeferInteractionAsync(interaction).ConfigureAwait(false);
@@ -369,7 +381,7 @@ public class ComponentPaginator : IComponentPaginator
     }
 
     /// <inheritdoc/>
-    public virtual async ValueTask ApplyActionOnStopAsync(Message message, MessageComponentInteraction? stopInteraction, bool deferInteraction)
+    public virtual async ValueTask ApplyActionOnStopAsync(RestMessage message, MessageComponentInteraction? stopInteraction, bool deferInteraction)
     {
         InteractiveGuards.NotNull(message);
 
@@ -392,13 +404,13 @@ public class ComponentPaginator : IComponentPaginator
 
         if (action.HasFlag(ActionOnStop.DeleteMessage))
         {
-            if (message.Flags?.HasFlag(MessageFlags.Ephemeral) != true)
+            if (!message.Flags.HasFlag(MessageFlags.Ephemeral))
             {
                 try
                 {
                     await message.DeleteAsync().ConfigureAwait(false);
                 }
-                catch (HttpException e) when (e.DiscordCode == DiscordErrorCode.UnknownMessage)
+                catch (RestException e) when (e.Error?.Code == 10008)
                 {
                     // Ignored, message was already deleted
                 }
@@ -406,20 +418,15 @@ public class ComponentPaginator : IComponentPaginator
             else if (stopInteraction is not null)
             {
                 await stopInteraction.SendResponseAsync(InteractionCallback.DeferredModifyMessage).ConfigureAwait(false);
-                await stopInteraction.DeleteOriginalResponseAsync().ConfigureAwait(false);
+                await stopInteraction.DeleteResponseAsync().ConfigureAwait(false);
             }
             else
             {
                 try
                 {
-                    await (message switch
-                    {
-                        RestInteractionMessage im => im.DeleteAsync().ConfigureAwait(false),
-                        RestFollowupMessage fm => fm.DeleteAsync().ConfigureAwait(false),
-                        _ => Task.CompletedTask.ConfigureAwait(false)
-                    });
+                    await message.DeleteAsync();
                 }
-                catch (HttpException e) when (e.DiscordCode == DiscordErrorCode.InvalidWebhookToken)
+                catch (RestException e) when (e.Error?.Code == 50027) // Invalid webhook token
                 {
                     // Ignored, token expired
                 }
@@ -448,7 +455,7 @@ public class ComponentPaginator : IComponentPaginator
                     await RenderPageAsync(message, page).ConfigureAwait(false);
                 }
             }
-            catch (HttpException e) when (e.DiscordCode == DiscordErrorCode.UnknownMessage)
+            catch (RestException e) when (e.Error?.Code == 10008)
             {
                 // Ignored, message was already deleted
             }
@@ -481,8 +488,18 @@ public class ComponentPaginator : IComponentPaginator
         var page = RestrictedPageFactory?.Invoke(this) ?? throw new InvalidOperationException($"Expected result of {nameof(RestrictedPageFactory)} to be non-null.");
         var attachments = page.AttachmentsFactory is null ? null : await page.AttachmentsFactory().ConfigureAwait(false);
 
-        await interaction.RespondWithFilesAsync(attachments ?? [], page.Text, page.Embeds, page.IsTTS,
-            ephemeral: true, page.AllowedMentions, flags: page.MessageFlags ?? MessageFlags.None).ConfigureAwait(false);
+        var message = new InteractionMessageProperties
+        {
+            Content = page.Text,
+            Tts = page.IsTTS,
+            Embeds = page.Embeds,
+            Components = page.Components,
+            AllowedMentions = page.AllowedMentions,
+            Attachments = attachments,
+            Flags = page.MessageFlags
+        };
+
+        await interaction.SendResponseAsync(InteractionCallback.Message(message)).ConfigureAwait(false);
 
         return InteractiveInputStatus.Success;
     }

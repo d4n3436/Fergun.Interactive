@@ -1,5 +1,4 @@
 ﻿using System;
-
 using JetBrains.Annotations;
 
 namespace Fergun.Interactive;
@@ -19,11 +18,6 @@ public class InteractiveConfig
         get;
         set => field = value > TimeSpan.Zero ? value : throw new ArgumentOutOfRangeException(nameof(value), "Value cannot be negative or zero.");
     } = TimeSpan.FromSeconds(30);
-
-    /// <summary>
-    /// Gets or sets the minimum log level severity that will be sent to the <see cref="InteractiveService.Log"/> event.
-    /// </summary>
-    public LogSeverity LogLevel { get; set; } = LogSeverity.Info;
 
     /// <summary>
     /// Gets or sets a value indicating whether the SendPaginatorAsync() methods should immediately return after sending the paginated message instead of waiting for a timeout or a cancellation. The library will still handle its inputs in the background.

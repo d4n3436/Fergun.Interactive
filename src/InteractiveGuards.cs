@@ -106,7 +106,7 @@ internal static class InteractiveGuards
         }
     }
 
-    public static void MessageFromCurrentUser(ShardedGatewayClient client, Message? message, [CallerArgumentExpression(nameof(message))] string? parameterName = null)
+    public static void MessageFromCurrentUser(ShardedGatewayClient client, RestMessage? message, [CallerArgumentExpression(nameof(message))] string? parameterName = null)
     {
         if (message is not null && message.Author.Id != client.Id)
         {

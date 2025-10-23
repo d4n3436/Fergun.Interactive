@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
-
 using JetBrains.Annotations;
 using NetCord;
 using NetCord.Rest;
@@ -96,7 +95,7 @@ public static class PaginatorExtensions
     /// <param name="user">The user.</param>
     /// <returns><see langword="true"/> if the user can interact with this paginator; otherwise, <see langword="false"/>.</returns>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="paginator"/> or <paramref name="user"/> are is <see langword="null"/>.</exception>
-    public static bool CanInteract(this IComponentPaginator paginator, NetCord.User user)
+    public static bool CanInteract(this IComponentPaginator paginator, User user)
     {
         InteractiveGuards.NotNull(paginator);
         InteractiveGuards.NotNull(user);

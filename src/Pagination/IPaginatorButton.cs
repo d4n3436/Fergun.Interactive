@@ -32,11 +32,6 @@ public interface IPaginatorButton
     PaginatorAction Action { get; }
 
     /// <summary>
-    /// Gets the url of the button.
-    /// </summary>
-    string? Url { get; }
-
-    /// <summary>
     /// Gets a value indicating whether to disable the button.
     /// </summary>
     /// <remarks>If the value is left as null, the library will use the result from <see cref="IButtonContext.ShouldDisable(PaginatorAction)"/>.</remarks>

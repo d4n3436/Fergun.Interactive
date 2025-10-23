@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-
 using JetBrains.Annotations;
 using NetCord;
 
@@ -38,7 +37,7 @@ public abstract class BaseSelectionBuilder<TSelection, TOption, TBuilder>
     public virtual IPageBuilder SelectionPage { get; set; } = null!;
 
     /// <inheritdoc/>
-    public virtual ICollection<NetCord.User> Users { get; set; } = [];
+    public virtual ICollection<User> Users { get; set; } = [];
 
     /// <summary>
     /// Gets or sets the options to select from.
@@ -78,7 +77,7 @@ public abstract class BaseSelectionBuilder<TSelection, TOption, TBuilder>
     /// Gets or sets the factory of the <see cref="IPage"/> that will be displayed ephemerally to a user when they are not allowed to interact with the <typeparamref name="TSelection"/>.
     /// </summary>
     /// <remarks>The first argument of the factory is a read-only collection of users who are allowed to interact with the paginator.</remarks>
-    public virtual Func<IReadOnlyCollection<NetCord.User>, IPage>? RestrictedPageFactory { get; set; }
+    public virtual Func<IReadOnlyCollection<User>, IPage>? RestrictedPageFactory { get; set; }
 
     /// <inheritdoc/>
     public virtual ActionOnStop ActionOnSuccess { get; set; }
@@ -176,7 +175,7 @@ public abstract class BaseSelectionBuilder<TSelection, TOption, TBuilder>
     /// </summary>
     /// <param name="users">The users.</param>
     /// <returns>This builder.</returns>
-    public virtual TBuilder WithUsers(params NetCord.User[] users)
+    public virtual TBuilder WithUsers(params User[] users)
     {
         InteractiveGuards.NotNull(users);
         Users = users.ToList();
@@ -188,7 +187,7 @@ public abstract class BaseSelectionBuilder<TSelection, TOption, TBuilder>
     /// </summary>
     /// <param name="users">The users.</param>
     /// <returns>This builder.</returns>
-    public virtual TBuilder WithUsers(IEnumerable<NetCord.User> users)
+    public virtual TBuilder WithUsers(IEnumerable<User> users)
     {
         InteractiveGuards.NotNull(users);
         Users = users.ToList();
@@ -200,7 +199,7 @@ public abstract class BaseSelectionBuilder<TSelection, TOption, TBuilder>
     /// </summary>
     /// <param name="user">The user.</param>
     /// <returns>This builder.</returns>
-    public virtual TBuilder AddUser(NetCord.User user)
+    public virtual TBuilder AddUser(User user)
     {
         InteractiveGuards.NotNull(user);
         Users.Add(user);
@@ -319,7 +318,7 @@ public abstract class BaseSelectionBuilder<TSelection, TOption, TBuilder>
     /// <remarks>The first argument of the factory is a read-only collection of users who are allowed to interact with the selection.</remarks>
     /// <param name="pageFactory">The restricted page factory. The first argument is a read-only collection of users who are allowed to interact with the selection.</param>
     /// <returns>This builder.</returns>
-    public virtual TBuilder WithRestrictedPageFactory(Func<IReadOnlyCollection<NetCord.User>, IPage> pageFactory)
+    public virtual TBuilder WithRestrictedPageFactory(Func<IReadOnlyCollection<User>, IPage> pageFactory)
     {
         InteractiveGuards.NotNull(pageFactory);
         RestrictedPageFactory = pageFactory;
@@ -345,7 +344,6 @@ public abstract class BaseSelectionBuilder<TSelection, TOption, TBuilder>
     /// <returns>This builder.</returns>
     public virtual TBuilder WithMinValues(int minValues)
     {
-        InteractiveGuards.ValueInRange(0, SelectMenuBuilder.MaxValuesCount, minValues);
         MinValues = minValues;
         return (TBuilder)this;
     }
@@ -358,7 +356,6 @@ public abstract class BaseSelectionBuilder<TSelection, TOption, TBuilder>
     /// <returns>This builder.</returns>
     public virtual TBuilder WithMaxValues(int maxValues)
     {
-        InteractiveGuards.ValueInRange(1, SelectMenuBuilder.MaxValuesCount, maxValues);
         MaxValues = maxValues;
         return (TBuilder)this;
     }
@@ -372,7 +369,6 @@ public abstract class BaseSelectionBuilder<TSelection, TOption, TBuilder>
     public virtual TBuilder WithPlaceholder(string placeholder)
     {
         InteractiveGuards.NotNull(placeholder);
-        InteractiveGuards.StringLengthInRange(1, SelectMenuBuilder.MaxPlaceholderLength, placeholder);
         Placeholder = placeholder;
         return (TBuilder)this;
     }

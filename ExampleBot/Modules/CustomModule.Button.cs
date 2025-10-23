@@ -1,17 +1,26 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
-
-
 using ExampleBot.Extensions;
 using Fergun.Interactive;
 using Fergun.Interactive.Selection;
+using NetCord;
+using NetCord.Rest;
+using NetCord.Services.ApplicationCommands;
 
 namespace ExampleBot.Modules;
 
-[Group("custom", "Module demonstrating the customizability paginators and selection.")]
-public partial class CustomModule : InteractionModuleBase
+public partial class CustomModule : ApplicationCommandModule<ApplicationCommandContext>
 {
-    [SlashCommand("button", "Sends a selection of buttons, where each option has its own button style/color.")]
+    private readonly InteractiveService _interactive;
+
+    public CustomModule(InteractiveService interactive)
+    {
+        _interactive = interactive;
+    }
+
+    [SlashCommand("custom-button", "Sends a selection of buttons, where each option has its own button style/color.")]
     public async Task CustomButtonSelectionAsync()
     {
         // To be able to create buttons with custom colors, we need to create a custom selection and a builder for that new selection.
@@ -54,9 +63,11 @@ public partial class CustomModule : InteractionModuleBase
     public class ButtonSelection<T>(ButtonSelectionBuilder<T> builder) : BaseSelection<ButtonOption<T>>(builder)
     {
         // This method needs to be overriden to build our own component the way we want.
-        public override ComponentBuilder GetOrAddComponents(bool disableAll, ComponentBuilder? builder = null)
+        public override List<IMessageComponentProperties> GetOrAddComponents(bool disableAll, List<IMessageComponentProperties>? builder = null)
         {
-            builder ??= new ComponentBuilder();
+            builder ??= [];
+
+            var buttons = new List<ButtonProperties>();
             foreach (var option in Options)
             {
                 var emote = EmoteConverter?.Invoke(option);
@@ -66,17 +77,13 @@ public partial class CustomModule : InteractionModuleBase
                     throw new InvalidOperationException($"Neither {nameof(EmoteConverter)} nor {nameof(StringConverter)} returned a valid emote or string.");
                 }
 
-                var button = new ButtonBuilder()
-                    .WithCustomId(emote?.ToString() ?? label)
-                    .WithStyle(option.Style) // Use the style of the option
-                    .WithEmote(emote)
+                var button = new ButtonProperties(emote?.GetValue() ?? label!, label!, emote!, option.Style)
                     .WithDisabled(disableAll);
 
-                if (label is not null)
-                    button.Label = label;
-
-                builder.WithButton(button);
+                buttons.Add(button);
             }
+
+            builder.AddRange(buttons.Chunk(5).Select(x => new ActionRowProperties(x)));
 
             return builder;
         }

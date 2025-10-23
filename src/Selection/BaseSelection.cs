@@ -5,8 +5,6 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-
-
 using Fergun.Interactive.Extensions;
 using JetBrains.Annotations;
 using NetCord;
@@ -53,7 +51,7 @@ public abstract class BaseSelection<TOption> : IInteractiveElement<TOption>
         MinValues = properties.MinValues;
         MaxValues = properties.MaxValues;
         Placeholder = properties.Placeholder;
-        Users = new ReadOnlyCollection<NetCord.User>(properties.Users.ToArray());
+        Users = new ReadOnlyCollection<User>(properties.Users.ToArray());
         CanceledPage = properties.CanceledPage?.Build();
         TimeoutPage = properties.TimeoutPage?.Build();
         RestrictedPage = properties.RestrictedPageFactory?.Invoke(Users);
@@ -129,7 +127,7 @@ public abstract class BaseSelection<TOption> : IInteractiveElement<TOption>
     public string? Placeholder { get; }
 
     /// <inheritdoc/>
-    public IReadOnlyCollection<NetCord.User> Users { get; }
+    public IReadOnlyCollection<User> Users { get; }
 
     /// <inheritdoc/>
     public IReadOnlyCollection<TOption> Options { get; }
@@ -181,7 +179,7 @@ public abstract class BaseSelection<TOption> : IInteractiveElement<TOption>
             throw new InvalidOperationException($"{nameof(InputType)} must have either {nameof(InputType.Buttons)} or {nameof(InputType.SelectMenus)}.");
         }
 
-        builder ??= new List<IMessageComponentProperties>();
+        builder ??= [];
         if (InputType.HasFlag(InputType.SelectMenus))
         {
             var options = new List<StringMenuSelectOptionProperties>();
@@ -195,7 +193,7 @@ public abstract class BaseSelection<TOption> : IInteractiveElement<TOption>
                     throw new InvalidOperationException($"Neither {nameof(EmoteConverter)} nor {nameof(StringConverter)} returned a valid emote or string.");
                 }
 
-                var option = new StringMenuSelectOptionProperties(label!, emote?.ToString() ?? label!)
+                var option = new StringMenuSelectOptionProperties(label!, emote?.GetValue() ?? label!)
                     .WithEmoji(emote);
 
                 options.Add(option);
@@ -216,6 +214,7 @@ public abstract class BaseSelection<TOption> : IInteractiveElement<TOption>
         if (!InputType.HasFlag(InputType.Buttons))
             return builder;
 
+        var buttons = new List<ButtonProperties>();
         foreach (var selection in Options)
         {
             var emote = EmoteConverter?.Invoke(selection);
@@ -225,14 +224,16 @@ public abstract class BaseSelection<TOption> : IInteractiveElement<TOption>
                 throw new InvalidOperationException($"Neither {nameof(EmoteConverter)} nor {nameof(StringConverter)} returned a valid emote or string.");
             }
 
-            var button = new ButtonProperties(emote?.ToString() ?? label!, emote!, ButtonStyle.Primary)
+            var button = new ButtonProperties(emote?.GetValue() ?? label!, emote!, ButtonStyle.Primary)
                 .WithDisabled(disableAll);
 
             if (label is not null)
                 button.Label = label;
 
-            builder.Add(new ActionRowProperties([button]));
+            buttons.Add(button);
         }
+
+        builder.AddRange(buttons.Chunk(5).Select(x => new ActionRowProperties(x)));
 
         return builder;
     }
@@ -346,9 +347,9 @@ public abstract class BaseSelection<TOption> : IInteractiveElement<TOption>
         List<TOption> options = [];
         foreach (string value in selectedValues)
         {
-            if (Options.Any(option => (EmoteConverter?.Invoke(option)?.ToString() ?? StringConverter?.Invoke(option)) == value))
+            if (Options.Any(option => (EmoteConverter?.Invoke(option)?.GetValue() ?? StringConverter?.Invoke(option)) == value))
             {
-                var option = Options.First(option => (EmoteConverter?.Invoke(option)?.ToString() ?? StringConverter?.Invoke(option)) == value);
+                var option = Options.First(option => (EmoteConverter?.Invoke(option)?.GetValue() ?? StringConverter?.Invoke(option)) == value);
                 options.Add(option);
             }
         }
@@ -386,7 +387,7 @@ public abstract class BaseSelection<TOption> : IInteractiveElement<TOption>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> to cancel this request.</param>
     /// <exception cref="InvalidOperationException">Thrown when <see cref="EmoteConverter"/> is <see langword="null"/>.</exception>
     /// <returns>A task representing the asynchronous operation.</returns>
-    internal virtual async Task InitializeMessageAsync(Message message, CancellationToken cancellationToken = default)
+    internal virtual async Task InitializeMessageAsync(RestMessage message, CancellationToken cancellationToken = default)
     {
         if (!InputType.HasFlag(InputType.Reactions)) return;
         if (EmoteConverter is null)
@@ -403,17 +404,11 @@ public abstract class BaseSelection<TOption> : IInteractiveElement<TOption>
 
             var emote = EmoteConverter(selection);
 
-            
-            // TODO: Fix?
-
-            await Task.CompletedTask;
             // Only add missing reactions
-            /*
-            if (!message.Reactions.Any(x => x.Emoji == emote))
+            if (!message.Reactions.Any(x => x.Emoji.Id == emote.Id && x.Emoji.Name == emote.Name))
             {
-                await message.AddReactionAsync(emote).ConfigureAwait(false);
+                await message.AddReactionAsync(emote.ToReactionEmojiProperties(), null, cancellationToken).ConfigureAwait(false);
             }
-            */
         }
     }
 
@@ -427,8 +422,19 @@ public abstract class BaseSelection<TOption> : IInteractiveElement<TOption>
     {
         var page = RestrictedPage ?? throw new InvalidOperationException($"Expected {nameof(RestrictedPage)} to be non-null.");
         var attachments = page.AttachmentsFactory is null ? null : await page.AttachmentsFactory().ConfigureAwait(false);
-        await input.RespondWithFilesAsync(attachments ?? [], page.Text, page.Embeds, page.IsTTS,
-            ephemeral: true, page.AllowedMentions, flags: page.MessageFlags ?? MessageFlags.None).ConfigureAwait(false);
+
+        var message = new InteractionMessageProperties
+        {
+            Content = page.Text,
+            Tts = page.IsTTS,
+            Embeds = page.Embeds,
+            Components = GetOrAddComponents(false),
+            AllowedMentions = page.AllowedMentions,
+            Attachments = attachments,
+            Flags = page.MessageFlags
+        };
+
+        await input.SendResponseAsync(InteractionCallback.Message(message)).ConfigureAwait(false);
 
         return InteractiveInputStatus.Ignored;
     }

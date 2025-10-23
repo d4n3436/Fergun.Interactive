@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-
 using Fergun.Interactive.Pagination;
 using JetBrains.Annotations;
 using NetCord;
@@ -382,7 +381,7 @@ public class PageBuilder : IPageBuilder<Page>, IPageBuilder
     public PageBuilder WithAuthor(User user)
     {
         InteractiveGuards.NotNull(user);
-        return WithAuthor(user.ToString()!, (user.GetAvatarUrl() ?? user.DefaultAvatarUrl).ToString());
+        return WithAuthor(user.Username, (user.GetAvatarUrl() ?? user.DefaultAvatarUrl).ToString());
     }
 
     /// <summary>
@@ -616,7 +615,7 @@ public class PageBuilder : IPageBuilder<Page>, IPageBuilder
     /// <inheritdoc/>
     IPage IPageBuilder<IPage>.Build() => Build();
 
-    internal PageBuilder WithPaginatorFooter(PaginatorFooter footer, int currentPageIndex, int maxPageIndex, ICollection<NetCord.User>? users)
+    internal PageBuilder WithPaginatorFooter(PaginatorFooter footer, int currentPageIndex, int maxPageIndex, ICollection<User>? users)
     {
         if (footer == PaginatorFooter.None)
             return this;
@@ -633,12 +632,12 @@ public class PageBuilder : IPageBuilder<Page>, IPageBuilder
             {
                 var user = users.Single();
 
-                Footer.Text += $"Interactor: {user}";
+                Footer.Text += $"Interactor: {user.Username}";
                 Footer.IconUrl =  ((user as GuildUser)?.GetGuildAvatarUrl() ?? user.GetAvatarUrl() ?? user.DefaultAvatarUrl).ToString();
             }
             else
             {
-                Footer.Text += $"Interactors: {string.Join(", ", users)}";
+                Footer.Text += $"Interactors: {string.Join(", ", users.Select(x => x.Username))}";
             }
 
             Footer.Text += '\n';

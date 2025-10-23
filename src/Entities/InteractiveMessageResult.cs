@@ -1,8 +1,7 @@
-
-
 using JetBrains.Annotations;
 using NetCord;
 using NetCord.Gateway;
+using NetCord.Rest;
 
 namespace Fergun.Interactive;
 
@@ -24,10 +23,10 @@ public class InteractiveMessageResult<T> : InteractiveResult<T>, IInteractiveMes
     }
 
     /// <inheritdoc/>
-    public Message Message { get; }
+    public RestMessage Message { get; }
 
     /// <inheritdoc/>
-    public NetCord.User? User { get; }
+    public User? User { get; }
 
     /// <inheritdoc/>
     public Message? StopMessage { get; }
@@ -56,10 +55,10 @@ public class InteractiveMessageResult : InteractiveResult, IInteractiveMessageRe
     }
 
     /// <inheritdoc/>
-    public Message Message { get; }
+    public RestMessage Message { get; }
 
     /// <inheritdoc/>
-    public NetCord.User? User { get; }
+    public User? User { get; }
 
     /// <inheritdoc/>
     public Message? StopMessage { get; }

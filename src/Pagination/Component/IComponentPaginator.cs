@@ -1,10 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-
 using JetBrains.Annotations;
 using NetCord;
-using NetCord.Gateway;
 using NetCord.Rest;
 
 namespace Fergun.Interactive.Pagination;
@@ -45,7 +43,7 @@ public interface IComponentPaginator
     /// <summary>
     /// Gets a read-only collection of users who can interact with this paginator.
     /// </summary>
-    IReadOnlyCollection<NetCord.User> Users { get; }
+    IReadOnlyCollection<User> Users { get; }
 
     /// <summary>
     /// Gets the action that will be done after a cancellation.
@@ -131,7 +129,7 @@ public interface IComponentPaginator
     /// The response type to use. This is used to determine how the interaction should be responded. Here's a list explaining the available response types:
     /// <list type="bullet">
     ///     <item>
-    ///         <term><see cref="Message"/></term>
+    ///         <term><see cref="InteractionCallbackType.Message"/></term>
     ///         <description>Sends a new message using <c>Interaction.RespondWithFilesAsync</c> (requires a non-deferred interaction).</description>
     ///     </item>
     ///     <item>
@@ -150,19 +148,19 @@ public interface IComponentPaginator
     /// </param>
     /// <param name="isEphemeral">Whether the response message should be ephemeral. Ignored if responding to a non-ephemeral interaction.</param>
     /// <param name="page">A specific page to render.</param>
-    /// <returns>A <see cref="Task{TResult}"/> representing the operation. The result contains an <see cref="Message"/> object with the current page.</returns>
+    /// <returns>A <see cref="Task{TResult}"/> representing the operation. The result contains an <see cref="RestMessage"/> object with the current page.</returns>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="interaction"/> is <see langword="null"/>.</exception>
     /// <exception cref="ArgumentException">Thrown when the value of <paramref name="responseType"/> is not supported.</exception>
-    Task<Message> RenderPageAsync(Interaction interaction, InteractionCallbackType responseType, bool isEphemeral, IPage? page = null);
+    Task<RestMessage> RenderPageAsync(Interaction interaction, InteractionCallbackType responseType, bool isEphemeral, IPage? page = null);
 
     /// <summary>
     /// Renders the specified <paramref name="page"/> or the current page of the paginator by sending a new message.
     /// </summary>
     /// <param name="channel">The channel where the new message will be sent.</param>
     /// <param name="page">A specific page to render.</param>
-    /// <returns>A <see cref="Task{TResult}"/> representing the operation. The result contains an <see cref="Message"/> object with the current page.</returns>
+    /// <returns>A <see cref="Task{TResult}"/> representing the operation. The result contains an <see cref="RestMessage"/> object with the current page.</returns>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="channel"/> is <see langword="null"/>.</exception>
-    Task<Message> RenderPageAsync(TextChannel channel, IPage? page = null);
+    Task<RestMessage> RenderPageAsync(TextChannel channel, IPage? page = null);
 
     /// <summary>
     /// Renders the specified <paramref name="page"/> or the current page of the paginator by modifying an existing message.
@@ -171,7 +169,7 @@ public interface IComponentPaginator
     /// <param name="page">A specific page to render.</param>
     /// <returns>A <see cref="Task"/> representing the operation.</returns>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="message"/> is <see langword="null"/>.</exception>
-    Task RenderPageAsync(Message message, IPage? page = null);
+    Task RenderPageAsync(RestMessage message, IPage? page = null);
 
     /// <summary>
     /// Responds to the interaction with a modal that allows the user to jump to a specific page of the paginator.
@@ -198,5 +196,5 @@ public interface IComponentPaginator
     /// <param name="deferInteraction">Whether to defer the interaction if the message isn't getting modified.</param>
     /// <returns>A <see cref="ValueTask"/> representing the operation.</returns>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="message"/> is <see langword="null"/>.</exception>
-    ValueTask ApplyActionOnStopAsync(Message message, MessageComponentInteraction? stopInteraction, bool deferInteraction);
+    ValueTask ApplyActionOnStopAsync(RestMessage message, MessageComponentInteraction? stopInteraction, bool deferInteraction);
 }

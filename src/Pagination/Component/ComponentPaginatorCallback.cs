@@ -2,7 +2,7 @@ using System;
 using System.Threading.Tasks;
 using NetCord;
 using NetCord.Gateway;
-
+using NetCord.Rest;
 
 namespace Fergun.Interactive.Pagination;
 
@@ -13,7 +13,7 @@ internal sealed class ComponentPaginatorCallback : IInteractiveCallback
 {
     private bool _disposed;
 
-    public ComponentPaginatorCallback(IComponentPaginator paginator, Message message,
+    public ComponentPaginatorCallback(IComponentPaginator paginator, RestMessage message,
         TimeoutTaskCompletionSource<InteractiveStatus> timeoutTaskSource, DateTimeOffset startTime)
     {
         Paginator = paginator;
@@ -30,7 +30,7 @@ internal sealed class ComponentPaginatorCallback : IInteractiveCallback
     /// <summary>
     /// Gets the message that contains the paginator.
     /// </summary>
-    public Message Message { get; }
+    public RestMessage Message { get; }
 
     /// <summary>
     /// Gets the <see cref="TimeoutTaskCompletionSource{TResult}"/> used to set the result of the paginator.
@@ -77,7 +77,7 @@ internal sealed class ComponentPaginatorCallback : IInteractiveCallback
                 break;
 
             case InteractiveInputStatus.Canceled:
-                StopInteraction = component as MessageComponentInteraction;
+                StopInteraction = component;
                 Cancel();
                 break;
         }

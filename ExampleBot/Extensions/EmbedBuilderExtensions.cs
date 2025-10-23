@@ -1,5 +1,4 @@
 ﻿
-
 using NetCord.Rest;
 
 namespace ExampleBot.Extensions;

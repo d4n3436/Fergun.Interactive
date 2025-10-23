@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-
+using Fergun.Interactive.Extensions;
 using JetBrains.Annotations;
 using NetCord;
 using NetCord.Rest;
@@ -111,7 +111,7 @@ public static class PaginatorBuilderExtensions
     /// <param name="users">The users.</param>
     /// <returns>This builder.</returns>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="builder"/> or <paramref name="users"/> are <see langword="null"/>.</exception>
-    public static TBuilder WithUsers<TBuilder>(this TBuilder builder, params NetCord.User[] users)
+    public static TBuilder WithUsers<TBuilder>(this TBuilder builder, params User[] users)
         where TBuilder : class, IComponentPaginatorBuilder
     {
         InteractiveGuards.NotNull(builder);
@@ -129,7 +129,7 @@ public static class PaginatorBuilderExtensions
     /// <param name="users">The users.</param>
     /// <returns>This builder.</returns>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="builder"/> or <paramref name="users"/> are <see langword="null"/>.</exception>
-    public static TBuilder WithUsers<TBuilder>(this TBuilder builder, IEnumerable<NetCord.User> users)
+    public static TBuilder WithUsers<TBuilder>(this TBuilder builder, IEnumerable<User> users)
         where TBuilder : class, IComponentPaginatorBuilder
     {
         InteractiveGuards.NotNull(builder);
@@ -147,7 +147,7 @@ public static class PaginatorBuilderExtensions
     /// <param name="user">The user.</param>
     /// <returns>This builder.</returns>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="builder"/> or <paramref name="user"/> are <see langword="null"/>.</exception>
-    public static TBuilder AddUser<TBuilder>(this TBuilder builder, NetCord.User user)
+    public static TBuilder AddUser<TBuilder>(this TBuilder builder, User user)
         where TBuilder : class, IComponentPaginatorBuilder
     {
         InteractiveGuards.NotNull(builder);

@@ -4,7 +4,6 @@ using NetCord;
 using NetCord.Gateway;
 using NetCord.Rest;
 
-
 namespace Fergun.Interactive.Pagination;
 
 /// <summary>

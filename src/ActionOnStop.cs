@@ -1,6 +1,6 @@
 using System;
-
 using JetBrains.Annotations;
+using NetCord;
 
 namespace Fergun.Interactive;
 
@@ -28,7 +28,7 @@ public enum ActionOnStop
     /// </summary>
     /// <remarks>
     /// This action is mutually exclusive with <see cref="DisableInput"/> and it's not supported on component paginators.<br/>
-    /// If reactions are used as input, this requires the <see cref="ChannelPermission.ManageMessages"/> permission.
+    /// If reactions are used as input, this requires the <see cref="Permissions.ManageMessages"/> permission.
     /// </remarks>
     DeleteInput = 1 << 1,
 

@@ -1,6 +1,5 @@
 using System;
 using System.Threading.Tasks;
-
 using Fergun.Interactive.Pagination;
 using Fergun.Interactive.Selection;
 using JetBrains.Annotations;

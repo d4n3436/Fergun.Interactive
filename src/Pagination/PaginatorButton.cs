@@ -1,5 +1,4 @@
 using System;
-
 using JetBrains.Annotations;
 using NetCord;
 
@@ -9,22 +8,6 @@ namespace Fergun.Interactive.Pagination;
 [PublicAPI]
 public class PaginatorButton : IPaginatorButton
 {
-    /// <summary>
-    /// Initializes a new instance of the <see cref="PaginatorButton"/> class.
-    /// </summary>
-    /// <param name="url">The url.</param>
-    /// <param name="emote">The emote.</param>
-    /// <param name="text">The button text.</param>
-    /// <param name="isDisabled">A value indicating whether to disable the button.</param>
-    public PaginatorButton(string url, EmojiProperties? emote, string? text, bool? isDisabled = null)
-        : this((PaginatorAction)(-1), emote, text, ButtonStyle.Link, isDisabled)
-    {
-        if (string.IsNullOrEmpty(url))
-            throw new ArgumentException("Url cannot be null or empty.", nameof(url));
-
-        Url = url;
-    }
-
     /// <summary>
     /// Initializes a new instance of the <see cref="PaginatorButton"/> class.
     /// </summary>
@@ -108,9 +91,6 @@ public class PaginatorButton : IPaginatorButton
 
     /// <inheritdoc/>
     public PaginatorAction Action { get; }
-
-    /// <inheritdoc/>
-    public string? Url { get; }
 
     /// <inheritdoc/>
     public bool? IsDisabled { get; }

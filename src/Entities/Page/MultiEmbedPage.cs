@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-
 using JetBrains.Annotations;
 using NetCord;
 using NetCord.Rest;
@@ -81,7 +80,4 @@ public class MultiEmbedPage : IPage
         .WithAttachmentsFactory(AttachmentsFactory)
         .WithComponents(Components)
         .WithMessageFlags(MessageFlags);
-
-    /// <inheritdoc />
-    Embed[] IPage.Embeds => _embedArray;
 }

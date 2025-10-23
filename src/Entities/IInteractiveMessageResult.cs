@@ -2,6 +2,7 @@ using System.Threading;
 using JetBrains.Annotations;
 using NetCord;
 using NetCord.Gateway;
+using NetCord.Rest;
 
 namespace Fergun.Interactive;
 
@@ -14,7 +15,7 @@ public interface IInteractiveMessageResult : IInteractiveResult<InteractiveStatu
     /// <summary>
     /// Gets the message this interactive result comes from.
     /// </summary>
-    Message Message { get; }
+    RestMessage Message { get; }
 
     /// <summary>
     /// Gets the user that caused the interactive action to end, if the result was successful.

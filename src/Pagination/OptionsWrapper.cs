@@ -3,7 +3,6 @@ using System.Collections;
 using System.Collections.Generic;
 using NetCord;
 
-
 namespace Fergun.Interactive.Pagination;
 
 /// <summary>

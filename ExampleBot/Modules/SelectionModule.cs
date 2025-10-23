@@ -2,19 +2,19 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-
-
 using ExampleBot.Extensions;
 using Fergun.Interactive;
 using Fergun.Interactive.Extensions;
 using Fergun.Interactive.Selection;
 using JetBrains.Annotations;
+using NetCord;
+using NetCord.Rest;
+using NetCord.Services.ApplicationCommands;
 
 namespace ExampleBot.Modules;
 
 [UsedImplicitly(ImplicitUseTargetFlags.WithMembers)]
-[Group("selection", "Selection commands.")]
-public class SelectionModule : InteractionModuleBase
+public class SelectionModule : ApplicationCommandModule<ApplicationCommandContext>
 {
     private readonly InteractiveService _interactive;
 
@@ -23,7 +23,7 @@ public class SelectionModule : InteractionModuleBase
         _interactive = interactive;
     }
 
-    [SlashCommand("simple", "Sends a message that contains selection of options which the user can select one.")]
+    [SlashCommand("select-simple", "Sends a message that contains selection of options which the user can select one.")]
     public async Task SelectAsync()
     {
         string[] options = ["C", "C++", "C#", "Java", "Python", "JavaScript", "PHP"];
@@ -55,19 +55,19 @@ public class SelectionModule : InteractionModuleBase
             .WithDescription(isSuccess ? $"You selected: {selected}" : "Timeout!")
             .WithRandomColor();
 
-        await ReplyAsync(embed: builder.Build());
+        await Context.Channel.SendMessageAsync(new MessageProperties().WithEmbeds([builder]));
     }
 
     // This variant of SelectionBuilder just exists for convenience,
     // but makes creating selections using reactions or buttons much easier.
-    [SlashCommand("emote", "Sends an emote selection. An emote selection is built using an EmoteSelectionBuilder.")]
+    [SlashCommand("select-emote", "Sends an emote selection. An emote selection is built using an EmoteSelectionBuilder.")]
     public async Task EmoteAsync()
     {
         var emotes = new[]
         {
-            EmojiPropertiesProperties.Standard("📱"),
-            EmojiPropertiesProperties.Standard("🖥"),
-            EmojiPropertiesProperties.Standard("💻")
+            EmojiProperties.Standard("📱"),
+            EmojiProperties.Standard("🖥"),
+            EmojiProperties.Standard("💻")
         };
 
         var pageBuilder = new PageBuilder()
@@ -88,22 +88,22 @@ public class SelectionModule : InteractionModuleBase
         var result = await _interactive.SendSelectionAsync(selection, Context.Interaction, TimeSpan.FromMinutes(1));
 
         var builder = new EmbedProperties()
-            .WithDescription(result.IsSuccess ? $"You selected: {result.Value}" : "Timeout!")
+            .WithDescription(result.IsSuccess ? $"You selected: {result.Value.GetValue()}" : "Timeout!")
             .WithRandomColor();
 
-        await ReplyAsync(embed: builder.Build());
+        await Context.Channel.SendMessageAsync(new MessageProperties().WithEmbeds([builder]));
     }
 
-    [SlashCommand("emote2", "Sends an emote selection, where each emote represents a specific value.")]
+    [SlashCommand("select-emote2", "Sends an emote selection, where each emote represents a specific value.")]
     public async Task Emote2Async()
     {
         var emotes = new Dictionary<EmojiProperties, string>
         {
-            [EmojiPropertiesProperties.Standard("\u0031\u20E3")] = "one",
-            [EmojiPropertiesProperties.Standard("\u0032\u20E3")] = "two",
-            [EmojiPropertiesProperties.Standard("\u0033\u20E3")] = "three",
-            [EmojiPropertiesProperties.Standard("\u0034\u20E3")] = "four",
-            [EmojiPropertiesProperties.Standard("\u0035\u20E3")] = "five"
+            [EmojiProperties.Standard("\u0031\u20E3")] = "one",
+            [EmojiProperties.Standard("\u0032\u20E3")] = "two",
+            [EmojiProperties.Standard("\u0033\u20E3")] = "three",
+            [EmojiProperties.Standard("\u0034\u20E3")] = "four",
+            [EmojiProperties.Standard("\u0035\u20E3")] = "five"
         };
 
         var pageBuilder = new PageBuilder()
@@ -123,22 +123,22 @@ public class SelectionModule : InteractionModuleBase
         string selected = result.Value.Value; // Selected option
 
         var builder = new EmbedProperties()
-            .WithDescription(result.IsSuccess ? $"You selected: {emote} ({selected})" : "Timeout!")
+            .WithDescription(result.IsSuccess ? $"You selected: {emote.GetValue()} ({selected})" : "Timeout!")
             .WithRandomColor();
 
-        await ReplyAsync(embed: builder.Build());
+        await Context.Channel.SendMessageAsync(new MessageProperties().WithEmbeds([builder]));
     }
 
-    [SlashCommand("multi", "Sends a selection that uses a select menu and allows selecting multiple options.")]
+    [SlashCommand("select-multi", "Sends a selection that uses a select menu and allows selecting multiple options.")]
     public async Task MultiAsync()
     {
         var colors = new Item[]
         {
-            new("Red", EmojiPropertiesProperties.Standard("\ud83d\udd34")),
-            new("Green", EmojiPropertiesProperties.Standard("\ud83d\udfe2")),
-            new("Blue", EmojiPropertiesProperties.Standard("\ud83d\udd35")),
-            new("Yellow", EmojiPropertiesProperties.Standard("\ud83d\udfe1")),
-            new("Purple", EmojiPropertiesProperties.Standard("\ud83d\udfe3"))
+            new("Red", EmojiProperties.Standard("\ud83d\udd34")),
+            new("Green", EmojiProperties.Standard("\ud83d\udfe2")),
+            new("Blue", EmojiProperties.Standard("\ud83d\udd35")),
+            new("Yellow", EmojiProperties.Standard("\ud83d\udfe1")),
+            new("Purple", EmojiProperties.Standard("\ud83d\udfe3"))
         };
 
         var color = Utils.GetRandomColor();
@@ -166,28 +166,27 @@ public class SelectionModule : InteractionModuleBase
             var selected = result.Values;
 
             var embed = new EmbedProperties()
-                .WithDescription($"You selected the color(s): {string.Join(", ", selected.Select(x => $"{x.Emote} {x.Name}"))}")
-                .WithColor(color)
-                .Build();
+                .WithDescription($"You selected the color(s): {string.Join(", ", selected.Select(x => $"{x.Emote.GetValue()} {x.Name}"))}")
+                .WithColor(color);
 
-            await result.StopInteraction!.ModifyOriginalResponseAsync(x => x.Embed = embed);
+            await result.StopInteraction!.ModifyResponseAsync(x => x.Embeds = [embed]);
         }
     }
 
     // Sends a selection that can be canceled, disables/deletes its input (reactions/buttons) after selecting an option,
     // modifies itself to a specific page after ending, and deletes itself after cancelling it.
-    [SlashCommand("extra", "Sends a selection that displays the customization options.")]
+    [SlashCommand("select-extra", "Sends a selection that displays the customization options.")]
     public async Task ExtraAsync()
     {
         var items = new Item[]
         {
-            new("Fruit", EmojiPropertiesProperties.Standard("🍎")),
-            new("Vegetable", EmojiPropertiesProperties.Standard("🥦")),
-            new("Fast food", EmojiPropertiesProperties.Standard("🍔")),
-            new("Dessert", EmojiPropertiesProperties.Standard("🍰")),
-            new("Dairy", EmojiPropertiesProperties.Standard("🧀")),
+            new("Fruit", EmojiProperties.Standard("🍎")),
+            new("Vegetable", EmojiProperties.Standard("🥦")),
+            new("Fast food", EmojiProperties.Standard("🍔")),
+            new("Dessert", EmojiProperties.Standard("🍰")),
+            new("Dairy", EmojiProperties.Standard("🧀")),
             // Important: When using an option for cancellation (with WithAllowCancel(), shown below), the last option will be used to cancel the selection.
-            new("Cancel", EmojiPropertiesProperties.Standard("❌"))
+            new("Cancel", EmojiProperties.Standard("❌"))
         };
 
         var color = Utils.GetRandomColor();
@@ -224,7 +223,7 @@ public class SelectionModule : InteractionModuleBase
         await _interactive.SendSelectionAsync(selection, Context.Interaction, TimeSpan.FromMinutes(1));
     }
 
-    [SlashCommand("menu", "Sends a menu of options that reuses a selection message.")]
+    [SlashCommand("select-menu", "Sends a menu of options that reuses a selection message.")]
     public async Task MenuAsync()
     {
         string[] options =
@@ -245,10 +244,10 @@ public class SelectionModule : InteractionModuleBase
 
         // Dynamically create the number emotes
         var emotes = Enumerable.Range(1, options.Length)
-            .ToDictionary(x => EmojiPropertiesProperties.Standard($"{x}\ufe0f\u20e3"), y => y);
+            .ToDictionary(x => EmojiProperties.Standard($"{x}\ufe0f\u20e3"), y => y);
 
         // Add the cancel emote at the end of the dictionary
-        emotes.Add(EmojiPropertiesProperties.Standard("❌"), -1);
+        emotes.Add(EmojiProperties.Standard("❌"), -1);
 
         var selection = new MenuSelectionBuilder<KeyValuePair<EmojiProperties, int>>()
             .AddUser(Context.User)
@@ -270,7 +269,7 @@ public class SelectionModule : InteractionModuleBase
                 .WithDescription("Use the reactions/buttons to enable or disable an option.")
                 .AddField("Option", string.Join('\n', options.Select((x, i) => $"**{i + 1}**. {x}")), inline: true)
                 .AddField("Value", string.Join('\n', values), inline: true)
-                .WithColor(Color.Blue);
+                .WithColor(new Color(0x00FF));
 
         Page HandleResult(KeyValuePair<EmojiProperties, int> input)
         {

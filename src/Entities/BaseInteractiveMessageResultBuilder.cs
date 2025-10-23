@@ -1,7 +1,5 @@
 using System;
 using System.Collections.Generic;
-
-
 using NetCord;
 using NetCord.Gateway;
 using NetCord.Rest;
@@ -18,7 +16,7 @@ internal abstract class BaseInteractiveMessageResultBuilder<TSelf, TResult>
 
     public RestMessage Message { get; set; } = null!;
 
-    public NetCord.User? User { get; set; }
+    public User? User { get; set; }
 
     public Message? StopMessage { get; set; }
 
