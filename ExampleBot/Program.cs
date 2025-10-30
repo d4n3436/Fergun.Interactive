@@ -20,7 +20,6 @@ builder.Services.AddApplicationCommands();
 builder.Services.AddComponentInteractions<StringMenuInteraction, StringMenuInteractionContext>(options => options.ResultHandler = new EmptyResultHandler<StringMenuInteractionContext>());
 builder.Services.AddInteractiveService();
 
-builder.Services.AddSingleton<InteractiveService>();
 builder.Services.AddSingleton<GoogleScraper>();
 builder.Services.AddSingleton<DuckDuckGoScraper>();
 
