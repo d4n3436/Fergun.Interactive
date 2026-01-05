@@ -6,7 +6,6 @@ using Discord.Interactions;
 using Discord.WebSocket;
 using ExampleBot.Services;
 using Fergun.Interactive;
-using GScraper.DuckDuckGo;
 using GScraper.Google;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -64,6 +63,5 @@ internal static class Program
             .AddSingleton<InteractionHandlingService>()
             .AddSingleton<InteractiveService>()
             .AddSingleton<GoogleScraper>()
-            .AddSingleton<DuckDuckGoScraper>()
             .BuildServiceProvider();
 }

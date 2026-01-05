@@ -8,8 +8,6 @@ using ExampleBot.Extensions;
 using Fergun.Interactive;
 using Fergun.Interactive.Extensions;
 using Fergun.Interactive.Pagination;
-using GScraper;
-using GScraper.DuckDuckGo;
 using GScraper.Google;
 using JetBrains.Annotations;
 
@@ -23,13 +21,11 @@ public class PaginatorModule : InteractionModuleBase
 
     private readonly InteractiveService _interactive;
     private readonly GoogleScraper _googleScraper;
-    private readonly DuckDuckGoScraper _duckDuckGoScraper;
 
-    public PaginatorModule(InteractiveService interactive, GoogleScraper googleScraper, DuckDuckGoScraper duckDuckGoScraper)
+    public PaginatorModule(InteractiveService interactive, GoogleScraper googleScraper)
     {
         _interactive = interactive;
         _googleScraper = googleScraper;
-        _duckDuckGoScraper = duckDuckGoScraper;
     }
 
     [SlashCommand("static", "Sends a message with a static paginator. The paginator has pages that can be changed using buttons.")]
@@ -126,132 +122,123 @@ public class PaginatorModule : InteractionModuleBase
                 .WithRandomColor();
     }
 
-    [SlashCommand("component", "Sends a component paginator (new paginator type) containing images from Google & DuckDuckGo.")]
-    public async Task ComponentAsync([Summary(description: "The search query.")] string query = "discord")
+    [SlashCommand("wikipedia", "Sends a component paginator (new paginator type) that allows switching over a set of pages.")]
+    public async Task WikipediaAsync()
     {
-        await DeferAsync();
-
-        var googleTask = _googleScraper.GetImagesAsync(query);
-        var ddgTask = _duckDuckGoScraper.GetImagesAsync(query);
-
-        try
+        string[] description =
+        [
+            "In computing, just-in-time (JIT) compilation (also dynamic translation or run-time compilations) is compilation (of computer code) during execution of a program (at run time) rather than before execution.",
+            "This may consist of source code translation but is more commonly bytecode translation to machine code, which is then executed directly."
+        ];
+    
+        string[] history =
+        [
+            "The earliest published JIT compiler is generally attributed to work on LISP by John McCarthy in 1960.",
+            "Smalltalk (c. 1983) pioneered new aspects of JIT compilations. For example, translation to machine code was done on demand, and the result was cached for later use.",
+            "Sun's Self language improved these techniques extensively and was at one point the fastest Smalltalk system in the world, achieving up to half the speed of optimized C but with a fully object-oriented language.",
+            """
+            Self was abandoned by Sun, but the research went into the Java language. The term "Just-in-time compilation" was borrowed from the manufacturing term "Just in time" and popularized by Java, with James Gosling using the term from 1993.
+            Currently JITing is used by most implementations of the Java Virtual Machine, as HotSpot builds on, and extensively uses, this research base.
+            """
+        ];
+    
+        string[] design =
+        [
+            """
+            In a bytecode-compiled system, source code is translated to an intermediate representation known as bytecode. Bytecode is not the machine code for any particular computer, and may be portable among computer architectures.
+            The bytecode may then be interpreted by, or run on a virtual machine. The JIT compiler reads the bytecodes in many sections (or in full, rarely) and compiles them dynamically into machine code so the program can run faster.
+            """,
+            """
+            By contrast, a traditional interpreted virtual machine will simply interpret the bytecode, generally with much lower performance. Some interpreters even interpret source code, without the step of first compiling to bytecode, with even worse performance.
+            Statically-compiled code or native code is compiled prior to deployment. A dynamic compilation environment is one in which the compiler can be used during execution.
+            """
+        ];
+    
+        var sections = new Dictionary<string, string[]>
         {
-            await Task.WhenAll(googleTask, ddgTask);
-        }
-        catch (Exception ex)
-        {
-            await FollowupAsync(ex.Message);
-            return;
-        }
-
-        var googleImages = (await googleTask).ToList();
-        var ddgImages = (await ddgTask).ToList();
-
-        if (googleImages.Count == 0 || ddgImages.Count == 0)
-        {
-            await FollowupAsync("No images found.");
-            return;
-        }
-
-        var info = new PaginatorInfo
-        {
-            SelectedOption = "Google",
-            Options =
-            {
-                ["Google"] = new PaginatorOption(googleImages),
-                ["DuckDuckGo"] = new PaginatorOption(ddgImages)
-            }
+            ["Description"] = description,
+            ["History"] = history,
+            ["Design"] = design
         };
-
+    
+        var state = new WikipediaState(sections, sections.Keys.First());
+    
         // ComponentPaginator is a new type of paginator written from scratch with customization and flexibility in mind
         // Now the components are decoupled from the paginator, and the paginator loosely owns the navigation buttons
 
         var paginator = new ComponentPaginatorBuilder()
             .AddUser(Context.User)
+            .WithPageCount(state.Sections[state.CurrentSectionName].Length) // Component paginators have a page count instead of a max. page index
+            .WithUserState(state) // Now it's possible to store arbitrary state in the paginator. This is useful for storing data that needs to be retrieved elsewhere
             .WithPageFactory(GeneratePage)
-            .WithUserState(info) // Now it's possible to store arbitrary state in the paginator. This is useful for storing data that needs to be retrieved elsewhere
             .WithActionOnCancellation(ActionOnStop.DeleteMessage)
             .WithActionOnTimeout(ActionOnStop.DisableInput)
-            .WithPageCount(info.Options[info.SelectedOption].Images.Count) // Component paginators have a page count instead of a max. page index
             .Build();
-
-        await _interactive.SendPaginatorAsync(paginator, Context.Interaction, TimeSpan.FromMinutes(20), InteractionResponseType.DeferredChannelMessageWithSource);
-        return;
-
+    
+        await _interactive.SendPaginatorAsync(paginator, Context.Interaction, TimeSpan.FromMinutes(10));
+    
         IPage GeneratePage(IComponentPaginator p)
         {
-            var selected = info.Options[info.SelectedOption];
-            var imageResult = selected.Images[p.CurrentPageIndex];
-
             // Create the select menu options from the dictionary keys
-            var options = info.Options.Keys
-                .Select(x => new SelectMenuOptionBuilder(x, x, isDefault: x == info.SelectedOption))
+            var options = state.Sections.Keys
+                .Select(x => new SelectMenuOptionBuilder(x, x, isDefault: x == state.CurrentSectionName))
                 .ToList();
-
+    
+            var section = state.Sections[state.CurrentSectionName];
+        
             var components = new ComponentBuilderV2()
                 .WithContainer(new ContainerBuilder()
-                    .WithTextDisplay($"### {imageResult.Title}\n{info.SelectedOption} Images")
-                    .WithMediaGallery(new MediaGalleryBuilder()
-                        .WithItems([new MediaGalleryItemProperties(imageResult.Url)]))
-                    .WithTextDisplay($"Page {p.CurrentPageIndex + 1} of {p.PageCount}")
-                    .WithSeparator()
-                    .WithActionRow(new ActionRowBuilder() // The navigation buttons need to added manually; extension methods were added to make this easier
-                        .AddPreviousButton(p, style: ButtonStyle.Secondary)
-                        .AddNextButton(p, style: ButtonStyle.Secondary)
-                        .AddJumpButton(p, style: ButtonStyle.Secondary)
-                        .AddStopButton(p))
+                    .WithTextDisplay($"## Just-in-time compilation\n{section[p.CurrentPageIndex]}")
+                    .WithActionRow(new ActionRowBuilder() // Interactions targeting this select menu will be handled on SelectSectionAsync
+                        .WithSelectMenu("paginator-select-section", options, disabled: p.ShouldDisable()))
                     .WithActionRow(new ActionRowBuilder()
-                        .WithSelectMenu(SelectOptionId, options, disabled: p.ShouldDisable())) // Interactions targeting this select menu will be handled on SelectOptionAsync
+                        .AddPreviousButton(p, style: ButtonStyle.Secondary)  // The navigation buttons need to added manually; extension methods were added to make this easier
+                        .AddNextButton(p, style: ButtonStyle.Secondary)
+                        .AddStopButton(p))
+                    .WithSeparator()
+                    .WithTextDisplay($"Info by Wikipedia | Page {p.CurrentPageIndex + 1} of {p.PageCount}")
                     .WithAccentColor(Color.Blue))
                 .Build();
-
+    
             return new PageBuilder()
                 .WithComponents(components) // Using components V2 requires not setting the page text, stickers, or any embed property
                 .Build();
         }
     }
-
-    [ComponentInteraction(SelectOptionId, ignoreGroupNames: true)]
-    public async Task SelectOptionAsync(string option)
+    
+    // This method handles the select menu from the paginator and stores the new section name in the attached state
+    // It also sets the page count, current page index, and renders the page
+    [ComponentInteraction("paginator-select-section", ignoreGroupNames: true)]
+    public async Task SelectSectionAsync(string sectionName)
     {
         var interaction = (IComponentInteraction)Context.Interaction;
-
+    
+        // RenderPageAsync bypasses the user check, so we need to call CanInteract here.
         if (!_interactive.TryGetComponentPaginator(interaction.Message, out var paginator) || !paginator.CanInteract(interaction.User))
         {
             await DeferAsync();
             return;
         }
-
-        var info = paginator.GetUserState<PaginatorInfo>(); // Extension method that gets the user state from the paginator as PaginatorInfo
-
-        info.Options[info.SelectedOption].PageIndex = paginator.CurrentPageIndex; // Save the current page index of the current paginator
-        info.SelectedOption = option; // Set the new option
-
-        var selected = info.Options[option];
-
-        // Set the new page count and page index
-        paginator.PageCount = selected.Images.Count; 
-        paginator.SetPage(selected.PageIndex);
-
+    
+        var state = paginator.GetUserState<WikipediaState>(); // Extension method that gets the user state from the paginator as WikipediaState
+    
+        state.CurrentSectionName = sectionName;
+        paginator.SetPage(0); // Reset the page index to 0
+        paginator.PageCount = state.Sections[sectionName].Length; // Set the new page count
+    
         await paginator.RenderPageAsync(interaction); // Render the current page of the paginator, this will call the GeneratePage method
     }
-
-    private sealed class PaginatorInfo
+    
+    public class WikipediaState
     {
-        public string SelectedOption { get; set; } = string.Empty;
-
-        public Dictionary<string, PaginatorOption> Options { get; } = [];
-    }
-
-    private sealed class PaginatorOption
-    {
-        public PaginatorOption(IReadOnlyList<IImageResult> images)
+        public WikipediaState(Dictionary<string, string[]> sections, string currentSectionName)
         {
-            Images = images;
+            Sections = sections;
+            CurrentSectionName = currentSectionName;
         }
-
-        public IReadOnlyList<IImageResult> Images { get; }
-
-        public int PageIndex { get; set; }
+    
+        public Dictionary<string, string[]> Sections { get; }
+    
+        public string CurrentSectionName { get; set; }
     }
 }
