@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
@@ -44,13 +43,13 @@ public abstract class BaseSelection<TOption> : IInteractiveElement<TOption>
         EmoteConverter = properties.EmoteConverter;
         EqualityComparer = properties.EqualityComparer;
         SelectionPage = properties.SelectionPage.Build();
-        Options = new ReadOnlyCollection<TOption>(properties.Options.ToArray());
+        Options = properties.Options.ToArray().AsReadOnly();
         AllowCancel = properties.AllowCancel && Options.Count > 1;
         CancelOption = AllowCancel ? Options.Last() : default;
         MinValues = properties.MinValues;
         MaxValues = properties.MaxValues;
         Placeholder = properties.Placeholder;
-        Users = new ReadOnlyCollection<IUser>(properties.Users.ToArray());
+        Users = properties.Users.ToArray().AsReadOnly();
         CanceledPage = properties.CanceledPage?.Build();
         TimeoutPage = properties.TimeoutPage?.Build();
         RestrictedPage = properties.RestrictedPageFactory?.Invoke(Users);

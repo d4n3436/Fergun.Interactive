@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
@@ -61,7 +60,7 @@ public class ComponentPaginator : IComponentPaginator
         CurrentPageIndex = builder.InitialPageIndex;
         PageFactory = builder.PageFactory;
         UserState = builder.UserState;
-        Users = new ReadOnlyCollection<IUser>(builder.Users.ToArray());
+        Users = builder.Users.ToArray().AsReadOnly();
         ActionOnCancellation = builder.ActionOnCancellation;
         ActionOnTimeout = builder.ActionOnTimeout;
         RestrictedInputBehavior = builder.RestrictedInputBehavior;

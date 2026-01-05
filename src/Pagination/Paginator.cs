@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Linq;
 using System.Threading;
@@ -53,10 +52,10 @@ public abstract class Paginator : IInteractiveElement<KeyValuePair<IEmote, Pagin
             ArgumentNullException.ThrowIfNull(properties.RestrictedPageFactory);
         }
 
-        Users = new ReadOnlyCollection<IUser>(properties.Users.ToArray());
-        Emotes = new ReadOnlyDictionary<IEmote, PaginatorAction>(new Dictionary<IEmote, PaginatorAction>(properties.Options));
-        ButtonFactories = new ReadOnlyCollection<Func<IButtonContext, IPaginatorButton>>(properties.ButtonFactories.ToArray());
-        SelectMenuFactories = new ReadOnlyCollection<Func<ISelectMenuContext, IPaginatorSelectMenu>>(properties.SelectMenuFactories.ToArray());
+        Users = properties.Users.ToArray().AsReadOnly();
+        Emotes = properties.Options.ToDictionary().AsReadOnly();
+        ButtonFactories = properties.ButtonFactories.ToArray().AsReadOnly();
+        SelectMenuFactories = properties.SelectMenuFactories.ToArray().AsReadOnly();
         CanceledPage = properties.CanceledPage?.Build();
         TimeoutPage = properties.TimeoutPage?.Build();
         RestrictedPage = properties.RestrictedPageFactory?.Invoke(Users);
