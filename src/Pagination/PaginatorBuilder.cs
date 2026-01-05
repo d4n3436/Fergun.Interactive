@@ -153,7 +153,7 @@ public abstract class PaginatorBuilder<TPaginator, TBuilder>
     /// <returns>This builder.</returns>
     public virtual TBuilder WithUsers(params IUser[] users)
     {
-        InteractiveGuards.NotNull(users);
+        ArgumentNullException.ThrowIfNull(users);
         Users = users.ToList();
         return (TBuilder)this;
     }
@@ -165,7 +165,7 @@ public abstract class PaginatorBuilder<TPaginator, TBuilder>
     /// <returns>This builder.</returns>
     public virtual TBuilder WithUsers(IEnumerable<IUser> users)
     {
-        InteractiveGuards.NotNull(users);
+        ArgumentNullException.ThrowIfNull(users);
         Users = users.ToList();
         return (TBuilder)this;
     }
@@ -177,7 +177,7 @@ public abstract class PaginatorBuilder<TPaginator, TBuilder>
     /// <returns>This builder.</returns>
     public virtual TBuilder AddUser(IUser user)
     {
-        InteractiveGuards.NotNull(user);
+        ArgumentNullException.ThrowIfNull(user);
         Users.Add(user);
         return (TBuilder)this;
     }
@@ -189,7 +189,7 @@ public abstract class PaginatorBuilder<TPaginator, TBuilder>
     /// <returns>This builder.</returns>
     public virtual TBuilder WithOptions(IDictionary<IEmote, PaginatorAction> emotes)
     {
-        InteractiveGuards.NotNull(emotes);
+        ArgumentNullException.ThrowIfNull(emotes);
 
         Options.Clear();
         ButtonFactories.Clear();
@@ -209,7 +209,7 @@ public abstract class PaginatorBuilder<TPaginator, TBuilder>
     /// <returns>This builder.</returns>
     public virtual TBuilder WithOptions(IEnumerable<IPaginatorButton> buttons)
     {
-        InteractiveGuards.NotNull(buttons);
+        ArgumentNullException.ThrowIfNull(buttons);
 
         return WithOptions(buttons.Select(x => new Func<IButtonContext, IPaginatorButton>(_ => x)));
     }
@@ -221,7 +221,7 @@ public abstract class PaginatorBuilder<TPaginator, TBuilder>
     /// <returns>This builder.</returns>
     public virtual TBuilder WithOptions(IEnumerable<Func<IButtonContext, IPaginatorButton>> buttonFactories)
     {
-        InteractiveGuards.NotNull(buttonFactories);
+        ArgumentNullException.ThrowIfNull(buttonFactories);
 
         // Clear ButtonFactories instead of setting a new value, otherwise OptionsWrapper would break
         Options.Clear();
@@ -253,7 +253,7 @@ public abstract class PaginatorBuilder<TPaginator, TBuilder>
     /// <returns>This builder.</returns>
     public virtual TBuilder AddOption(IEmote emote, PaginatorAction action)
     {
-        InteractiveGuards.NotNull(emote);
+        ArgumentNullException.ThrowIfNull(emote);
 
         // This will add the option to both Options and ButtonFactories
         Options.Add(emote, action);
@@ -354,7 +354,7 @@ public abstract class PaginatorBuilder<TPaginator, TBuilder>
     /// <returns>This builder.</returns>
     public virtual TBuilder AddOption(IPaginatorButton button)
     {
-        InteractiveGuards.NotNull(button);
+        ArgumentNullException.ThrowIfNull(button);
 
         return AddOption(_ => button);
     }
@@ -366,7 +366,7 @@ public abstract class PaginatorBuilder<TPaginator, TBuilder>
     /// <returns>This builder.</returns>
     public virtual TBuilder AddOption(Func<IButtonContext, IPaginatorButton> buttonFactory)
     {
-        InteractiveGuards.NotNull(buttonFactory);
+        ArgumentNullException.ThrowIfNull(buttonFactory);
         ButtonFactories.Add(buttonFactory);
         return (TBuilder)this;
     }
@@ -382,7 +382,7 @@ public abstract class PaginatorBuilder<TPaginator, TBuilder>
     /// <returns>This builder.</returns>
     public virtual TBuilder WithSelectMenus(IEnumerable<SelectMenuBuilder> builders)
     {
-        InteractiveGuards.NotNull(builders);
+        ArgumentNullException.ThrowIfNull(builders);
         return WithSelectMenus(builders.Select(x => new PaginatorSelectMenu(x)));
     }
 
@@ -394,7 +394,7 @@ public abstract class PaginatorBuilder<TPaginator, TBuilder>
     /// <returns>This builder.</returns>
     public virtual TBuilder WithSelectMenus(IEnumerable<IPaginatorSelectMenu> selectMenus)
     {
-        InteractiveGuards.NotNull(selectMenus);
+        ArgumentNullException.ThrowIfNull(selectMenus);
         return WithSelectMenus(selectMenus.Select(x => new Func<ISelectMenuContext, IPaginatorSelectMenu>(_ => x)));
     }
 
@@ -406,7 +406,7 @@ public abstract class PaginatorBuilder<TPaginator, TBuilder>
     /// <returns>This builder.</returns>
     public virtual TBuilder WithSelectMenus(IEnumerable<Func<ISelectMenuContext, IPaginatorSelectMenu>> selectMenuFactories)
     {
-        InteractiveGuards.NotNull(selectMenuFactories);
+        ArgumentNullException.ThrowIfNull(selectMenuFactories);
         SelectMenuFactories = selectMenuFactories.ToList();
         return (TBuilder)this;
     }
@@ -438,7 +438,7 @@ public abstract class PaginatorBuilder<TPaginator, TBuilder>
     /// <returns>This builder.</returns>
     public virtual TBuilder AddSelectMenu(SelectMenuBuilder builder, bool? isDisabled = null)
     {
-        InteractiveGuards.NotNull(builder);
+        ArgumentNullException.ThrowIfNull(builder);
         return AddSelectMenu(new PaginatorSelectMenu(builder, isDisabled));
     }
 
@@ -450,7 +450,7 @@ public abstract class PaginatorBuilder<TPaginator, TBuilder>
     /// <returns>This builder.</returns>
     public virtual TBuilder AddSelectMenu(IPaginatorSelectMenu selectMenu)
     {
-        InteractiveGuards.NotNull(selectMenu);
+        ArgumentNullException.ThrowIfNull(selectMenu);
         return AddSelectMenu(_ => selectMenu);
     }
 
@@ -462,7 +462,7 @@ public abstract class PaginatorBuilder<TPaginator, TBuilder>
     /// <returns>This builder.</returns>
     public virtual TBuilder AddSelectMenu(Func<ISelectMenuContext, IPaginatorSelectMenu> selectMenuFactory)
     {
-        InteractiveGuards.NotNull(selectMenuFactory);
+        ArgumentNullException.ThrowIfNull(selectMenuFactory);
         SelectMenuFactories.Add(selectMenuFactory);
         return (TBuilder)this;
     }
@@ -546,7 +546,7 @@ public abstract class PaginatorBuilder<TPaginator, TBuilder>
     /// <returns>This builder.</returns>
     public virtual TBuilder WithRestrictedPage(IPage page)
     {
-        InteractiveGuards.NotNull(page);
+        ArgumentNullException.ThrowIfNull(page);
         return WithRestrictedPageFactory(_ => page);
     }
 
@@ -558,7 +558,7 @@ public abstract class PaginatorBuilder<TPaginator, TBuilder>
     /// <returns>This builder.</returns>
     public virtual TBuilder WithRestrictedPageFactory(Func<IReadOnlyCollection<IUser>, IPage> pageFactory)
     {
-        InteractiveGuards.NotNull(pageFactory);
+        ArgumentNullException.ThrowIfNull(pageFactory);
         RestrictedPageFactory = pageFactory;
         return (TBuilder)this;
     }

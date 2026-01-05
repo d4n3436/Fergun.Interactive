@@ -185,8 +185,8 @@ public static class ComponentExtensions
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="builder"/> or <paramref name="paginator"/> are <see langword="null"/>.</exception>
     public static ActionRowBuilder AddButton(this ActionRowBuilder builder, IComponentPaginator paginator, PaginatorAction action, string? label = null, ButtonStyle? style = null, IEmote? emote = null)
     {
-        InteractiveGuards.NotNull(builder);
-        InteractiveGuards.NotNull(paginator);
+        ArgumentNullException.ThrowIfNull(builder);
+        ArgumentNullException.ThrowIfNull(paginator);
 
         return builder.WithButton(CreateButton(paginator, action, label, style, emote));
     }
@@ -205,8 +205,8 @@ public static class ComponentExtensions
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="builder"/> or <paramref name="paginator"/> are <see langword="null"/>.</exception>
     public static ComponentBuilder AddButton(this ComponentBuilder builder, IComponentPaginator paginator, PaginatorAction action, string? label = null, ButtonStyle? style = null, IEmote? emote = null, int row = 0)
     {
-        InteractiveGuards.NotNull(builder);
-        InteractiveGuards.NotNull(paginator);
+        ArgumentNullException.ThrowIfNull(builder);
+        ArgumentNullException.ThrowIfNull(paginator);
 
         return builder.WithButton(CreateButton(paginator, action, label, style, emote), row);
     }
@@ -220,8 +220,8 @@ public static class ComponentExtensions
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="builder"/> or <paramref name="paginator"/> are <see langword="null"/>.</exception>
     public static ActionRowBuilder AddPaginatorButtons(this ActionRowBuilder builder, IComponentPaginator paginator)
     {
-        InteractiveGuards.NotNull(builder);
-        InteractiveGuards.NotNull(paginator);
+        ArgumentNullException.ThrowIfNull(builder);
+        ArgumentNullException.ThrowIfNull(paginator);
 
         return builder.AddPreviousButton(paginator)
             .AddNextButton(paginator)
@@ -239,8 +239,8 @@ public static class ComponentExtensions
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="builder"/> or <paramref name="paginator"/> are <see langword="null"/>.</exception>
     public static ComponentBuilder AddPaginatorButtons(this ComponentBuilder builder, IComponentPaginator paginator)
     {
-        InteractiveGuards.NotNull(builder);
-        InteractiveGuards.NotNull(paginator);
+        ArgumentNullException.ThrowIfNull(builder);
+        ArgumentNullException.ThrowIfNull(paginator);
 
         return builder.AddPreviousButton(paginator)
             .AddNextButton(paginator)
@@ -260,8 +260,8 @@ public static class ComponentExtensions
     /// <exception cref="ArgumentOutOfRangeException">Thrown when <paramref name="action"/> is invalid.</exception>
     public static ButtonBuilder AsPaginatorButton(this ButtonBuilder builder, IComponentPaginator paginator, PaginatorAction action)
     {
-        InteractiveGuards.NotNull(builder);
-        InteractiveGuards.NotNull(paginator);
+        ArgumentNullException.ThrowIfNull(builder);
+        ArgumentNullException.ThrowIfNull(paginator);
 
         return builder.WithCustomId(paginator.GetCustomId(action))
             .WithDisabled(paginator, action);
@@ -277,8 +277,8 @@ public static class ComponentExtensions
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="builder"/> or <paramref name="paginator"/> are <see langword="null"/>.</exception>
     public static ButtonBuilder WithDisabled(this ButtonBuilder builder, IComponentPaginator paginator, PaginatorAction? action = null)
     {
-        InteractiveGuards.NotNull(builder);
-        InteractiveGuards.NotNull(paginator);
+        ArgumentNullException.ThrowIfNull(builder);
+        ArgumentNullException.ThrowIfNull(paginator);
 
         return builder.WithDisabled(paginator.ShouldDisable(action));
     }
@@ -293,15 +293,15 @@ public static class ComponentExtensions
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="builder"/> or <paramref name="paginator"/> are <see langword="null"/>.</exception>
     public static SelectMenuBuilder WithDisabled(this SelectMenuBuilder builder, IComponentPaginator paginator, PaginatorAction? action = null)
     {
-        InteractiveGuards.NotNull(builder);
-        InteractiveGuards.NotNull(paginator);
+        ArgumentNullException.ThrowIfNull(builder);
+        ArgumentNullException.ThrowIfNull(paginator);
 
         return builder.WithDisabled(paginator.ShouldDisable(action));
     }
 
     private static ButtonBuilder CreateButton(IComponentPaginator paginator, PaginatorAction action, string? label = null, ButtonStyle? style = null, IEmote? emote = null)
     {
-        InteractiveGuards.NotNull(paginator);
+        ArgumentNullException.ThrowIfNull(paginator);
 
         if (string.IsNullOrEmpty(label) && emote is null)
         {

@@ -22,7 +22,7 @@ public class InteractiveResult<T> : InteractiveResult
     internal InteractiveResult(IReadOnlyList<T> values, TimeSpan elapsed, InteractiveStatus status = InteractiveStatus.Success)
         : base(elapsed, status)
     {
-        InteractiveGuards.NotNull(values);
+        ArgumentNullException.ThrowIfNull(values);
 
         Values = values;
         Value = values.Count > 0 ? values[0] : default;

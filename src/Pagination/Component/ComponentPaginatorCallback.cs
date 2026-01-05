@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using System.Threading.Tasks;
 using Discord;
 using Discord.WebSocket;
@@ -79,6 +80,11 @@ internal sealed class ComponentPaginatorCallback : IInteractiveCallback
                 StopInteraction = component as SocketMessageComponent;
                 Cancel();
                 break;
+
+            case InteractiveInputStatus.Ignored:
+                break;
+            default:
+                throw new UnreachableException();
         }
     }
 

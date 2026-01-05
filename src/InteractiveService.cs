@@ -65,8 +65,8 @@ public class InteractiveService
     /// <param name="config">The configuration.</param>
     public InteractiveService(BaseSocketClient client, InteractiveConfig config)
     {
-        InteractiveGuards.NotNull(client);
-        InteractiveGuards.NotNull(config);
+        ArgumentNullException.ThrowIfNull(client);
+        ArgumentNullException.ThrowIfNull(config);
 
         _client = client;
         _config = config;
@@ -140,7 +140,7 @@ public class InteractiveService
         IUserMessage? message = null, string? text = null, bool isTTS = false, Embed? embed = null, RequestOptions? options = null,
         AllowedMentions? allowedMentions = null, MessageReference? messageReference = null)
     {
-        InteractiveGuards.NotNull(channel);
+        ArgumentNullException.ThrowIfNull(channel);
         InteractiveGuards.MessageFromCurrentUser(_client, message);
 
         await Task.Delay(sendDelay ?? TimeSpan.Zero, CancellationToken.None).ConfigureAwait(false);
@@ -186,7 +186,7 @@ public class InteractiveService
         string? filePath = null, string? text = null, bool isTTS = false, Embed? embed = null, RequestOptions? options = null,
         bool isSpoiler = false, AllowedMentions? allowedMentions = null, MessageReference? messageReference = null)
     {
-        InteractiveGuards.NotNull(channel);
+        ArgumentNullException.ThrowIfNull(channel);
 
         await Task.Delay(sendDelay ?? TimeSpan.Zero, CancellationToken.None).ConfigureAwait(false);
         var msg = await channel.SendFileAsync(filePath, text, isTTS, embed, options, isSpoiler, allowedMentions, messageReference)
@@ -219,7 +219,7 @@ public class InteractiveService
         Stream? stream = null, string? filename = null, string? text = null, bool isTTS = false, Embed? embed = null, RequestOptions? options = null,
         bool isSpoiler = false, AllowedMentions? allowedMentions = null, MessageReference? messageReference = null)
     {
-        InteractiveGuards.NotNull(channel);
+        ArgumentNullException.ThrowIfNull(channel);
 
         await Task.Delay(sendDelay ?? TimeSpan.Zero, CancellationToken.None).ConfigureAwait(false);
         var msg = await channel.SendFileAsync(stream, filename, text, isTTS, embed, options, isSpoiler, allowedMentions, messageReference)
@@ -237,7 +237,7 @@ public class InteractiveService
     /// <exception cref="ArgumentNullException"/>
     public async Task DelayedDeleteMessageAsync(IMessage message, TimeSpan? deleteDelay = null)
     {
-        InteractiveGuards.NotNull(message);
+        ArgumentNullException.ThrowIfNull(message);
 
         await Task.Delay(deleteDelay ?? _config.DefaultTimeout).ConfigureAwait(false);
 
@@ -485,8 +485,8 @@ public class InteractiveService
         InteractionResponseType responseType = InteractionResponseType.ChannelMessageWithSource, bool ephemeral = false,
         Action<IUserMessage>? messageAction = null, bool resetTimeoutOnInput = false, CancellationToken cancellationToken = default)
     {
-        InteractiveGuards.NotNull(paginator);
-        InteractiveGuards.NotNull(interaction);
+        ArgumentNullException.ThrowIfNull(paginator);
+        ArgumentNullException.ThrowIfNull(interaction);
         InteractiveGuards.ValidActionOnStop(paginator.ActionOnTimeout);
         InteractiveGuards.ValidActionOnStop(paginator.ActionOnCancellation);
         InteractiveGuards.SupportedInputType(paginator, ephemeral);
@@ -571,8 +571,8 @@ public class InteractiveService
         InteractionResponseType responseType = InteractionResponseType.ChannelMessageWithSource, bool ephemeral = false,
         Func<IUserMessage, Task>? messageAction = null, bool resetTimeoutOnInput = false, CancellationToken cancellationToken = default)
     {
-        InteractiveGuards.NotNull(paginator);
-        InteractiveGuards.NotNull(interaction);
+        ArgumentNullException.ThrowIfNull(paginator);
+        ArgumentNullException.ThrowIfNull(interaction);
         cancellationToken.ThrowIfCancellationRequested();
 
         var message = await paginator.RenderPageAsync(interaction, responseType, ephemeral).ConfigureAwait(false);
@@ -601,8 +601,8 @@ public class InteractiveService
     public async Task<InteractiveMessageResult> SendPaginatorAsync(IComponentPaginator paginator, IMessageChannel channel, TimeSpan? timeout = null,
         Func<IUserMessage, Task>? messageAction = null, bool resetTimeoutOnInput = false, CancellationToken cancellationToken = default)
     {
-        InteractiveGuards.NotNull(paginator);
-        InteractiveGuards.NotNull(channel);
+        ArgumentNullException.ThrowIfNull(paginator);
+        ArgumentNullException.ThrowIfNull(channel);
         cancellationToken.ThrowIfCancellationRequested();
 
         var message = await paginator.RenderPageAsync(channel).ConfigureAwait(false);
@@ -632,8 +632,8 @@ public class InteractiveService
     public async Task<InteractiveMessageResult> SendPaginatorAsync(IComponentPaginator paginator, IUserMessage message, TimeSpan? timeout = null,
         Func<IUserMessage, Task>? messageAction = null, bool resetTimeoutOnInput = false, CancellationToken cancellationToken = default)
     {
-        InteractiveGuards.NotNull(paginator);
-        InteractiveGuards.NotNull(message);
+        ArgumentNullException.ThrowIfNull(paginator);
+        ArgumentNullException.ThrowIfNull(message);
         InteractiveGuards.MessageFromCurrentUser(_client, message);
         cancellationToken.ThrowIfCancellationRequested();
 
@@ -710,8 +710,8 @@ public class InteractiveService
         TimeSpan? timeout = null, InteractionResponseType responseType = InteractionResponseType.ChannelMessageWithSource, bool ephemeral = false,
         Action<IUserMessage>? messageAction = null, CancellationToken cancellationToken = default)
     {
-        InteractiveGuards.NotNull(selection);
-        InteractiveGuards.NotNull(interaction);
+        ArgumentNullException.ThrowIfNull(selection);
+        ArgumentNullException.ThrowIfNull(interaction);
         InteractiveGuards.ValidActionOnStop(selection.ActionOnTimeout);
         InteractiveGuards.ValidActionOnStop(selection.ActionOnCancellation);
         InteractiveGuards.ValidActionOnStop(selection.ActionOnSuccess);
@@ -738,7 +738,7 @@ public class InteractiveService
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="interaction"/> is <see langword="null"/>.</exception>
     public bool IsManaged(SocketInteraction interaction)
     {
-        InteractiveGuards.NotNull(interaction);
+        ArgumentNullException.ThrowIfNull(interaction);
 
         (var message, string? customId) = interaction switch
         {
@@ -773,7 +773,7 @@ public class InteractiveService
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="message"/> is <see langword="null"/>.</exception>
     public bool IsManaged(IUserMessage message)
     {
-        InteractiveGuards.NotNull(message);
+        ArgumentNullException.ThrowIfNull(message);
         return IsManaged(message.Id);
     }
 
@@ -793,7 +793,7 @@ public class InteractiveService
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="message"/> is <see langword="null"/>.</exception>
     public bool TryGetPaginator(IUserMessage message, [MaybeNullWhen(false)] out Paginator paginator)
     {
-        InteractiveGuards.NotNull(message);
+        ArgumentNullException.ThrowIfNull(message);
         return TryGetPaginator(message.Id, out paginator);
     }
 
@@ -822,7 +822,7 @@ public class InteractiveService
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="message"/> is <see langword="null"/>.</exception>
     public bool TryGetComponentPaginator(IUserMessage message, [MaybeNullWhen(false)] out IComponentPaginator paginator)
     {
-        InteractiveGuards.NotNull(message);
+        ArgumentNullException.ThrowIfNull(message);
         return TryGetComponentPaginator(message.Id, out paginator);
     }
 
@@ -837,7 +837,7 @@ public class InteractiveService
     public bool TryGetComponentPaginator<TPaginator>(IUserMessage message, [MaybeNullWhen(false)] out TPaginator paginator)
         where TPaginator : class, IComponentPaginator
     {
-        InteractiveGuards.NotNull(message);
+        ArgumentNullException.ThrowIfNull(message);
         return TryGetComponentPaginator(message.Id, out paginator);
     }
 
@@ -885,7 +885,7 @@ public class InteractiveService
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="message"/> is <see langword="null"/>.</exception>
     public bool TryGetSelection<TOption>(IUserMessage message, [MaybeNullWhen(false)] out BaseSelection<TOption> selection)
     {
-        InteractiveGuards.NotNull(message);
+        ArgumentNullException.ThrowIfNull(message);
         return TryGetSelection(message.Id, out selection);
     }
 
@@ -1049,7 +1049,7 @@ public class InteractiveService
     private async Task<InteractiveMessageResult> SendPaginatorInternalAsync(Paginator paginator, IMessageChannel? channel, TimeSpan? timeout = null,
         IUserMessage? message = null, Action<IUserMessage>? messageAction = null, bool resetTimeoutOnInput = false, CancellationToken cancellationToken = default)
     {
-        InteractiveGuards.NotNull(paginator);
+        ArgumentNullException.ThrowIfNull(paginator);
         InteractiveGuards.MessageFromCurrentUser(_client, message);
         InteractiveGuards.ValidActionOnStop(paginator.ActionOnTimeout);
         InteractiveGuards.ValidActionOnStop(paginator.ActionOnCancellation);
@@ -1122,7 +1122,7 @@ public class InteractiveService
     private async Task<InteractiveMessageResult<TOption>> SendSelectionInternalAsync<TOption>(BaseSelection<TOption> selection, IMessageChannel? channel,
         TimeSpan? timeout = null, IUserMessage? message = null, Action<IUserMessage>? messageAction = null, CancellationToken cancellationToken = default)
     {
-        InteractiveGuards.NotNull(selection);
+        ArgumentNullException.ThrowIfNull(selection);
         InteractiveGuards.MessageFromCurrentUser(_client, message);
         InteractiveGuards.ValidActionOnStop(selection.ActionOnTimeout);
         InteractiveGuards.ValidActionOnStop(selection.ActionOnCancellation);
@@ -1186,7 +1186,10 @@ public class InteractiveService
         }
 
         var status = await callback.TimeoutTaskSource.Task.ConfigureAwait(false);
-        cts?.Cancel();
+        if (cts is not null)
+        {
+            await cts.CancelAsync().ConfigureAwait(false);
+        }
 
         var result = InteractiveMessageResultBuilder.FromCallback(callback, status).Build();
 
@@ -1259,7 +1262,10 @@ public class InteractiveService
         }
 
         var (selected, status) = await callback.TimeoutTaskSource.Task.ConfigureAwait(false);
-        cts?.Cancel();
+        if (cts is not null)
+        {
+            await cts.CancelAsync().ConfigureAwait(false);
+        }
 
         var result = InteractiveMessageResultBuilder<TOption>.FromCallback(callback, selected, status).Build();
 

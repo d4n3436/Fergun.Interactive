@@ -16,8 +16,8 @@ public class Page : IPage
 
     internal Page(PageBuilder builder)
     {
-        InteractiveGuards.NotNull(builder);
-        InteractiveGuards.NotNull(builder.Stickers);
+        ArgumentNullException.ThrowIfNull(builder);
+        ArgumentNullException.ThrowIfNull(builder.Stickers);
 
         Text = builder.Text;
         IsTTS = builder.IsTTS;

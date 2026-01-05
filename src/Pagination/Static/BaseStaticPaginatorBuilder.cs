@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using JetBrains.Annotations;
@@ -26,7 +27,7 @@ public abstract class BaseStaticPaginatorBuilder<TPaginator, TBuilder>
     /// <returns>This builder.</returns>
     public virtual TBuilder WithPages(params IPageBuilder[] pages)
     {
-        InteractiveGuards.NotNull(pages);
+        ArgumentNullException.ThrowIfNull(pages);
         Pages = pages.ToList();
         return (TBuilder)this;
     }
@@ -38,7 +39,7 @@ public abstract class BaseStaticPaginatorBuilder<TPaginator, TBuilder>
     /// <returns>This builder.</returns>
     public virtual TBuilder WithPages(IEnumerable<IPageBuilder> pages)
     {
-        InteractiveGuards.NotNull(pages);
+        ArgumentNullException.ThrowIfNull(pages);
         Pages = pages.ToList();
         return (TBuilder)this;
     }
@@ -50,7 +51,7 @@ public abstract class BaseStaticPaginatorBuilder<TPaginator, TBuilder>
     /// <returns>This builder.</returns>
     public virtual TBuilder AddPage(IPageBuilder page)
     {
-        InteractiveGuards.NotNull(page);
+        ArgumentNullException.ThrowIfNull(page);
         Pages.Add(page);
         return (TBuilder)this;
     }

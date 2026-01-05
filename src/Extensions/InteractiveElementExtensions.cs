@@ -22,10 +22,10 @@ public static class InteractiveElementExtensions
     /// <returns><see langword="true"/> the user can interact with this element; otherwise, <see langword="false"/>.</returns>
     public static bool CanInteract<TOption>(this IInteractiveElement<TOption> element, IUser user)
     {
-        InteractiveGuards.NotNull(element);
-        InteractiveGuards.NotNull(user);
+        ArgumentNullException.ThrowIfNull(element);
+        ArgumentNullException.ThrowIfNull(user);
 
-        return CanInteract(element, user.Id);
+        return element.CanInteract(user.Id);
     }
 
     /// <summary>
@@ -37,7 +37,7 @@ public static class InteractiveElementExtensions
     /// <returns><see langword="true"/> the user ID can interact with this element; otherwise, <see langword="false"/>.</returns>
     public static bool CanInteract<TOption>(this IInteractiveElement<TOption> element, ulong userId)
     {
-        InteractiveGuards.NotNull(element);
+        ArgumentNullException.ThrowIfNull(element);
 
         if (element.Users.Count == 0)
         {

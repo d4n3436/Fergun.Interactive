@@ -19,8 +19,8 @@ public static class PageBuilderExtensions
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="builder"/> or <paramref name="paginator"/> are <see langword="null"/>.</exception>
     public static PageBuilder WithPaginatorFooter(this PageBuilder builder, IComponentPaginator paginator, PaginatorFooter style = PaginatorFooter.PageNumber)
     {
-        InteractiveGuards.NotNull(builder);
-        InteractiveGuards.NotNull(paginator);
+        ArgumentNullException.ThrowIfNull(builder);
+        ArgumentNullException.ThrowIfNull(paginator);
 
         builder.GetEmbedBuilder().WithPaginatorFooter(paginator, style);
 

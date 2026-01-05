@@ -43,18 +43,19 @@ public class ComponentPaginator : IComponentPaginator
     /// <exception cref="ArgumentOutOfRangeException">Thrown when the value of a property is outside the valid range.</exception>
     protected internal ComponentPaginator(IComponentPaginatorBuilder builder)
     {
-        InteractiveGuards.NotNull(builder);
-        InteractiveGuards.NotNull(builder.PageFactory);
+        ArgumentNullException.ThrowIfNull(builder);
+        ArgumentNullException.ThrowIfNull(builder.PageFactory);
 
         if (builder.RestrictedInputBehavior == RestrictedInputBehavior.SendMessage)
         {
-            InteractiveGuards.NotNull(builder.RestrictedPageFactory);
+            ArgumentNullException.ThrowIfNull(builder.RestrictedPageFactory);
         }
 
         InteractiveGuards.ValidActionOnStop(builder.ActionOnCancellation);
         InteractiveGuards.ValidActionOnStop(builder.ActionOnTimeout);
-        InteractiveGuards.LessThan(builder.PageCount, 1);
-        InteractiveGuards.ValueInRange(0, builder.PageCount - 1, builder.InitialPageIndex);
+        ArgumentOutOfRangeException.ThrowIfLessThan(builder.PageCount, 1);
+        ArgumentOutOfRangeException.ThrowIfLessThan(builder.InitialPageIndex, 0);
+        ArgumentOutOfRangeException.ThrowIfGreaterThan(builder.InitialPageIndex, builder.PageCount - 1);
 
         PageCount = builder.PageCount;
         CurrentPageIndex = builder.InitialPageIndex;
@@ -146,7 +147,7 @@ public class ComponentPaginator : IComponentPaginator
     /// <inheritdoc/>
     public virtual bool OwnsComponent(string customId)
     {
-        InteractiveGuards.NotNull(customId);
+        ArgumentNullException.ThrowIfNull(customId);
 
         return customId is NextPageId or PreviousPageId or FirstPageId or LastPageId or StopId or JumpId or JumpModalId;
     }
@@ -167,7 +168,7 @@ public class ComponentPaginator : IComponentPaginator
     /// <inheritdoc/>
     public virtual async ValueTask<InteractiveInputStatus> HandleInteractionAsync(IComponentInteraction interaction)
     {
-        InteractiveGuards.NotNull(interaction);
+        ArgumentNullException.ThrowIfNull(interaction);
 
         if (!this.CanInteract(interaction.User))
         {
@@ -219,7 +220,7 @@ public class ComponentPaginator : IComponentPaginator
     /// <inheritdoc/>
     public virtual async Task<IUserMessage> RenderPageAsync(IDiscordInteraction interaction, InteractionResponseType responseType, bool isEphemeral, IPage? page = null)
     {
-        InteractiveGuards.NotNull(interaction);
+        ArgumentNullException.ThrowIfNull(interaction);
 
         page ??= await PageFactory(this).ConfigureAwait(false);
         var attachments = page.AttachmentsFactory is null ? [] : await page.AttachmentsFactory().ConfigureAwait(false);
@@ -268,7 +269,7 @@ public class ComponentPaginator : IComponentPaginator
     /// <inheritdoc/>
     public virtual async Task<IUserMessage> RenderPageAsync(IMessageChannel channel, IPage? page = null)
     {
-        InteractiveGuards.NotNull(channel);
+        ArgumentNullException.ThrowIfNull(channel);
 
         page ??= await PageFactory(this).ConfigureAwait(false);
         var attachments = page.AttachmentsFactory is null ? [] : await page.AttachmentsFactory().ConfigureAwait(false);
@@ -280,7 +281,7 @@ public class ComponentPaginator : IComponentPaginator
     /// <inheritdoc/>
     public virtual async Task RenderPageAsync(IUserMessage message, IPage? page = null)
     {
-        InteractiveGuards.NotNull(message);
+        ArgumentNullException.ThrowIfNull(message);
 
         page ??= await PageFactory(this).ConfigureAwait(false);
         var attachments = page.AttachmentsFactory is null ? [] : await page.AttachmentsFactory().ConfigureAwait(false);
@@ -322,7 +323,7 @@ public class ComponentPaginator : IComponentPaginator
     /// <inheritdoc/>
     public virtual async Task SendJumpPromptAsync(IComponentInteraction interaction)
     {
-        InteractiveGuards.NotNull(interaction);
+        ArgumentNullException.ThrowIfNull(interaction);
 
         var builder = JumpModalFactory?
             .Invoke(this)?
@@ -337,7 +338,7 @@ public class ComponentPaginator : IComponentPaginator
     /// <inheritdoc/>
     public virtual async ValueTask<InteractiveInputStatus> HandleModalInteractionAsync(IModalInteraction interaction)
     {
-        InteractiveGuards.NotNull(interaction);
+        ArgumentNullException.ThrowIfNull(interaction);
 
         if (!this.CanInteract(interaction.User))
         {
@@ -354,7 +355,7 @@ public class ComponentPaginator : IComponentPaginator
             return InteractiveInputStatus.Ignored;
 
         string? rawInput = interaction.Data.Components.FirstOrDefault(x => x.Type == ComponentType.TextInput)?.Value;
-        if (rawInput is null || !int.TryParse(rawInput, NumberStyles.Integer, CultureInfo.InvariantCulture, out int pageNumber) || !SetPage(Clamp(pageNumber - 1, 0, PageCount - 1)))
+        if (rawInput is null || !int.TryParse(rawInput, NumberStyles.Integer, CultureInfo.InvariantCulture, out int pageNumber) || !SetPage(Math.Clamp(pageNumber - 1, 0, PageCount - 1)))
         {
             return await DeferInteractionAsync(interaction).ConfigureAwait(false);
         }
@@ -366,7 +367,7 @@ public class ComponentPaginator : IComponentPaginator
     /// <inheritdoc/>
     public virtual async ValueTask ApplyActionOnStopAsync(IUserMessage message, IComponentInteraction? stopInteraction, bool deferInteraction)
     {
-        InteractiveGuards.NotNull(message);
+        ArgumentNullException.ThrowIfNull(message);
 
         var action = Status switch
         {
@@ -454,21 +455,6 @@ public class ComponentPaginator : IComponentPaginator
     {
         await interaction.DeferAsync().ConfigureAwait(false);
         return InteractiveInputStatus.Success;
-    }
-
-    private static int Clamp(int value, int min, int max)
-    {
-        if (min > max)
-        {
-            throw new ArgumentException($"'{min}' cannot be greater than {max}.");
-        }
-
-        if (value < min)
-        {
-            return min;
-        }
-
-        return value > max ? max : value;
     }
 
     private async Task<InteractiveInputStatus> SendRestrictedPageAsync(IDiscordInteraction interaction)

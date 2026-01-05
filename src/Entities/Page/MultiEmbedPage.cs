@@ -17,9 +17,9 @@ public class MultiEmbedPage : IPage
 
     internal MultiEmbedPage(MultiEmbedPageBuilder builder)
     {
-        InteractiveGuards.NotNull(builder);
-        InteractiveGuards.NotNull(builder.Stickers);
-        InteractiveGuards.NotNull(builder.Builders);
+        ArgumentNullException.ThrowIfNull(builder);
+        ArgumentNullException.ThrowIfNull(builder.Stickers);
+        ArgumentNullException.ThrowIfNull(builder.Builders);
         InteractiveGuards.EmbedCountInRange(builder.Builders);
         if (string.IsNullOrEmpty(builder.Text) && builder.Builders.Count == 0 && builder.AttachmentsFactory is null)
         {

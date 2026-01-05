@@ -40,7 +40,7 @@ public sealed class EmoteSelectionBuilder<TValue>
     /// <returns>This builder.</returns>
     public EmoteSelectionBuilder<TValue> WithOptions(IDictionary<IEmote, TValue> options)
     {
-        InteractiveGuards.NotNull(options);
+        ArgumentNullException.ThrowIfNull(options);
         Options = options;
         return this;
     }

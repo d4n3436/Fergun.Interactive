@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -19,7 +20,7 @@ public abstract class BaseStaticPaginator : Paginator
         : base(properties)
     {
         InteractiveGuards.SupportedPaginatorInputType(properties.InputType);
-        InteractiveGuards.NotNull(properties.Pages);
+        ArgumentNullException.ThrowIfNull(properties.Pages);
         InteractiveGuards.NotEmpty(properties.Pages);
         InteractiveGuards.IndexInRange(properties.Pages, properties.StartPageIndex);
 

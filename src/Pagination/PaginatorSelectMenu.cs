@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Discord;
 using JetBrains.Annotations;
 
@@ -18,7 +19,7 @@ public class PaginatorSelectMenu : IPaginatorSelectMenu
     /// <param name="isDisabled">A value indicating whether to disable the select menu. If the value is null, the library will decide its status. This value overrides the one in <paramref name="builder"/>.</param>
     public PaginatorSelectMenu(SelectMenuBuilder builder, bool? isDisabled = null)
     {
-        InteractiveGuards.NotNull(builder);
+        ArgumentNullException.ThrowIfNull(builder);
         IsDisabled = isDisabled;
         _builder = builder;
     }

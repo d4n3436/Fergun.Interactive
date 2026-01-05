@@ -28,8 +28,8 @@ public static class PaginatorExtensions
         where TPaginator : BaseLazyPaginator
         where TBuilder : BaseLazyPaginatorBuilder<TPaginator, TBuilder>
     {
-        InteractiveGuards.NotNull(builder);
-        InteractiveGuards.NotNull(collection);
+        ArgumentNullException.ThrowIfNull(builder);
+        ArgumentNullException.ThrowIfNull(collection);
         InteractiveGuards.NotEmpty(collection);
 
         return builder.WithMaxPageIndex(collection.Count - 1);
@@ -43,7 +43,7 @@ public static class PaginatorExtensions
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="paginator"/> is <see langword="null"/>.</exception>
     public static bool NextPage(this IComponentPaginator paginator)
     {
-        InteractiveGuards.NotNull(paginator);
+        ArgumentNullException.ThrowIfNull(paginator);
 
         return paginator.SetPage(paginator.CurrentPageIndex + 1);
     }
@@ -56,7 +56,7 @@ public static class PaginatorExtensions
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="paginator"/> is <see langword="null"/>.</exception>
     public static bool PreviousPage(this IComponentPaginator paginator)
     {
-        InteractiveGuards.NotNull(paginator);
+        ArgumentNullException.ThrowIfNull(paginator);
 
         return paginator.SetPage(paginator.CurrentPageIndex - 1);
     }
@@ -69,7 +69,7 @@ public static class PaginatorExtensions
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="paginator"/> is <see langword="null"/>.</exception>
     public static bool FirstPage(this IComponentPaginator paginator)
     {
-        InteractiveGuards.NotNull(paginator);
+        ArgumentNullException.ThrowIfNull(paginator);
 
         return paginator.SetPage(0);
     }
@@ -82,7 +82,7 @@ public static class PaginatorExtensions
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="paginator"/> is <see langword="null"/>.</exception>
     public static bool LastPage(this IComponentPaginator paginator)
     {
-        InteractiveGuards.NotNull(paginator);
+        ArgumentNullException.ThrowIfNull(paginator);
 
         return paginator.SetPage(paginator.PageCount - 1);
     }
@@ -96,10 +96,10 @@ public static class PaginatorExtensions
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="paginator"/> or <paramref name="user"/> are is <see langword="null"/>.</exception>
     public static bool CanInteract(this IComponentPaginator paginator, IUser user)
     {
-        InteractiveGuards.NotNull(paginator);
-        InteractiveGuards.NotNull(user);
+        ArgumentNullException.ThrowIfNull(paginator);
+        ArgumentNullException.ThrowIfNull(user);
 
-        return CanInteract(paginator, user.Id);
+        return paginator.CanInteract(user.Id);
     }
 
     /// <summary>
@@ -111,7 +111,7 @@ public static class PaginatorExtensions
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="paginator"/> is <see langword="null"/>.</exception>
     public static bool CanInteract(this IComponentPaginator paginator, ulong userId)
     {
-        InteractiveGuards.NotNull(paginator);
+        ArgumentNullException.ThrowIfNull(paginator);
 
         if (paginator.Users.Count == 0)
         {
@@ -139,8 +139,8 @@ public static class PaginatorExtensions
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="paginator"/> or <paramref name="interaction"/> are <see langword="null"/>.</exception>
     public static async Task RenderPageAsync(this IComponentPaginator paginator, IComponentInteraction interaction, IPage? page = null)
     {
-        InteractiveGuards.NotNull(paginator);
-        InteractiveGuards.NotNull(interaction);
+        ArgumentNullException.ThrowIfNull(paginator);
+        ArgumentNullException.ThrowIfNull(interaction);
 
         await paginator.RenderPageAsync(interaction, InteractionResponseType.UpdateMessage, isEphemeral: false, page).ConfigureAwait(false);
     }
@@ -155,7 +155,7 @@ public static class PaginatorExtensions
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="paginator"/> is <see langword="null"/>.</exception>
     public static bool TryGetUserState<T>(this IComponentPaginator paginator, [MaybeNullWhen(false)] out T userState)
     {
-        InteractiveGuards.NotNull(paginator);
+        ArgumentNullException.ThrowIfNull(paginator);
 
         if (paginator.UserState is T state)
         {
@@ -177,7 +177,7 @@ public static class PaginatorExtensions
     /// <exception cref="InvalidCastException">Thrown when <see cref="IComponentPaginator.UserState"/> is <see langword="null"/>, or is not of type <typeparamref name="T"/>.</exception>
     public static T GetUserState<T>(this IComponentPaginator paginator)
     {
-        InteractiveGuards.NotNull(paginator);
+        ArgumentNullException.ThrowIfNull(paginator);
 
         return paginator.UserState switch
         {

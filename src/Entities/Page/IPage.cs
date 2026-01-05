@@ -57,11 +57,7 @@ public interface IPage<out TEmbed> where TEmbed : IEmbed
     /// Gets the components of this page.
     /// </summary>
     /// <remarks>This property is only used on component paginators. Using the new components (components V2) requires leaving <see cref="Text"/>, <see cref="Embeds"/> and <see cref="Stickers"/> empty.</remarks>
-#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_0_OR_GREATER
     MessageComponent? Components => null;
-#else
-    MessageComponent? Components { get; }
-#endif
 }
 
 /// <inheritdoc/>

@@ -33,7 +33,7 @@ public abstract class BaseLazyPaginatorBuilder<TPaginator, TBuilder>
     /// <returns>This builder.</returns>
     public virtual TBuilder WithPageFactory(Func<int, IPageBuilder> pageFactory)
     {
-        InteractiveGuards.NotNull(pageFactory);
+        ArgumentNullException.ThrowIfNull(pageFactory);
         return WithPageFactory(index => Task.FromResult(pageFactory(index)));
     }
 
@@ -47,7 +47,7 @@ public abstract class BaseLazyPaginatorBuilder<TPaginator, TBuilder>
     public virtual TBuilder WithPageFactory<TPageBuilder>(Func<int, Task<TPageBuilder>> pageFactory)
         where TPageBuilder : IPageBuilder
     {
-        InteractiveGuards.NotNull(pageFactory);
+        ArgumentNullException.ThrowIfNull(pageFactory);
         PageFactory = pageFactory as Func<int, Task<IPageBuilder>> ?? (async index => await pageFactory(index).ConfigureAwait(false));
         return (TBuilder)this;
     }

@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using Discord;
@@ -10,14 +9,6 @@ namespace Fergun.Interactive;
 
 internal static class InteractiveGuards
 {
-    public static void NotNull<T>([NotNull][JetBrains.Annotations.NoEnumeration] T? obj, [CallerArgumentExpression(nameof(obj))] string? parameterName = null) where T : class
-    {
-        if (obj is null)
-        {
-            throw new ArgumentNullException(parameterName);
-        }
-    }
-
     public static void NotEmpty<T>(ICollection<T> collection, [CallerArgumentExpression(nameof(collection))] string? parameterName = null)
     {
         if (collection.Count == 0)
@@ -51,30 +42,9 @@ internal static class InteractiveGuards
         }
     }
 
-    public static void LessThan(int value, int other, [CallerArgumentExpression(nameof(value))] string? parameterName = null)
-    {
-        if (value < other)
-        {
-            throw new ArgumentOutOfRangeException(parameterName, value, $"Value must be greater than or equal to {other}.");
-        }
-    }
-
-    public static void ValueInRange(int min, int max, int value, [CallerArgumentExpression(nameof(value))] string? parameterName = null)
-    {
-        if (value < min)
-        {
-            throw new ArgumentOutOfRangeException(parameterName, value, $"Value must be greater than or equal to {min}.");
-        }
-
-        if (value > max)
-        {
-            throw new ArgumentOutOfRangeException(parameterName, value, $"Value must be lower than or equal to {max}.");
-        }
-    }
-
     public static void StringLengthInRange(int min, int max, string str, [CallerArgumentExpression(nameof(str))] string? parameterName = null)
     {
-        NotNull(str);
+        ArgumentNullException.ThrowIfNull(str);
 
         if (str.Length < min)
         {

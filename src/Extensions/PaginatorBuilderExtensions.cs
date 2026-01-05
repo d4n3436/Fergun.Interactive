@@ -24,7 +24,7 @@ public static class PaginatorBuilderExtensions
     public static TBuilder WithPageCount<TBuilder>(this TBuilder builder, int pageCount)
         where TBuilder : class, IComponentPaginatorBuilder
     {
-        InteractiveGuards.NotNull(builder);
+        ArgumentNullException.ThrowIfNull(builder);
 
         builder.PageCount = pageCount;
         return builder;
@@ -41,7 +41,7 @@ public static class PaginatorBuilderExtensions
     public static TBuilder WithInitialPageIndex<TBuilder>(this TBuilder builder, int initialPageIndex)
         where TBuilder : class, IComponentPaginatorBuilder
     {
-        InteractiveGuards.NotNull(builder);
+        ArgumentNullException.ThrowIfNull(builder);
 
         builder.InitialPageIndex = initialPageIndex;
         return builder;
@@ -59,10 +59,10 @@ public static class PaginatorBuilderExtensions
     public static TBuilder WithPageFactory<TBuilder>(this TBuilder builder, Func<IComponentPaginator, IPage> pageFactory)
         where TBuilder : class, IComponentPaginatorBuilder
     {
-        InteractiveGuards.NotNull(builder);
-        InteractiveGuards.NotNull(pageFactory);
+        ArgumentNullException.ThrowIfNull(builder);
+        ArgumentNullException.ThrowIfNull(pageFactory);
 
-        return WithPageFactory(builder, paginator => new ValueTask<IPage>(pageFactory(paginator)));
+        return builder.WithPageFactory(paginator => new ValueTask<IPage>(pageFactory(paginator)));
     }
 
     /// <summary>
@@ -79,8 +79,8 @@ public static class PaginatorBuilderExtensions
         where TBuilder : class, IComponentPaginatorBuilder
         where TPage : IPage
     {
-        InteractiveGuards.NotNull(builder);
-        InteractiveGuards.NotNull(pageFactory);
+        ArgumentNullException.ThrowIfNull(builder);
+        ArgumentNullException.ThrowIfNull(pageFactory);
 
         builder.PageFactory = pageFactory as Func<IComponentPaginator, ValueTask<IPage>> ?? (async index => await pageFactory(index).ConfigureAwait(false));
         return builder;
@@ -112,8 +112,8 @@ public static class PaginatorBuilderExtensions
     public static TBuilder WithUsers<TBuilder>(this TBuilder builder, params IUser[] users)
         where TBuilder : class, IComponentPaginatorBuilder
     {
-        InteractiveGuards.NotNull(builder);
-        InteractiveGuards.NotNull(users);
+        ArgumentNullException.ThrowIfNull(builder);
+        ArgumentNullException.ThrowIfNull(users);
 
         builder.Users = users.ToList();
         return builder;
@@ -130,8 +130,8 @@ public static class PaginatorBuilderExtensions
     public static TBuilder WithUsers<TBuilder>(this TBuilder builder, IEnumerable<IUser> users)
         where TBuilder : class, IComponentPaginatorBuilder
     {
-        InteractiveGuards.NotNull(builder);
-        InteractiveGuards.NotNull(users);
+        ArgumentNullException.ThrowIfNull(builder);
+        ArgumentNullException.ThrowIfNull(users);
 
         builder.Users = users.ToList();
         return builder;
@@ -148,8 +148,8 @@ public static class PaginatorBuilderExtensions
     public static TBuilder AddUser<TBuilder>(this TBuilder builder, IUser user)
         where TBuilder : class, IComponentPaginatorBuilder
     {
-        InteractiveGuards.NotNull(builder);
-        InteractiveGuards.NotNull(user);
+        ArgumentNullException.ThrowIfNull(builder);
+        ArgumentNullException.ThrowIfNull(user);
 
         builder.Users.Add(user);
         return builder;
@@ -166,7 +166,7 @@ public static class PaginatorBuilderExtensions
     public static TBuilder WithActionOnCancellation<TBuilder>(this TBuilder builder, ActionOnStop action)
         where TBuilder : class, IComponentPaginatorBuilder
     {
-        InteractiveGuards.NotNull(builder);
+        ArgumentNullException.ThrowIfNull(builder);
 
         builder.ActionOnCancellation = action;
         return builder;
@@ -183,7 +183,7 @@ public static class PaginatorBuilderExtensions
     public static TBuilder WithActionOnTimeout<TBuilder>(this TBuilder builder, ActionOnStop action)
         where TBuilder : class, IComponentPaginatorBuilder
     {
-        InteractiveGuards.NotNull(builder);
+        ArgumentNullException.ThrowIfNull(builder);
 
         builder.ActionOnTimeout = action;
         return builder;
@@ -201,8 +201,8 @@ public static class PaginatorBuilderExtensions
     public static TBuilder WithCanceledPage<TBuilder>(this TBuilder builder, IPage page)
         where TBuilder : class, IComponentPaginatorBuilder
     {
-        InteractiveGuards.NotNull(builder);
-        InteractiveGuards.NotNull(page);
+        ArgumentNullException.ThrowIfNull(builder);
+        ArgumentNullException.ThrowIfNull(page);
 
         builder.CanceledPage = page;
         return builder.WithActionOnCancellation(ActionOnStop.ModifyMessage);
@@ -220,8 +220,8 @@ public static class PaginatorBuilderExtensions
     public static TBuilder WithTimeoutPage<TBuilder>(this TBuilder builder, IPage page)
         where TBuilder : class, IComponentPaginatorBuilder
     {
-        InteractiveGuards.NotNull(builder);
-        InteractiveGuards.NotNull(page);
+        ArgumentNullException.ThrowIfNull(builder);
+        ArgumentNullException.ThrowIfNull(page);
 
         builder.TimeoutPage = page;
         return builder.WithActionOnTimeout(ActionOnStop.ModifyMessage);
@@ -238,7 +238,7 @@ public static class PaginatorBuilderExtensions
     public static TBuilder WithRestrictedInputBehavior<TBuilder>(this TBuilder builder, RestrictedInputBehavior behavior)
         where TBuilder : class, IComponentPaginatorBuilder
     {
-        InteractiveGuards.NotNull(builder);
+        ArgumentNullException.ThrowIfNull(builder);
 
         builder.RestrictedInputBehavior = behavior;
         return builder;
@@ -256,8 +256,8 @@ public static class PaginatorBuilderExtensions
     public static TBuilder WithJumpModalFactory<TBuilder>(this TBuilder builder, Func<IComponentPaginator, ModalBuilder> modalFactory)
         where TBuilder : class, IComponentPaginatorBuilder
     {
-        InteractiveGuards.NotNull(builder);
-        InteractiveGuards.NotNull(modalFactory);
+        ArgumentNullException.ThrowIfNull(builder);
+        ArgumentNullException.ThrowIfNull(modalFactory);
 
         builder.JumpModalFactory = modalFactory;
         return builder;
@@ -274,10 +274,10 @@ public static class PaginatorBuilderExtensions
     public static TBuilder WithRestrictedPage<TBuilder>(this TBuilder builder, IPage page)
         where TBuilder : class, IComponentPaginatorBuilder
     {
-        InteractiveGuards.NotNull(builder);
-        InteractiveGuards.NotNull(page);
+        ArgumentNullException.ThrowIfNull(builder);
+        ArgumentNullException.ThrowIfNull(page);
 
-        return WithRestrictedPageFactory(builder, _ => page);
+        return builder.WithRestrictedPageFactory(_ => page);
     }
 
     /// <summary>
@@ -292,8 +292,8 @@ public static class PaginatorBuilderExtensions
     public static TBuilder WithRestrictedPageFactory<TBuilder>(this TBuilder builder, Func<IComponentPaginator, IPage> pageFactory)
         where TBuilder : class, IComponentPaginatorBuilder
     {
-        InteractiveGuards.NotNull(builder);
-        InteractiveGuards.NotNull(pageFactory);
+        ArgumentNullException.ThrowIfNull(builder);
+        ArgumentNullException.ThrowIfNull(pageFactory);
 
         builder.RestrictedPageFactory = pageFactory;
         return builder;
@@ -309,7 +309,7 @@ public static class PaginatorBuilderExtensions
     public static TBuilder WithStandardRestrictedPage<TBuilder>(this TBuilder builder)
         where TBuilder : class, IComponentPaginatorBuilder
     {
-        InteractiveGuards.NotNull(builder);
+        ArgumentNullException.ThrowIfNull(builder);
 
         return builder.WithRestrictedPageFactory(paginator =>
         {

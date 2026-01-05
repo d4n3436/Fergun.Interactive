@@ -105,7 +105,7 @@ public class MultiEmbedPageBuilder : IPageBuilder<MultiEmbedPage>, IPageBuilder
     /// <returns>This builder.</returns>
     public MultiEmbedPageBuilder WithBuilders(params Embed[] embeds)
     {
-        InteractiveGuards.NotNull(embeds);
+        ArgumentNullException.ThrowIfNull(embeds);
         return WithBuilders(embeds.AsEnumerable());
     }
 
@@ -129,7 +129,7 @@ public class MultiEmbedPageBuilder : IPageBuilder<MultiEmbedPage>, IPageBuilder
     /// <returns>This builder.</returns>
     public MultiEmbedPageBuilder WithBuilders(IEnumerable<Embed> embeds)
     {
-        InteractiveGuards.NotNull(embeds);
+        ArgumentNullException.ThrowIfNull(embeds);
         return WithBuilders(embeds.Select(x => x.ToEmbedBuilder()));
     }
 
@@ -140,7 +140,7 @@ public class MultiEmbedPageBuilder : IPageBuilder<MultiEmbedPage>, IPageBuilder
     /// <returns>This builder.</returns>
     public MultiEmbedPageBuilder AddBuilder(EmbedBuilder builder)
     {
-        InteractiveGuards.NotNull(builder);
+        ArgumentNullException.ThrowIfNull(builder);
         InteractiveGuards.EmbedCountInRange(Builders, ensureMaxCapacity: true);
         Builders.Add(builder);
         return this;
@@ -153,7 +153,7 @@ public class MultiEmbedPageBuilder : IPageBuilder<MultiEmbedPage>, IPageBuilder
     /// <returns>This builder.</returns>
     public MultiEmbedPageBuilder AddBuilder(Embed embed)
     {
-        InteractiveGuards.NotNull(embed);
+        ArgumentNullException.ThrowIfNull(embed);
         return AddBuilder(embed.ToEmbedBuilder());
     }
 
@@ -197,7 +197,7 @@ public class MultiEmbedPageBuilder : IPageBuilder<MultiEmbedPage>, IPageBuilder
     /// <returns>The current builder.</returns>
     public MultiEmbedPageBuilder WithStickers(IReadOnlyCollection<ISticker> stickers)
     {
-        InteractiveGuards.NotNull(stickers);
+        ArgumentNullException.ThrowIfNull(stickers);
         Stickers = stickers;
         return this;
     }
@@ -210,7 +210,7 @@ public class MultiEmbedPageBuilder : IPageBuilder<MultiEmbedPage>, IPageBuilder
     /// <returns>The current builder.</returns>
     public MultiEmbedPageBuilder WithAttachmentFactory(Func<FileAttachment?> attachmentFactory)
     {
-        InteractiveGuards.NotNull(attachmentFactory);
+        ArgumentNullException.ThrowIfNull(attachmentFactory);
         return WithAttachmentsFactory(() =>
         {
             var attachment = attachmentFactory();
@@ -226,7 +226,7 @@ public class MultiEmbedPageBuilder : IPageBuilder<MultiEmbedPage>, IPageBuilder
     /// <returns>The current builder.</returns>
     public MultiEmbedPageBuilder WithAttachmentFactory(Func<ValueTask<FileAttachment?>> attachmentFactory)
     {
-        InteractiveGuards.NotNull(attachmentFactory);
+        ArgumentNullException.ThrowIfNull(attachmentFactory);
         return WithAttachmentsFactory(async () =>
         {
             var attachment = await attachmentFactory().ConfigureAwait(false);
@@ -242,7 +242,7 @@ public class MultiEmbedPageBuilder : IPageBuilder<MultiEmbedPage>, IPageBuilder
     /// <returns>The current builder.</returns>
     public MultiEmbedPageBuilder WithAttachmentsFactory(Func<IEnumerable<FileAttachment>?> attachmentsFactory)
     {
-        InteractiveGuards.NotNull(attachmentsFactory);
+        ArgumentNullException.ThrowIfNull(attachmentsFactory);
         return WithAttachmentsFactory(() => new ValueTask<IEnumerable<FileAttachment>?>(attachmentsFactory()));
     }
 

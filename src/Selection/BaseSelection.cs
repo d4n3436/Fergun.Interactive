@@ -25,19 +25,19 @@ public abstract class BaseSelection<TOption> : IInteractiveElement<TOption>
     /// <param name="properties">The builder properties to copy from.</param>
     protected BaseSelection(IBaseSelectionBuilderProperties<TOption> properties)
     {
-        InteractiveGuards.NotNull(properties);
+        ArgumentNullException.ThrowIfNull(properties);
         InteractiveGuards.SupportedInputType(properties.InputType, ephemeral: false);
         InteractiveGuards.RequiredEmoteConverter(properties.InputType, properties.EmoteConverter);
-        InteractiveGuards.NotNull(properties.EqualityComparer);
-        InteractiveGuards.NotNull(properties.SelectionPage);
-        InteractiveGuards.NotNull(properties.Options);
-        InteractiveGuards.NotNull(properties.Users);
+        ArgumentNullException.ThrowIfNull(properties.EqualityComparer);
+        ArgumentNullException.ThrowIfNull(properties.SelectionPage);
+        ArgumentNullException.ThrowIfNull(properties.Options);
+        ArgumentNullException.ThrowIfNull(properties.Users);
         InteractiveGuards.NotEmpty(properties.Options);
         InteractiveGuards.NoDuplicates(properties.Options, properties.EqualityComparer);
 
         if (properties.RestrictedInputBehavior == RestrictedInputBehavior.SendMessage)
         {
-            InteractiveGuards.NotNull(properties.RestrictedPageFactory);
+            ArgumentNullException.ThrowIfNull(properties.RestrictedPageFactory);
         }
 
         StringConverter = properties.StringConverter;
@@ -243,8 +243,8 @@ public abstract class BaseSelection<TOption> : IInteractiveElement<TOption>
     /// <inheritdoc cref="IInteractiveInputHandler.HandleMessageAsync"/>
     public virtual async Task<InteractiveInputResult<TOption>> HandleMessageAsync(IMessage input, IUserMessage message)
     {
-        InteractiveGuards.NotNull(input);
-        InteractiveGuards.NotNull(message);
+        ArgumentNullException.ThrowIfNull(input);
+        ArgumentNullException.ThrowIfNull(message);
 
         if (!InputType.HasFlag(InputType.Messages) || !this.CanInteract(input.Author))
         {
@@ -290,8 +290,8 @@ public abstract class BaseSelection<TOption> : IInteractiveElement<TOption>
     /// <inheritdoc cref="IInteractiveInputHandler.HandleReactionAsync"/>
     public virtual async Task<InteractiveInputResult<TOption>> HandleReactionAsync(SocketReaction input, IUserMessage message)
     {
-        InteractiveGuards.NotNull(input);
-        InteractiveGuards.NotNull(message);
+        ArgumentNullException.ThrowIfNull(input);
+        ArgumentNullException.ThrowIfNull(message);
 
         if (!InputType.HasFlag(InputType.Reactions) || !this.CanInteract(input.UserId))
         {
@@ -337,8 +337,8 @@ public abstract class BaseSelection<TOption> : IInteractiveElement<TOption>
     /// <inheritdoc cref="IInteractiveInputHandler.HandleInteractionAsync"/>
     public virtual async Task<InteractiveInputResult<TOption>> HandleInteractionAsync(SocketMessageComponent input, IUserMessage message)
     {
-        InteractiveGuards.NotNull(input);
-        InteractiveGuards.NotNull(message);
+        ArgumentNullException.ThrowIfNull(input);
+        ArgumentNullException.ThrowIfNull(message);
 
         if ((!InputType.HasFlag(InputType.Buttons) && !InputType.HasFlag(InputType.SelectMenus)) || input.Message.Id != message.Id)
         {

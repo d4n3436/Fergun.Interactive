@@ -13,6 +13,10 @@ using JetBrains.Annotations;
 
 namespace Fergun.Interactive.Pagination;
 
+#if !NET9_0_OR_GREATER
+using Lock = object;
+#endif
+
 /// <summary>
 /// Represents an abstract immutable paginator.
 /// </summary>
@@ -23,7 +27,7 @@ public abstract class Paginator : IInteractiveElement<KeyValuePair<IEmote, Pagin
     private readonly Lazy<string> _lazyInvalidJumpInputMessage;
     private readonly Lazy<TimeoutTaskCompletionSource<IMessage?>> _lazyMessageTcs;
     private readonly Lazy<TimeoutTaskCompletionSource<IModalInteraction?>> _lazyModalTcs;
-    private readonly object _waitLock = new();
+    private readonly Lock _waitLock = new();
 
     /// <summary>
     /// Initializes a new instance of the <see cref="Paginator"/> class.
@@ -31,11 +35,11 @@ public abstract class Paginator : IInteractiveElement<KeyValuePair<IEmote, Pagin
     /// <param name="properties">The builder properties to copy from.</param>
     protected Paginator(IBasePaginatorBuilderProperties properties)
     {
-        InteractiveGuards.NotNull(properties);
-        InteractiveGuards.NotNull(properties.Users);
-        InteractiveGuards.NotNull(properties.Options);
-        InteractiveGuards.NotNull(properties.ButtonFactories);
-        InteractiveGuards.NotNull(properties.SelectMenuFactories);
+        ArgumentNullException.ThrowIfNull(properties);
+        ArgumentNullException.ThrowIfNull(properties.Users);
+        ArgumentNullException.ThrowIfNull(properties.Options);
+        ArgumentNullException.ThrowIfNull(properties.ButtonFactories);
+        ArgumentNullException.ThrowIfNull(properties.SelectMenuFactories);
         InteractiveGuards.NotEmpty(properties.ButtonFactories);
         InteractiveGuards.SupportedInputType(properties.InputType, ephemeral: false);
 
@@ -46,7 +50,7 @@ public abstract class Paginator : IInteractiveElement<KeyValuePair<IEmote, Pagin
 
         if (properties.RestrictedInputBehavior == RestrictedInputBehavior.SendMessage)
         {
-            InteractiveGuards.NotNull(properties.RestrictedPageFactory);
+            ArgumentNullException.ThrowIfNull(properties.RestrictedPageFactory);
         }
 
         Users = new ReadOnlyCollection<IUser>(properties.Users.ToArray());
@@ -261,7 +265,7 @@ public abstract class Paginator : IInteractiveElement<KeyValuePair<IEmote, Pagin
     /// <returns>A task representing the asynchronous operation. The task result contains whether the action succeeded.</returns>
     public virtual async ValueTask<bool> JumpToPageAsync(SocketReaction reaction)
     {
-        InteractiveGuards.NotNull(reaction);
+        ArgumentNullException.ThrowIfNull(reaction);
 
         if (JumpInputUserId != 0)
         {
@@ -338,7 +342,7 @@ public abstract class Paginator : IInteractiveElement<KeyValuePair<IEmote, Pagin
     /// <returns>A task representing the asynchronous operation. The task result contains whether the action succeeded.</returns>
     public virtual async ValueTask<bool> JumpToPageAsync(SocketMessageComponent interaction)
     {
-        InteractiveGuards.NotNull(interaction);
+        ArgumentNullException.ThrowIfNull(interaction);
 
         if (JumpInputUserId != 0)
         {
@@ -463,8 +467,8 @@ public abstract class Paginator : IInteractiveElement<KeyValuePair<IEmote, Pagin
     /// <remarks>By default, paginators only accept a message input for the "jump to page" action.</remarks>
     public virtual Task<InteractiveInputResult> HandleMessageAsync(IMessage input, IUserMessage message)
     {
-        InteractiveGuards.NotNull(input);
-        InteractiveGuards.NotNull(message);
+        ArgumentNullException.ThrowIfNull(input);
+        ArgumentNullException.ThrowIfNull(message);
 
         if (!this.CanInteract(input.Author) || JumpInputUserId == 0)
         {
@@ -478,8 +482,8 @@ public abstract class Paginator : IInteractiveElement<KeyValuePair<IEmote, Pagin
     /// <inheritdoc cref="IInteractiveInputHandler.HandleReactionAsync"/>
     public virtual async Task<InteractiveInputResult> HandleReactionAsync(SocketReaction input, IUserMessage message)
     {
-        InteractiveGuards.NotNull(input);
-        InteractiveGuards.NotNull(message);
+        ArgumentNullException.ThrowIfNull(input);
+        ArgumentNullException.ThrowIfNull(message);
 
         if (!InputType.HasFlag(InputType.Reactions) || input.MessageId != message.Id)
         {
@@ -525,8 +529,8 @@ public abstract class Paginator : IInteractiveElement<KeyValuePair<IEmote, Pagin
     /// <inheritdoc cref="IInteractiveInputHandler.HandleInteractionAsync"/>
     public virtual async Task<InteractiveInputResult> HandleInteractionAsync(SocketMessageComponent input, IUserMessage message)
     {
-        InteractiveGuards.NotNull(input);
-        InteractiveGuards.NotNull(message);
+        ArgumentNullException.ThrowIfNull(input);
+        ArgumentNullException.ThrowIfNull(message);
 
         if (!InputType.HasFlag(InputType.Buttons) || input.Message.Id != message.Id)
         {
@@ -576,8 +580,8 @@ public abstract class Paginator : IInteractiveElement<KeyValuePair<IEmote, Pagin
     /// <returns>A <see cref="Task{TResult}"/> containing the result.</returns>
     public virtual async ValueTask<InteractiveInputResult> HandleModalAsync(IModalInteraction input, IUserMessage message)
     {
-        InteractiveGuards.NotNull(input);
-        InteractiveGuards.NotNull(message);
+        ArgumentNullException.ThrowIfNull(input);
+        ArgumentNullException.ThrowIfNull(message);
 
         if (!ulong.TryParse(input.Data.CustomId, out ulong messageId) || messageId != message.Id || !this.CanInteract(input.User))
         {
@@ -647,7 +651,7 @@ public abstract class Paginator : IInteractiveElement<KeyValuePair<IEmote, Pagin
     {
         // Get last character of custom ID, convert it to a number and cast it to PaginatorAction
         action = (PaginatorAction)(input.Data.CustomId?[^1] - '0' ?? -1);
-        if (Enum.IsDefined(typeof(PaginatorAction), action))
+        if (Enum.IsDefined(action))
         {
             return true;
         }

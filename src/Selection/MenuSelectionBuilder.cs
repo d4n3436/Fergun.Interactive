@@ -64,7 +64,7 @@ public sealed class MenuSelectionBuilder<TOption> : BaseSelectionBuilder<MenuSel
     /// <returns>This builder.</returns>
     public MenuSelectionBuilder<TOption> WithInputHandler(Func<TOption, IPage?> inputHandler)
     {
-        InteractiveGuards.NotNull(inputHandler);
+        ArgumentNullException.ThrowIfNull(inputHandler);
         return WithInputHandler(input => new ValueTask<IPage?>(inputHandler(input[0])));
     }
 
@@ -82,7 +82,7 @@ public sealed class MenuSelectionBuilder<TOption> : BaseSelectionBuilder<MenuSel
     /// <returns>This builder.</returns>
     public MenuSelectionBuilder<TOption> WithInputHandler(Func<IReadOnlyList<TOption>, IPage?> inputHandler)
     {
-        InteractiveGuards.NotNull(inputHandler);
+        ArgumentNullException.ThrowIfNull(inputHandler);
         return WithInputHandler(input => new ValueTask<IPage?>(inputHandler(input)));
     }
 
@@ -102,7 +102,7 @@ public sealed class MenuSelectionBuilder<TOption> : BaseSelectionBuilder<MenuSel
     public MenuSelectionBuilder<TOption> WithInputHandler<TPage>(Func<TOption, ValueTask<TPage?>> inputHandler)
         where TPage : IPage
     {
-        InteractiveGuards.NotNull(inputHandler);
+        ArgumentNullException.ThrowIfNull(inputHandler);
         return WithInputHandler(async input => await inputHandler(input[0]).ConfigureAwait(false));
     }
 
@@ -122,7 +122,7 @@ public sealed class MenuSelectionBuilder<TOption> : BaseSelectionBuilder<MenuSel
     public MenuSelectionBuilder<TOption> WithInputHandler<TPage>(Func<IReadOnlyList<TOption>, ValueTask<TPage?>> inputHandler)
         where TPage : IPage
     {
-        InteractiveGuards.NotNull(inputHandler);
+        ArgumentNullException.ThrowIfNull(inputHandler);
         InputHandler = inputHandler as Func<IReadOnlyList<TOption>, ValueTask<IPage?>> ?? (async input => await inputHandler(input).ConfigureAwait(false));
         return this;
     }
