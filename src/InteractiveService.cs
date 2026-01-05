@@ -740,23 +740,29 @@ public class InteractiveService
     {
         InteractiveGuards.NotNull(interaction);
 
-        if (interaction is SocketMessageComponent componentInteraction)
+        (var message, string? customId) = interaction switch
         {
-            if (TryGetPaginator(componentInteraction.Message, out var paginator) && paginator.TryGetAction(componentInteraction, out _))
+            SocketModal modalInteraction => (modalInteraction.Message, modalInteraction.Data.CustomId),
+            SocketMessageComponent componentInteraction => (componentInteraction.Message, componentInteraction.Data.CustomId),
+            _ => (null, null)
+        };
+
+        if (message is not null)
+        {
+            // Modal interactions managed by old paginators use the message ID as custom ID
+            if (interaction is SocketMessageComponent messageComponent && TryGetPaginator(message, out var paginator) && paginator.TryGetAction(messageComponent, out _))
             {
                 return true;
             }
 
-            if (TryGetComponentPaginator(componentInteraction.Message, out var componentPaginator) && componentPaginator.OwnsComponent(componentInteraction.Data.CustomId))
+            if (customId is not null && TryGetComponentPaginator(message, out var componentPaginator) && componentPaginator.OwnsComponent(customId))
             {
                 return true;
             }
         }
 
-        string? customId = (interaction as SocketModal)?.Data?.CustomId ?? (interaction as SocketMessageComponent)?.Data?.CustomId;
-
         return ulong.TryParse(customId, out ulong messageId)
-            && _callbacks.ContainsKey(messageId);
+               && _callbacks.ContainsKey(messageId);
     }
 
     /// <summary>
