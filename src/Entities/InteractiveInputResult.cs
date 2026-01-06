@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using JetBrains.Annotations;
 
@@ -39,7 +40,7 @@ public class InteractiveInputResult<TOption> : InteractiveInputResult
     public InteractiveInputResult(InteractiveInputStatus status, IReadOnlyList<TOption> selectedOptions)
         : this(status)
     {
-        InteractiveGuards.NotNull(selectedOptions);
+        ArgumentNullException.ThrowIfNull(selectedOptions);
         InteractiveGuards.NotEmpty(selectedOptions);
 
         SelectedOptions = selectedOptions;

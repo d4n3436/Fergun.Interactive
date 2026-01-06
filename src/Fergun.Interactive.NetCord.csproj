@@ -1,8 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <Version>0.1.0</Version>
-    <LangVersion>preview</LangVersion>
+    <Version>0.1.1</Version>
+    <LangVersion>14</LangVersion>
     <Nullable>enable</Nullable>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <Authors>d4n3436</Authors>
@@ -18,7 +18,7 @@
     <Description>
 Port of Fergun.Interactive to NetCord.
     </Description>
-    <PackageReleaseNotes>https://github.com/d4n3436/Fergun.Interactive/releases</PackageReleaseNotes>
+    <PackageReleaseNotes>Brought in changes and fixes from master branch</PackageReleaseNotes>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <EnableNETAnalyzers>true</EnableNETAnalyzers>
     <PackageIcon>logo.png</PackageIcon>
@@ -27,8 +27,8 @@ Port of Fergun.Interactive to NetCord.
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="JetBrains.Annotations.Sources" Version="2025.2.0" PrivateAssets="all" />
-    <PackageReference Include="NetCord.Hosting" Version="1.0.0-alpha.438" />
+    <PackageReference Include="JetBrains.Annotations.Sources" Version="2025.2.4" PrivateAssets="all" />
+    <PackageReference Include="NetCord.Hosting" Version="1.0.0-alpha.452" />
   </ItemGroup>
 
   <ItemGroup>

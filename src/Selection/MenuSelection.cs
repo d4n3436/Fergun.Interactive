@@ -22,7 +22,7 @@ public sealed class MenuSelection<TOption> : BaseSelection<TOption>
     internal MenuSelection(MenuSelectionBuilder<TOption> builder)
         : base(builder)
     {
-        InteractiveGuards.NotNull(builder.InputHandler);
+        ArgumentNullException.ThrowIfNull(builder.InputHandler);
         SetDefaultValues = builder.SetDefaultValues;
         InputHandler = builder.InputHandler;
     }

@@ -60,7 +60,7 @@ public class WaitModule : ApplicationCommandModule<ApplicationCommandContext>
         var props = new InteractionMessageProperties
         {
             Content = "Press this button!",
-            Components = [builder],
+            Components = [builder]
         };
 
         await RespondAsync(InteractionCallback.Message(props));

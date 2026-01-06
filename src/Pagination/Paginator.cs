@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Linq;
 using System.Threading;
@@ -31,11 +30,13 @@ public abstract class Paginator : IInteractiveElement<KeyValuePair<EmojiProperti
     /// <param name="properties">The builder properties to copy from.</param>
     protected Paginator(IBasePaginatorBuilderProperties properties)
     {
-        InteractiveGuards.NotNull(properties);
-        InteractiveGuards.NotNull(properties.Users);
-        InteractiveGuards.NotNull(properties.Options);
-        InteractiveGuards.NotNull(properties.ButtonFactories);
-        InteractiveGuards.NotNull(properties.SelectMenuFactories);
+        ArgumentNullException.ThrowIfNull(properties);
+        ArgumentNullException.ThrowIfNull(properties.Users);
+        ArgumentNullException.ThrowIfNull(properties.Options);
+        ArgumentNullException.ThrowIfNull(properties.ButtonFactories);
+#pragma warning disable CS0618 // Type or member is obsolete
+        ArgumentNullException.ThrowIfNull(properties.SelectMenuFactories);
+#pragma warning restore CS0618 // Type or member is obsolete
         InteractiveGuards.NotEmpty(properties.ButtonFactories);
         InteractiveGuards.SupportedInputType(properties.InputType, ephemeral: false);
 
@@ -46,13 +47,15 @@ public abstract class Paginator : IInteractiveElement<KeyValuePair<EmojiProperti
 
         if (properties.RestrictedInputBehavior == RestrictedInputBehavior.SendMessage)
         {
-            InteractiveGuards.NotNull(properties.RestrictedPageFactory);
+            ArgumentNullException.ThrowIfNull(properties.RestrictedPageFactory);
         }
 
-        Users = new ReadOnlyCollection<User>(properties.Users.ToArray());
-        Emotes = new ReadOnlyDictionary<EmojiProperties, PaginatorAction>(new Dictionary<EmojiProperties, PaginatorAction>(properties.Options));
-        ButtonFactories = new ReadOnlyCollection<Func<IButtonContext, IPaginatorButton>>(properties.ButtonFactories.ToArray());
-        SelectMenuFactories = new ReadOnlyCollection<Func<ISelectMenuContext, IPaginatorSelectMenu>>(properties.SelectMenuFactories.ToArray());
+        Users = properties.Users.ToArray().AsReadOnly();
+        Emotes = properties.Options.ToDictionary().AsReadOnly();
+        ButtonFactories = properties.ButtonFactories.ToArray().AsReadOnly();
+#pragma warning disable CS0618 // Type or member is obsolete
+        SelectMenuFactories = properties.SelectMenuFactories.ToArray().AsReadOnly();
+#pragma warning restore CS0618 // Type or member is obsolete
         CanceledPage = properties.CanceledPage?.Build();
         TimeoutPage = properties.TimeoutPage?.Build();
         RestrictedPage = properties.RestrictedPageFactory?.Invoke(Users);
@@ -111,6 +114,7 @@ public abstract class Paginator : IInteractiveElement<KeyValuePair<EmojiProperti
     /// Gets the select menu factories.
     /// </summary>
     /// <remarks>Paginator select menus are detached from the paginator and their interactions must be manually handled.</remarks>
+    [Obsolete("Paginator select menus are obsolete and its functionality has been replaced by component paginators, which offer better control of select menus.")]
     public IReadOnlyList<Func<ISelectMenuContext, IPaginatorSelectMenu>> SelectMenuFactories { get; }
 
     /// <inheritdoc/>
@@ -262,7 +266,7 @@ public abstract class Paginator : IInteractiveElement<KeyValuePair<EmojiProperti
     /// <returns>A task representing the asynchronous operation. The task result contains whether the action succeeded.</returns>
     public virtual async ValueTask<bool> JumpToPageAsync(MessageReactionAddEventArgs reaction, RestMessage message)
     {
-        InteractiveGuards.NotNull(reaction);
+        ArgumentNullException.ThrowIfNull(reaction);
 
         if (JumpInputUserId != 0)
         {
@@ -342,7 +346,7 @@ public abstract class Paginator : IInteractiveElement<KeyValuePair<EmojiProperti
     /// <returns>A task representing the asynchronous operation. The task result contains whether the action succeeded.</returns>
     public virtual async ValueTask<bool> JumpToPageAsync(MessageComponentInteraction interaction)
     {
-        InteractiveGuards.NotNull(interaction);
+        ArgumentNullException.ThrowIfNull(interaction);
 
         if (JumpInputUserId != 0)
         {
@@ -453,6 +457,7 @@ public abstract class Paginator : IInteractiveElement<KeyValuePair<EmojiProperti
 
         builder.AddRange(buttons.Chunk(5).Select(x => new ActionRowProperties(x)));
 
+#pragma warning disable CS0618 // Type or member is obsolete
         for (int i = 0; i < SelectMenuFactories.Count; i++)
         {
             var context = new SelectMenuContext(i, CurrentPageIndex, MaxPageIndex, disableAll);
@@ -466,6 +471,7 @@ public abstract class Paginator : IInteractiveElement<KeyValuePair<EmojiProperti
 
             builder.Add(selectMenu);
         }
+#pragma warning restore CS0618 // Type or member is obsolete
 
         return builder;
     }
@@ -474,8 +480,8 @@ public abstract class Paginator : IInteractiveElement<KeyValuePair<EmojiProperti
     /// <remarks>By default, paginators only accept a message input for the "jump to page" action.</remarks>
     public virtual Task<InteractiveInputResult> HandleMessageAsync(Message input, RestMessage message)
     {
-        InteractiveGuards.NotNull(input);
-        InteractiveGuards.NotNull(message);
+        ArgumentNullException.ThrowIfNull(input);
+        ArgumentNullException.ThrowIfNull(message);
 
         if (!this.CanInteract(input.Author) || JumpInputUserId == 0)
         {
@@ -489,8 +495,8 @@ public abstract class Paginator : IInteractiveElement<KeyValuePair<EmojiProperti
     /// <inheritdoc cref="IInteractiveInputHandler.HandleReactionAsync"/>
     public virtual async Task<InteractiveInputResult> HandleReactionAsync(MessageReactionAddEventArgs input, RestMessage message)
     {
-        InteractiveGuards.NotNull(input);
-        InteractiveGuards.NotNull(message);
+        ArgumentNullException.ThrowIfNull(input);
+        ArgumentNullException.ThrowIfNull(message);
 
         if (!InputType.HasFlag(InputType.Reactions) || input.MessageId != message.Id)
         {
@@ -523,8 +529,8 @@ public abstract class Paginator : IInteractiveElement<KeyValuePair<EmojiProperti
     /// <inheritdoc cref="IInteractiveInputHandler.HandleInteractionAsync"/>
     public virtual async Task<InteractiveInputResult> HandleInteractionAsync(MessageComponentInteraction input, RestMessage message)
     {
-        InteractiveGuards.NotNull(input);
-        InteractiveGuards.NotNull(message);
+        ArgumentNullException.ThrowIfNull(input);
+        ArgumentNullException.ThrowIfNull(message);
 
         if (!InputType.HasFlag(InputType.Buttons) || input.Message.Id != message.Id)
         {
@@ -578,8 +584,8 @@ public abstract class Paginator : IInteractiveElement<KeyValuePair<EmojiProperti
     /// <returns>A <see cref="Task{TResult}"/> containing the result.</returns>
     public virtual async ValueTask<InteractiveInputResult> HandleModalAsync(ModalInteraction input, RestMessage message)
     {
-        InteractiveGuards.NotNull(input);
-        InteractiveGuards.NotNull(message);
+        ArgumentNullException.ThrowIfNull(input);
+        ArgumentNullException.ThrowIfNull(message);
 
         if (!ulong.TryParse(input.Data.CustomId, out ulong messageId) || messageId != message.Id || !this.CanInteract(input.User))
         {

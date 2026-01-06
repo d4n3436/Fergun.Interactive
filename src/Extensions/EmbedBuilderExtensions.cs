@@ -22,8 +22,8 @@ public static class EmbedPropertiesExtensions
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="builder"/> or <paramref name="paginator"/> are <see langword="null"/>.</exception>
     public static EmbedProperties WithPaginatorFooter(this EmbedProperties builder, IComponentPaginator paginator, PaginatorFooter style = PaginatorFooter.PageNumber)
     {
-        InteractiveGuards.NotNull(builder);
-        InteractiveGuards.NotNull(paginator);
+        ArgumentNullException.ThrowIfNull(builder);
+        ArgumentNullException.ThrowIfNull(paginator);
 
         if (style == PaginatorFooter.None)
             return builder;

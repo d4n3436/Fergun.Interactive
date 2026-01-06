@@ -1,8 +1,6 @@
 ﻿using ExampleBot;
 using ExampleBot.Modules;
-using Fergun.Interactive;
 using Fergun.Interactive.Extensions;
-using GScraper.DuckDuckGo;
 using GScraper.Google;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -21,7 +19,6 @@ builder.Services.AddComponentInteractions<StringMenuInteraction, StringMenuInter
 builder.Services.AddInteractiveService();
 
 builder.Services.AddSingleton<GoogleScraper>();
-builder.Services.AddSingleton<DuckDuckGoScraper>();
 
 var host = builder.Build();
 

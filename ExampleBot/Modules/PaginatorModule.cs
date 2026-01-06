@@ -6,7 +6,6 @@ using ExampleBot.Extensions;
 using Fergun.Interactive;
 using Fergun.Interactive.Extensions;
 using Fergun.Interactive.Pagination;
-using GScraper.DuckDuckGo;
 using GScraper.Google;
 using JetBrains.Annotations;
 using NetCord;
@@ -20,13 +19,11 @@ public class PaginatorModule : ApplicationCommandModule<ApplicationCommandContex
 {
     private readonly InteractiveService _interactive;
     private readonly GoogleScraper _googleScraper;
-    private readonly DuckDuckGoScraper _duckDuckGoScraper;
 
-    public PaginatorModule(InteractiveService interactive, GoogleScraper googleScraper, DuckDuckGoScraper duckDuckGoScraper)
+    public PaginatorModule(InteractiveService interactive, GoogleScraper googleScraper)
     {
         _interactive = interactive;
         _googleScraper = googleScraper;
-        _duckDuckGoScraper = duckDuckGoScraper;
     }
 
     [SlashCommand("paginator-static", "Sends a message with a static paginator. The paginator has pages that can be changed using buttons.")]
@@ -58,7 +55,6 @@ public class PaginatorModule : ApplicationCommandModule<ApplicationCommandContex
         // By default, SendPaginatorAsync sends the paginator and waits for a timeout or a cancellation.
         // If you want the method to return after sending the paginator, you can set the
         // ReturnAfterSendingPaginator option to true in the InteractiveService configuration, InteractiveServiceOptions.
-
     }
 
     [SlashCommand("paginator-lazy", "Sends a lazy-loaded paginator. The pages are generated using a page factory.")]

@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
@@ -41,24 +40,25 @@ public class ComponentPaginator : IComponentPaginator
     /// <exception cref="ArgumentOutOfRangeException">Thrown when the value of a property is outside the valid range.</exception>
     protected internal ComponentPaginator(IComponentPaginatorBuilder builder)
     {
-        InteractiveGuards.NotNull(builder);
-        InteractiveGuards.NotNull(builder.PageFactory);
+        ArgumentNullException.ThrowIfNull(builder);
+        ArgumentNullException.ThrowIfNull(builder.PageFactory);
 
         if (builder.RestrictedInputBehavior == RestrictedInputBehavior.SendMessage)
         {
-            InteractiveGuards.NotNull(builder.RestrictedPageFactory);
+            ArgumentNullException.ThrowIfNull(builder.RestrictedPageFactory);
         }
 
         InteractiveGuards.ValidActionOnStop(builder.ActionOnCancellation);
         InteractiveGuards.ValidActionOnStop(builder.ActionOnTimeout);
-        InteractiveGuards.LessThan(builder.PageCount, 1);
-        InteractiveGuards.ValueInRange(0, builder.PageCount - 1, builder.InitialPageIndex);
+        ArgumentOutOfRangeException.ThrowIfLessThan(builder.PageCount, 1);
+        ArgumentOutOfRangeException.ThrowIfLessThan(builder.InitialPageIndex, 0);
+        ArgumentOutOfRangeException.ThrowIfGreaterThan(builder.InitialPageIndex, builder.PageCount - 1);
 
         PageCount = builder.PageCount;
         CurrentPageIndex = builder.InitialPageIndex;
         PageFactory = builder.PageFactory;
         UserState = builder.UserState;
-        Users = new ReadOnlyCollection<User>(builder.Users.ToArray());
+        Users = builder.Users.ToArray().AsReadOnly();
         ActionOnCancellation = builder.ActionOnCancellation;
         ActionOnTimeout = builder.ActionOnTimeout;
         RestrictedInputBehavior = builder.RestrictedInputBehavior;
@@ -144,7 +144,7 @@ public class ComponentPaginator : IComponentPaginator
     /// <inheritdoc/>
     public virtual bool OwnsComponent(string customId)
     {
-        InteractiveGuards.NotNull(customId);
+        ArgumentNullException.ThrowIfNull(customId);
 
         return customId is NextPageId or PreviousPageId or FirstPageId or LastPageId or StopId or JumpId or JumpModalId;
     }
@@ -165,7 +165,7 @@ public class ComponentPaginator : IComponentPaginator
     /// <inheritdoc/>
     public virtual async ValueTask<InteractiveInputStatus> HandleInteractionAsync(MessageComponentInteraction interaction)
     {
-        InteractiveGuards.NotNull(interaction);
+        ArgumentNullException.ThrowIfNull(interaction);
 
         if (!this.CanInteract(interaction.User))
         {
@@ -217,7 +217,7 @@ public class ComponentPaginator : IComponentPaginator
     /// <inheritdoc/>
     public virtual async Task<RestMessage> RenderPageAsync(Interaction interaction, InteractionCallbackType responseType, bool isEphemeral, IPage? page = null)
     {
-        InteractiveGuards.NotNull(interaction);
+        ArgumentNullException.ThrowIfNull(interaction);
 
         page ??= await PageFactory(this).ConfigureAwait(false);
         var attachments = page.AttachmentsFactory is null ? [] : await page.AttachmentsFactory().ConfigureAwait(false);
@@ -276,7 +276,7 @@ public class ComponentPaginator : IComponentPaginator
     /// <inheritdoc/>
     public virtual async Task<RestMessage> RenderPageAsync(TextChannel channel, IPage? page = null)
     {
-        InteractiveGuards.NotNull(channel);
+        ArgumentNullException.ThrowIfNull(channel);
 
         page ??= await PageFactory(this).ConfigureAwait(false);
         var attachments = page.AttachmentsFactory is null ? [] : await page.AttachmentsFactory().ConfigureAwait(false);
@@ -300,7 +300,7 @@ public class ComponentPaginator : IComponentPaginator
     /// <inheritdoc/>
     public virtual async Task RenderPageAsync(RestMessage message, IPage? page = null)
     {
-        InteractiveGuards.NotNull(message);
+        ArgumentNullException.ThrowIfNull(message);
 
         page ??= await PageFactory(this).ConfigureAwait(false);
         var attachments = page.AttachmentsFactory is null ? [] : await page.AttachmentsFactory().ConfigureAwait(false);
@@ -323,7 +323,7 @@ public class ComponentPaginator : IComponentPaginator
     /// <inheritdoc/>
     public virtual async Task SendJumpPromptAsync(MessageComponentInteraction interaction)
     {
-        InteractiveGuards.NotNull(interaction);
+        ArgumentNullException.ThrowIfNull(interaction);
 
         var builder = JumpModalFactory?
             .Invoke(this)?
@@ -348,7 +348,7 @@ public class ComponentPaginator : IComponentPaginator
     /// <inheritdoc/>
     public virtual async ValueTask<InteractiveInputStatus> HandleModalInteractionAsync(ModalInteraction interaction)
     {
-        InteractiveGuards.NotNull(interaction);
+        ArgumentNullException.ThrowIfNull(interaction);
 
         if (!this.CanInteract(interaction.User))
         {
@@ -383,7 +383,7 @@ public class ComponentPaginator : IComponentPaginator
     /// <inheritdoc/>
     public virtual async ValueTask ApplyActionOnStopAsync(RestMessage message, MessageComponentInteraction? stopInteraction, bool deferInteraction)
     {
-        InteractiveGuards.NotNull(message);
+        ArgumentNullException.ThrowIfNull(message);
 
         var action = Status switch
         {

@@ -140,7 +140,7 @@ public abstract class BaseSelectionBuilder<TSelection, TOption, TBuilder>
     /// <returns>This builder.</returns>
     public virtual TBuilder WithEqualityComparer(IEqualityComparer<TOption> equalityComparer)
     {
-        InteractiveGuards.NotNull(equalityComparer);
+        ArgumentNullException.ThrowIfNull(equalityComparer);
         EqualityComparer = equalityComparer;
         return (TBuilder)this;
     }
@@ -165,7 +165,7 @@ public abstract class BaseSelectionBuilder<TSelection, TOption, TBuilder>
     /// <returns>This builder.</returns>
     public virtual TBuilder WithSelectionPage(IPageBuilder page)
     {
-        InteractiveGuards.NotNull(page);
+        ArgumentNullException.ThrowIfNull(page);
         SelectionPage = page;
         return (TBuilder)this;
     }
@@ -177,7 +177,7 @@ public abstract class BaseSelectionBuilder<TSelection, TOption, TBuilder>
     /// <returns>This builder.</returns>
     public virtual TBuilder WithUsers(params User[] users)
     {
-        InteractiveGuards.NotNull(users);
+        ArgumentNullException.ThrowIfNull(users);
         Users = users.ToList();
         return (TBuilder)this;
     }
@@ -189,7 +189,7 @@ public abstract class BaseSelectionBuilder<TSelection, TOption, TBuilder>
     /// <returns>This builder.</returns>
     public virtual TBuilder WithUsers(IEnumerable<User> users)
     {
-        InteractiveGuards.NotNull(users);
+        ArgumentNullException.ThrowIfNull(users);
         Users = users.ToList();
         return (TBuilder)this;
     }
@@ -201,7 +201,7 @@ public abstract class BaseSelectionBuilder<TSelection, TOption, TBuilder>
     /// <returns>This builder.</returns>
     public virtual TBuilder AddUser(User user)
     {
-        InteractiveGuards.NotNull(user);
+        ArgumentNullException.ThrowIfNull(user);
         Users.Add(user);
         return (TBuilder)this;
     }
@@ -209,7 +209,7 @@ public abstract class BaseSelectionBuilder<TSelection, TOption, TBuilder>
     /// <inheritdoc/>
     public virtual TBuilder WithOptions(ICollection<TOption> options)
     {
-        InteractiveGuards.NotNull(options);
+        ArgumentNullException.ThrowIfNull(options);
         Options = options;
         return (TBuilder)this;
     }
@@ -308,7 +308,7 @@ public abstract class BaseSelectionBuilder<TSelection, TOption, TBuilder>
     /// <returns>This builder.</returns>
     public virtual TBuilder WithRestrictedPage(IPage page)
     {
-        InteractiveGuards.NotNull(page);
+        ArgumentNullException.ThrowIfNull(page);
         return WithRestrictedPageFactory(_ => page);
     }
 
@@ -320,7 +320,7 @@ public abstract class BaseSelectionBuilder<TSelection, TOption, TBuilder>
     /// <returns>This builder.</returns>
     public virtual TBuilder WithRestrictedPageFactory(Func<IReadOnlyCollection<User>, IPage> pageFactory)
     {
-        InteractiveGuards.NotNull(pageFactory);
+        ArgumentNullException.ThrowIfNull(pageFactory);
         RestrictedPageFactory = pageFactory;
         return (TBuilder)this;
     }
@@ -368,7 +368,7 @@ public abstract class BaseSelectionBuilder<TSelection, TOption, TBuilder>
     /// <returns>This builder.</returns>
     public virtual TBuilder WithPlaceholder(string placeholder)
     {
-        InteractiveGuards.NotNull(placeholder);
+        ArgumentNullException.ThrowIfNull(placeholder);
         Placeholder = placeholder;
         return (TBuilder)this;
     }

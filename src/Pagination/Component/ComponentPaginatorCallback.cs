@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using System.Threading.Tasks;
 using NetCord;
 using NetCord.Gateway;
@@ -80,6 +81,11 @@ internal sealed class ComponentPaginatorCallback : IInteractiveCallback
                 StopInteraction = component;
                 Cancel();
                 break;
+
+            case InteractiveInputStatus.Ignored:
+                break;
+            default:
+                throw new UnreachableException();
         }
     }
 

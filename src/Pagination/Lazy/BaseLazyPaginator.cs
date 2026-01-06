@@ -22,7 +22,7 @@ public abstract class BaseLazyPaginator : Paginator
         : base(properties)
     {
         InteractiveGuards.SupportedPaginatorInputType(properties.InputType);
-        InteractiveGuards.NotNull(properties.PageFactory);
+        ArgumentNullException.ThrowIfNull(properties.PageFactory);
 
         PageFactory = AddPaginatorFooterAsync;
         MaxPageIndex = properties.MaxPageIndex;
@@ -67,9 +67,9 @@ public abstract class BaseLazyPaginator : Paginator
 
         page = await PageFactory(pageIndex).ConfigureAwait(false);
 
-        if (CacheLoadedPages && !_cachedPages.ContainsKey(pageIndex))
+        if (CacheLoadedPages)
         {
-            _cachedPages.Add(pageIndex, page);
+            _cachedPages.TryAdd(pageIndex, page);
         }
 
         return page;

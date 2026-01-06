@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
@@ -26,32 +25,32 @@ public abstract class BaseSelection<TOption> : IInteractiveElement<TOption>
     /// <param name="properties">The builder properties to copy from.</param>
     protected BaseSelection(IBaseSelectionBuilderProperties<TOption> properties)
     {
-        InteractiveGuards.NotNull(properties);
+        ArgumentNullException.ThrowIfNull(properties);
         InteractiveGuards.SupportedInputType(properties.InputType, ephemeral: false);
         InteractiveGuards.RequiredEmoteConverter(properties.InputType, properties.EmoteConverter);
-        InteractiveGuards.NotNull(properties.EqualityComparer);
-        InteractiveGuards.NotNull(properties.SelectionPage);
-        InteractiveGuards.NotNull(properties.Options);
-        InteractiveGuards.NotNull(properties.Users);
+        ArgumentNullException.ThrowIfNull(properties.EqualityComparer);
+        ArgumentNullException.ThrowIfNull(properties.SelectionPage);
+        ArgumentNullException.ThrowIfNull(properties.Options);
+        ArgumentNullException.ThrowIfNull(properties.Users);
         InteractiveGuards.NotEmpty(properties.Options);
         InteractiveGuards.NoDuplicates(properties.Options, properties.EqualityComparer);
 
         if (properties.RestrictedInputBehavior == RestrictedInputBehavior.SendMessage)
         {
-            InteractiveGuards.NotNull(properties.RestrictedPageFactory);
+            ArgumentNullException.ThrowIfNull(properties.RestrictedPageFactory);
         }
 
         StringConverter = properties.StringConverter;
         EmoteConverter = properties.EmoteConverter;
         EqualityComparer = properties.EqualityComparer;
         SelectionPage = properties.SelectionPage.Build();
-        Options = new ReadOnlyCollection<TOption>(properties.Options.ToArray());
+        Options = properties.Options.ToArray().AsReadOnly();
         AllowCancel = properties.AllowCancel && Options.Count > 1;
         CancelOption = AllowCancel ? Options.Last() : default;
         MinValues = properties.MinValues;
         MaxValues = properties.MaxValues;
         Placeholder = properties.Placeholder;
-        Users = new ReadOnlyCollection<User>(properties.Users.ToArray());
+        Users = properties.Users.ToArray().AsReadOnly();
         CanceledPage = properties.CanceledPage?.Build();
         TimeoutPage = properties.TimeoutPage?.Build();
         RestrictedPage = properties.RestrictedPageFactory?.Invoke(Users);
@@ -241,8 +240,8 @@ public abstract class BaseSelection<TOption> : IInteractiveElement<TOption>
     /// <inheritdoc cref="IInteractiveInputHandler.HandleMessageAsync"/>
     public virtual async Task<InteractiveInputResult<TOption>> HandleMessageAsync(Message input, RestMessage message)
     {
-        InteractiveGuards.NotNull(input);
-        InteractiveGuards.NotNull(message);
+        ArgumentNullException.ThrowIfNull(input);
+        ArgumentNullException.ThrowIfNull(message);
 
         if (!InputType.HasFlag(InputType.Messages) || !this.CanInteract(input.Author))
         {
@@ -277,8 +276,8 @@ public abstract class BaseSelection<TOption> : IInteractiveElement<TOption>
     /// <inheritdoc cref="IInteractiveInputHandler.HandleReactionAsync"/>
     public virtual async Task<InteractiveInputResult<TOption>> HandleReactionAsync(MessageReactionAddEventArgs input, RestMessage message)
     {
-        InteractiveGuards.NotNull(input);
-        InteractiveGuards.NotNull(message);
+        ArgumentNullException.ThrowIfNull(input);
+        ArgumentNullException.ThrowIfNull(message);
 
         if (!InputType.HasFlag(InputType.Reactions) || !this.CanInteract(input.UserId))
         {
@@ -313,8 +312,8 @@ public abstract class BaseSelection<TOption> : IInteractiveElement<TOption>
     /// <inheritdoc cref="IInteractiveInputHandler.HandleInteractionAsync"/>
     public virtual async Task<InteractiveInputResult<TOption>> HandleInteractionAsync(MessageComponentInteraction input, RestMessage message)
     {
-        InteractiveGuards.NotNull(input);
-        InteractiveGuards.NotNull(message);
+        ArgumentNullException.ThrowIfNull(input);
+        ArgumentNullException.ThrowIfNull(message);
 
         if ((!InputType.HasFlag(InputType.Buttons) && !InputType.HasFlag(InputType.SelectMenus)) || input.Message.Id != message.Id)
         {

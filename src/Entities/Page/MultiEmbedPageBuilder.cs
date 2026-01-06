@@ -118,7 +118,7 @@ public class MultiEmbedPageBuilder : IPageBuilder<MultiEmbedPage>, IPageBuilder
     /// <returns>This builder.</returns>
     public MultiEmbedPageBuilder AddBuilder(EmbedProperties builder)
     {
-        InteractiveGuards.NotNull(builder);
+        ArgumentNullException.ThrowIfNull(builder);
         InteractiveGuards.EmbedCountInRange(Builders, ensureMaxCapacity: true);
         Builders.Add(builder);
         return this;
@@ -164,7 +164,7 @@ public class MultiEmbedPageBuilder : IPageBuilder<MultiEmbedPage>, IPageBuilder
     /// <returns>The current builder.</returns>
     public MultiEmbedPageBuilder WithStickerIds(IReadOnlyCollection<ulong> stickerIds)
     {
-        InteractiveGuards.NotNull(stickerIds);
+        ArgumentNullException.ThrowIfNull(stickerIds);
         StickerIds = stickerIds;
         return this;
     }
@@ -177,7 +177,7 @@ public class MultiEmbedPageBuilder : IPageBuilder<MultiEmbedPage>, IPageBuilder
     /// <returns>The current builder.</returns>
     public MultiEmbedPageBuilder WithAttachmentFactory(Func<AttachmentProperties?> attachmentFactory)
     {
-        InteractiveGuards.NotNull(attachmentFactory);
+        ArgumentNullException.ThrowIfNull(attachmentFactory);
         return WithAttachmentsFactory(() =>
         {
             var attachment = attachmentFactory();
@@ -193,7 +193,7 @@ public class MultiEmbedPageBuilder : IPageBuilder<MultiEmbedPage>, IPageBuilder
     /// <returns>The current builder.</returns>
     public MultiEmbedPageBuilder WithAttachmentFactory(Func<ValueTask<AttachmentProperties?>> attachmentFactory)
     {
-        InteractiveGuards.NotNull(attachmentFactory);
+        ArgumentNullException.ThrowIfNull(attachmentFactory);
         return WithAttachmentsFactory(async () =>
         {
             var attachment = await attachmentFactory().ConfigureAwait(false);
@@ -209,7 +209,7 @@ public class MultiEmbedPageBuilder : IPageBuilder<MultiEmbedPage>, IPageBuilder
     /// <returns>The current builder.</returns>
     public MultiEmbedPageBuilder WithAttachmentsFactory(Func<IEnumerable<AttachmentProperties>?> attachmentsFactory)
     {
-        InteractiveGuards.NotNull(attachmentsFactory);
+        ArgumentNullException.ThrowIfNull(attachmentsFactory);
         return WithAttachmentsFactory(() => new ValueTask<IEnumerable<AttachmentProperties>?>(attachmentsFactory()));
     }
 

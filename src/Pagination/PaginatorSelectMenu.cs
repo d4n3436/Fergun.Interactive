@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using JetBrains.Annotations;
 using NetCord;
 using NetCord.Rest;
@@ -7,6 +8,7 @@ namespace Fergun.Interactive.Pagination;
 
 /// <inheritdoc cref="IPaginatorSelectMenu"/>
 [PublicAPI]
+[Obsolete("Paginator select menus are obsolete and its functionality has been replaced by component paginators, which offer better control of select menus.")]
 public class PaginatorSelectMenu : IPaginatorSelectMenu
 {
     private readonly StringMenuProperties _builder;
@@ -19,7 +21,7 @@ public class PaginatorSelectMenu : IPaginatorSelectMenu
     /// <param name="isDisabled">A value indicating whether to disable the select menu. If the value is null, the library will decide its status. This value overrides the one in <paramref name="builder"/>.</param>
     public PaginatorSelectMenu(StringMenuProperties builder, bool? isDisabled = null)
     {
-        InteractiveGuards.NotNull(builder);
+        ArgumentNullException.ThrowIfNull(builder);
         IsDisabled = isDisabled;
         _builder = builder;
     }

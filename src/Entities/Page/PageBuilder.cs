@@ -363,7 +363,7 @@ public class PageBuilder : IPageBuilder<Page>, IPageBuilder
     /// <returns>The current builder.</returns>
     public PageBuilder WithAuthor(string name, string? iconUrl = null, string? url = null)
     {
-        InteractiveGuards.NotNull(name);
+        ArgumentNullException.ThrowIfNull(name);
         var author = new EmbedAuthorProperties()
             .WithName(name)
             .WithIconUrl(iconUrl)
@@ -380,7 +380,7 @@ public class PageBuilder : IPageBuilder<Page>, IPageBuilder
     /// <returns>The current builder.</returns>
     public PageBuilder WithAuthor(User user)
     {
-        InteractiveGuards.NotNull(user);
+        ArgumentNullException.ThrowIfNull(user);
         return WithAuthor(user.Username, (user.GetAvatarUrl() ?? user.DefaultAvatarUrl).ToString());
     }
 
@@ -528,7 +528,7 @@ public class PageBuilder : IPageBuilder<Page>, IPageBuilder
     /// <returns>The current builder.</returns>
     public PageBuilder WithStickerIds(IReadOnlyCollection<ulong> stickerIds)
     {
-        InteractiveGuards.NotNull(stickerIds);
+        ArgumentNullException.ThrowIfNull(stickerIds);
         StickerIds = stickerIds;
         return this;
     }
@@ -541,7 +541,7 @@ public class PageBuilder : IPageBuilder<Page>, IPageBuilder
     /// <returns>The current builder.</returns>
     public PageBuilder WithAttachmentFactory(Func<AttachmentProperties?> attachmentFactory)
     {
-        InteractiveGuards.NotNull(attachmentFactory);
+        ArgumentNullException.ThrowIfNull(attachmentFactory);
         return WithAttachmentsFactory(() =>
         {
             var attachment = attachmentFactory();
@@ -557,7 +557,7 @@ public class PageBuilder : IPageBuilder<Page>, IPageBuilder
     /// <returns>The current builder.</returns>
     public PageBuilder WithAttachmentFactory(Func<ValueTask<AttachmentProperties?>> attachmentFactory)
     {
-        InteractiveGuards.NotNull(attachmentFactory);
+        ArgumentNullException.ThrowIfNull(attachmentFactory);
         return WithAttachmentsFactory(async () =>
         {
             var attachment = await attachmentFactory().ConfigureAwait(false);
@@ -573,7 +573,7 @@ public class PageBuilder : IPageBuilder<Page>, IPageBuilder
     /// <returns>The current builder.</returns>
     public PageBuilder WithAttachmentsFactory(Func<IEnumerable<AttachmentProperties>?> attachmentsFactory)
     {
-        InteractiveGuards.NotNull(attachmentsFactory);
+        ArgumentNullException.ThrowIfNull(attachmentsFactory);
         return WithAttachmentsFactory(() => new ValueTask<IEnumerable<AttachmentProperties>?>(attachmentsFactory()));
     }
 

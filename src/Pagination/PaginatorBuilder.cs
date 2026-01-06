@@ -57,6 +57,7 @@ public abstract class PaginatorBuilder<TPaginator, TBuilder>
     public virtual IList<Func<IButtonContext, IPaginatorButton>> ButtonFactories { get; protected set; } = [];
 
     /// <inheritdoc/>
+    [Obsolete("Paginator select menus are obsolete and its functionality has been replaced by component paginators, which offer better control of select menus.")]
     public virtual IList<Func<ISelectMenuContext, IPaginatorSelectMenu>> SelectMenuFactories { get; protected set; } = [];
 
     /// <inheritdoc/>
@@ -155,7 +156,7 @@ public abstract class PaginatorBuilder<TPaginator, TBuilder>
     /// <returns>This builder.</returns>
     public virtual TBuilder WithUsers(params User[] users)
     {
-        InteractiveGuards.NotNull(users);
+        ArgumentNullException.ThrowIfNull(users);
         Users = users.ToList();
         return (TBuilder)this;
     }
@@ -167,7 +168,7 @@ public abstract class PaginatorBuilder<TPaginator, TBuilder>
     /// <returns>This builder.</returns>
     public virtual TBuilder WithUsers(IEnumerable<User> users)
     {
-        InteractiveGuards.NotNull(users);
+        ArgumentNullException.ThrowIfNull(users);
         Users = users.ToList();
         return (TBuilder)this;
     }
@@ -179,7 +180,7 @@ public abstract class PaginatorBuilder<TPaginator, TBuilder>
     /// <returns>This builder.</returns>
     public virtual TBuilder AddUser(User user)
     {
-        InteractiveGuards.NotNull(user);
+        ArgumentNullException.ThrowIfNull(user);
         Users.Add(user);
         return (TBuilder)this;
     }
@@ -191,7 +192,7 @@ public abstract class PaginatorBuilder<TPaginator, TBuilder>
     /// <returns>This builder.</returns>
     public virtual TBuilder WithOptions(IDictionary<EmojiProperties, PaginatorAction> emotes)
     {
-        InteractiveGuards.NotNull(emotes);
+        ArgumentNullException.ThrowIfNull(emotes);
 
         Options.Clear();
         ButtonFactories.Clear();
@@ -211,7 +212,7 @@ public abstract class PaginatorBuilder<TPaginator, TBuilder>
     /// <returns>This builder.</returns>
     public virtual TBuilder WithOptions(IEnumerable<IPaginatorButton> buttons)
     {
-        InteractiveGuards.NotNull(buttons);
+        ArgumentNullException.ThrowIfNull(buttons);
 
         return WithOptions(buttons.Select(x => new Func<IButtonContext, IPaginatorButton>(_ => x)));
     }
@@ -223,7 +224,7 @@ public abstract class PaginatorBuilder<TPaginator, TBuilder>
     /// <returns>This builder.</returns>
     public virtual TBuilder WithOptions(IEnumerable<Func<IButtonContext, IPaginatorButton>> buttonFactories)
     {
-        InteractiveGuards.NotNull(buttonFactories);
+        ArgumentNullException.ThrowIfNull(buttonFactories);
 
         // Clear ButtonFactories instead of setting a new value, otherwise OptionsWrapper would break
         Options.Clear();
@@ -255,7 +256,7 @@ public abstract class PaginatorBuilder<TPaginator, TBuilder>
     /// <returns>This builder.</returns>
     public virtual TBuilder AddOption(EmojiProperties emote, PaginatorAction action)
     {
-        InteractiveGuards.NotNull(emote);
+        ArgumentNullException.ThrowIfNull(emote);
 
         // This will add the option to both Options and ButtonFactories
         Options.Add(emote, action);
@@ -299,6 +300,7 @@ public abstract class PaginatorBuilder<TPaginator, TBuilder>
     /// <exception cref="ArgumentException">Thrown when <paramref name="customId"/> is <see langword="null"/> or empty.</exception>
     /// <exception cref="InvalidOperationException">Thrown when <paramref name="emote"/> or <paramref name="text"/> do not have valid values.</exception>
     /// <returns>This builder.</returns>
+    [Obsolete("Detached paginator buttons are obsolete and its functionality has been replaced by component paginators, which offer better control of detached buttons.")]
     public virtual TBuilder AddOption(string customId, EmojiProperties? emote, string? text, ButtonStyle? style, bool? isDisabled = null)
     {
         if (string.IsNullOrEmpty(customId))
@@ -335,7 +337,7 @@ public abstract class PaginatorBuilder<TPaginator, TBuilder>
     /// <returns>This builder.</returns>
     public virtual TBuilder AddOption(IPaginatorButton button)
     {
-        InteractiveGuards.NotNull(button);
+        ArgumentNullException.ThrowIfNull(button);
 
         return AddOption(_ => button);
     }
@@ -347,7 +349,7 @@ public abstract class PaginatorBuilder<TPaginator, TBuilder>
     /// <returns>This builder.</returns>
     public virtual TBuilder AddOption(Func<IButtonContext, IPaginatorButton> buttonFactory)
     {
-        InteractiveGuards.NotNull(buttonFactory);
+        ArgumentNullException.ThrowIfNull(buttonFactory);
         ButtonFactories.Add(buttonFactory);
         return (TBuilder)this;
     }
@@ -361,9 +363,10 @@ public abstract class PaginatorBuilder<TPaginator, TBuilder>
     /// </remarks>
     /// <param name="builders">The select menu builders.</param>
     /// <returns>This builder.</returns>
+    [Obsolete("Paginator select menus are obsolete and its functionality has been replaced by component paginators, which offer better control of select menus.")]
     public virtual TBuilder WithSelectMenus(IEnumerable<StringMenuProperties> builders)
     {
-        InteractiveGuards.NotNull(builders);
+        ArgumentNullException.ThrowIfNull(builders);
         return WithSelectMenus(builders.Select(x => new PaginatorSelectMenu(x)));
     }
 
@@ -373,9 +376,10 @@ public abstract class PaginatorBuilder<TPaginator, TBuilder>
     /// <remarks>Paginator select menus are detached from the paginator and their interactions must be manually handled.</remarks>
     /// <param name="selectMenus">The paginator select menus.</param>
     /// <returns>This builder.</returns>
+    [Obsolete("Paginator select menus are obsolete and its functionality has been replaced by component paginators, which offer better control of select menus.")]
     public virtual TBuilder WithSelectMenus(IEnumerable<IPaginatorSelectMenu> selectMenus)
     {
-        InteractiveGuards.NotNull(selectMenus);
+        ArgumentNullException.ThrowIfNull(selectMenus);
         return WithSelectMenus(selectMenus.Select(x => new Func<ISelectMenuContext, IPaginatorSelectMenu>(_ => x)));
     }
 
@@ -385,9 +389,10 @@ public abstract class PaginatorBuilder<TPaginator, TBuilder>
     /// <remarks>Paginator select menus are detached from the paginator and their interactions must be manually handled.</remarks>
     /// <param name="selectMenuFactories">The paginator select menu factories.</param>
     /// <returns>This builder.</returns>
+    [Obsolete("Paginator select menus are obsolete and its functionality has been replaced by component paginators, which offer better control of select menus.")]
     public virtual TBuilder WithSelectMenus(IEnumerable<Func<ISelectMenuContext, IPaginatorSelectMenu>> selectMenuFactories)
     {
-        InteractiveGuards.NotNull(selectMenuFactories);
+        ArgumentNullException.ThrowIfNull(selectMenuFactories);
         SelectMenuFactories = selectMenuFactories.ToList();
         return (TBuilder)this;
     }
@@ -399,9 +404,10 @@ public abstract class PaginatorBuilder<TPaginator, TBuilder>
     /// <param name="builder">The select menu builder.</param>
     /// <param name="isDisabled">A value indicating whether to disable the select menu. If the value is null, the library will decide its status. This value overrides the one in <paramref name="builder"/>.</param>
     /// <returns>This builder.</returns>
+    [Obsolete("Paginator select menus are obsolete and its functionality has been replaced by component paginators, which offer better control of select menus.")]
     public virtual TBuilder AddSelectMenu(StringMenuProperties builder, bool? isDisabled = null)
     {
-        InteractiveGuards.NotNull(builder);
+        ArgumentNullException.ThrowIfNull(builder);
         return AddSelectMenu(new PaginatorSelectMenu(builder, isDisabled));
     }
 
@@ -411,9 +417,10 @@ public abstract class PaginatorBuilder<TPaginator, TBuilder>
     /// <remarks>Paginator select menus are detached from the paginator and their interactions must be manually handled.</remarks>
     /// <param name="selectMenu">The select menu.</param>
     /// <returns>This builder.</returns>
+    [Obsolete("Paginator select menus are obsolete and its functionality has been replaced by component paginators, which offer better control of select menus.")]
     public virtual TBuilder AddSelectMenu(IPaginatorSelectMenu selectMenu)
     {
-        InteractiveGuards.NotNull(selectMenu);
+        ArgumentNullException.ThrowIfNull(selectMenu);
         return AddSelectMenu(_ => selectMenu);
     }
 
@@ -423,9 +430,10 @@ public abstract class PaginatorBuilder<TPaginator, TBuilder>
     /// <remarks>Paginator select menus are detached from the paginator and their interactions must be manually handled.</remarks>
     /// <param name="selectMenuFactory">The select menu factory.</param>
     /// <returns>This builder.</returns>
+    [Obsolete("Paginator select menus are obsolete and its functionality has been replaced by component paginators, which offer better control of select menus.")]
     public virtual TBuilder AddSelectMenu(Func<ISelectMenuContext, IPaginatorSelectMenu> selectMenuFactory)
     {
-        InteractiveGuards.NotNull(selectMenuFactory);
+        ArgumentNullException.ThrowIfNull(selectMenuFactory);
         SelectMenuFactories.Add(selectMenuFactory);
         return (TBuilder)this;
     }
@@ -509,7 +517,7 @@ public abstract class PaginatorBuilder<TPaginator, TBuilder>
     /// <returns>This builder.</returns>
     public virtual TBuilder WithRestrictedPage(IPage page)
     {
-        InteractiveGuards.NotNull(page);
+        ArgumentNullException.ThrowIfNull(page);
         return WithRestrictedPageFactory(_ => page);
     }
 
@@ -521,7 +529,7 @@ public abstract class PaginatorBuilder<TPaginator, TBuilder>
     /// <returns>This builder.</returns>
     public virtual TBuilder WithRestrictedPageFactory(Func<IReadOnlyCollection<User>, IPage> pageFactory)
     {
-        InteractiveGuards.NotNull(pageFactory);
+        ArgumentNullException.ThrowIfNull(pageFactory);
         RestrictedPageFactory = pageFactory;
         return (TBuilder)this;
     }

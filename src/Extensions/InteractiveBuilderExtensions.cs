@@ -24,8 +24,8 @@ public static class InteractiveBuilderExtensions
         where TElement : IInteractiveElement<TOption>
         where TBuilder : IInteractiveBuilder<TElement, TOption, TBuilder>
     {
-        InteractiveGuards.NotNull(builder);
-        InteractiveGuards.NotNull(action);
+        ArgumentNullException.ThrowIfNull(builder);
+        ArgumentNullException.ThrowIfNull(action);
 
         action((TBuilder)builder);
         return (TBuilder)builder;
@@ -43,7 +43,7 @@ public static class InteractiveBuilderExtensions
         where TElement : IInteractiveElement<TOption>
         where TBuilder : IInteractiveBuilder<TElement, TOption, TBuilder>
     {
-        InteractiveGuards.NotNull(builder);
+        ArgumentNullException.ThrowIfNull(builder);
 
         return builder.WithRestrictedPageFactory(users =>
         {

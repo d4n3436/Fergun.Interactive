@@ -102,8 +102,8 @@ public static class ComponentExtensions
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="builder"/> or <paramref name="paginator"/> are <see langword="null"/>.</exception>
     public static ActionRowProperties AddButton(this ActionRowProperties builder, IComponentPaginator paginator, PaginatorAction action, string? label = null, ButtonStyle? style = null, EmojiProperties? emote = null)
     {
-        InteractiveGuards.NotNull(builder);
-        InteractiveGuards.NotNull(paginator);
+        ArgumentNullException.ThrowIfNull(builder);
+        ArgumentNullException.ThrowIfNull(paginator);
 
         builder.Add(CreateButton(paginator, action, label, style, emote));
         return builder;
@@ -118,8 +118,8 @@ public static class ComponentExtensions
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="builder"/> or <paramref name="paginator"/> are <see langword="null"/>.</exception>
     public static ActionRowProperties AddPaginatorButtons(this ActionRowProperties builder, IComponentPaginator paginator)
     {
-        InteractiveGuards.NotNull(builder);
-        InteractiveGuards.NotNull(paginator);
+        ArgumentNullException.ThrowIfNull(builder);
+        ArgumentNullException.ThrowIfNull(paginator);
 
         return builder.AddPreviousButton(paginator)
             .AddNextButton(paginator)
@@ -139,8 +139,8 @@ public static class ComponentExtensions
     /// <exception cref="ArgumentOutOfRangeException">Thrown when <paramref name="action"/> is invalid.</exception>
     public static ButtonProperties AsPaginatorButton(this ButtonProperties builder, IComponentPaginator paginator, PaginatorAction action)
     {
-        InteractiveGuards.NotNull(builder);
-        InteractiveGuards.NotNull(paginator);
+        ArgumentNullException.ThrowIfNull(builder);
+        ArgumentNullException.ThrowIfNull(paginator);
 
         return builder.WithCustomId(paginator.GetCustomId(action))
             .WithDisabled(paginator, action);
@@ -156,8 +156,8 @@ public static class ComponentExtensions
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="builder"/> or <paramref name="paginator"/> are <see langword="null"/>.</exception>
     public static ButtonProperties WithDisabled(this ButtonProperties builder, IComponentPaginator paginator, PaginatorAction? action = null)
     {
-        InteractiveGuards.NotNull(builder);
-        InteractiveGuards.NotNull(paginator);
+        ArgumentNullException.ThrowIfNull(builder);
+        ArgumentNullException.ThrowIfNull(paginator);
 
         return builder.WithDisabled(paginator.ShouldDisable(action));
     }
@@ -172,15 +172,15 @@ public static class ComponentExtensions
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="builder"/> or <paramref name="paginator"/> are <see langword="null"/>.</exception>
     public static TMenuProperties WithDisabled<TMenuProperties>(this TMenuProperties builder, IComponentPaginator paginator, PaginatorAction? action = null) where TMenuProperties : MenuProperties
     {
-        InteractiveGuards.NotNull(builder);
-        InteractiveGuards.NotNull(paginator);
+        ArgumentNullException.ThrowIfNull(builder);
+        ArgumentNullException.ThrowIfNull(paginator);
 
         return (TMenuProperties)builder.WithDisabled(paginator.ShouldDisable(action));
     }
 
     private static ButtonProperties CreateButton(IComponentPaginator paginator, PaginatorAction action, string? label = null, ButtonStyle? style = null, EmojiProperties? emote = null)
     {
-        InteractiveGuards.NotNull(paginator);
+        ArgumentNullException.ThrowIfNull(paginator);
 
         if (string.IsNullOrEmpty(label) && emote is null)
         {

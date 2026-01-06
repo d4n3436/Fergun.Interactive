@@ -39,6 +39,7 @@ public class PaginatorButton : IPaginatorButton
     /// <param name="text">The button text.</param>
     /// <param name="style">The button style.</param>
     /// <param name="isDisabled">A value indicating whether to disable the button.</param>
+    [Obsolete("Detached paginator buttons are obsolete and its functionality has been replaced by component paginators, which offer better control of detached buttons.")]
     public PaginatorButton(string customId, EmojiProperties? emote, string? text, ButtonStyle? style, bool? isDisabled = null)
      : this((PaginatorAction)(-1), emote, text, style, isDisabled)
     {

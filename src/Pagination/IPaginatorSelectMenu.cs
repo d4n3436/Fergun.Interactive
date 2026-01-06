@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using JetBrains.Annotations;
 using NetCord;
 using NetCord.Rest;
@@ -9,6 +10,7 @@ namespace Fergun.Interactive.Pagination;
 /// Represents a paginator select menu.
 /// </summary>
 [PublicAPI]
+[Obsolete("Paginator select menus are obsolete and its functionality has been replaced by component paginators, which offer better control of select menus.")]
 public interface IPaginatorSelectMenu
 {
     /// <summary>
