@@ -319,6 +319,7 @@ public abstract class PaginatorBuilder<TPaginator, TBuilder>
     /// <exception cref="ArgumentException">Thrown when <paramref name="customId"/> is <see langword="null"/> or empty.</exception>
     /// <exception cref="InvalidOperationException">Thrown when <paramref name="emote"/> or <paramref name="text"/> do not have valid values.</exception>
     /// <returns>This builder.</returns>
+    [Obsolete("Detached paginator buttons are obsolete and its functionality has been replaced by component paginators, which offer better control of detached buttons.")]
     public virtual TBuilder AddOption(string customId, IEmote? emote, string? text, ButtonStyle? style, bool? isDisabled = null)
     {
         if (string.IsNullOrEmpty(customId))
