@@ -55,6 +55,7 @@ public abstract class PaginatorBuilder<TPaginator, TBuilder>
     public virtual IList<Func<IButtonContext, IPaginatorButton>> ButtonFactories { get; protected set; } = [];
 
     /// <inheritdoc/>
+    [Obsolete("Paginator select menus are obsolete and its functionality has been replaced by component paginators, which offer better control of select menus.")]
     public virtual IList<Func<ISelectMenuContext, IPaginatorSelectMenu>> SelectMenuFactories { get; protected set; } = [];
 
     /// <inheritdoc/>
@@ -380,6 +381,7 @@ public abstract class PaginatorBuilder<TPaginator, TBuilder>
     /// </remarks>
     /// <param name="builders">The select menu builders.</param>
     /// <returns>This builder.</returns>
+    [Obsolete("Paginator select menus are obsolete and its functionality has been replaced by component paginators, which offer better control of select menus.")]
     public virtual TBuilder WithSelectMenus(IEnumerable<SelectMenuBuilder> builders)
     {
         ArgumentNullException.ThrowIfNull(builders);
@@ -392,6 +394,7 @@ public abstract class PaginatorBuilder<TPaginator, TBuilder>
     /// <remarks>Paginator select menus are detached from the paginator and their interactions must be manually handled.</remarks>
     /// <param name="selectMenus">The paginator select menus.</param>
     /// <returns>This builder.</returns>
+    [Obsolete("Paginator select menus are obsolete and its functionality has been replaced by component paginators, which offer better control of select menus.")]
     public virtual TBuilder WithSelectMenus(IEnumerable<IPaginatorSelectMenu> selectMenus)
     {
         ArgumentNullException.ThrowIfNull(selectMenus);
@@ -404,6 +407,7 @@ public abstract class PaginatorBuilder<TPaginator, TBuilder>
     /// <remarks>Paginator select menus are detached from the paginator and their interactions must be manually handled.</remarks>
     /// <param name="selectMenuFactories">The paginator select menu factories.</param>
     /// <returns>This builder.</returns>
+    [Obsolete("Paginator select menus are obsolete and its functionality has been replaced by component paginators, which offer better control of select menus.")]
     public virtual TBuilder WithSelectMenus(IEnumerable<Func<ISelectMenuContext, IPaginatorSelectMenu>> selectMenuFactories)
     {
         ArgumentNullException.ThrowIfNull(selectMenuFactories);
@@ -425,6 +429,7 @@ public abstract class PaginatorBuilder<TPaginator, TBuilder>
     /// <param name="channelTypes">The types of channels this menu can select (only valid on select menus of type <see cref="ComponentType.ChannelSelect"/>).</param>
     /// <param name="defaultValues">The default values of the select menu.</param>
     /// <returns>This builder.</returns>
+    [Obsolete("Paginator select menus are obsolete and its functionality has been replaced by component paginators, which offer better control of select menus.")]
     public virtual TBuilder AddSelectMenu(string customId, List<SelectMenuOptionBuilder>? options = null, string? placeholder = null, int maxValues = 1, int minValues = 1,
         bool? isDisabled = null, ComponentType type = ComponentType.SelectMenu, List<ChannelType>? channelTypes = null, List<SelectMenuDefaultValue>? defaultValues = null)
         => AddSelectMenu(new SelectMenuBuilder(customId, options, placeholder, maxValues, minValues, isDisabled ?? false, type, channelTypes, defaultValues), isDisabled);
@@ -436,6 +441,7 @@ public abstract class PaginatorBuilder<TPaginator, TBuilder>
     /// <param name="builder">The select menu builder.</param>
     /// <param name="isDisabled">A value indicating whether to disable the select menu. If the value is null, the library will decide its status. This value overrides the one in <paramref name="builder"/>.</param>
     /// <returns>This builder.</returns>
+    [Obsolete("Paginator select menus are obsolete and its functionality has been replaced by component paginators, which offer better control of select menus.")]
     public virtual TBuilder AddSelectMenu(SelectMenuBuilder builder, bool? isDisabled = null)
     {
         ArgumentNullException.ThrowIfNull(builder);
@@ -448,6 +454,7 @@ public abstract class PaginatorBuilder<TPaginator, TBuilder>
     /// <remarks>Paginator select menus are detached from the paginator and their interactions must be manually handled.</remarks>
     /// <param name="selectMenu">The select menu.</param>
     /// <returns>This builder.</returns>
+    [Obsolete("Paginator select menus are obsolete and its functionality has been replaced by component paginators, which offer better control of select menus.")]
     public virtual TBuilder AddSelectMenu(IPaginatorSelectMenu selectMenu)
     {
         ArgumentNullException.ThrowIfNull(selectMenu);
@@ -460,6 +467,7 @@ public abstract class PaginatorBuilder<TPaginator, TBuilder>
     /// <remarks>Paginator select menus are detached from the paginator and their interactions must be manually handled.</remarks>
     /// <param name="selectMenuFactory">The select menu factory.</param>
     /// <returns>This builder.</returns>
+    [Obsolete("Paginator select menus are obsolete and its functionality has been replaced by component paginators, which offer better control of select menus.")]
     public virtual TBuilder AddSelectMenu(Func<ISelectMenuContext, IPaginatorSelectMenu> selectMenuFactory)
     {
         ArgumentNullException.ThrowIfNull(selectMenuFactory);

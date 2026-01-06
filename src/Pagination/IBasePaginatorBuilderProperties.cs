@@ -47,6 +47,7 @@ public interface IBasePaginatorBuilderProperties : IInteractiveBuilderProperties
     /// Gets the select menu factories.
     /// </summary>
     /// <remarks>Paginator select menus are detached from the paginator and their interactions must be manually handled.</remarks>
+    [Obsolete("Paginator select menus are obsolete and its functionality has been replaced by component paginators, which offer better control of select menus.")]
     IList<Func<ISelectMenuContext, IPaginatorSelectMenu>> SelectMenuFactories { get; }
 
     /// <summary>

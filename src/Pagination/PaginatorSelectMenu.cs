@@ -7,6 +7,7 @@ namespace Fergun.Interactive.Pagination;
 
 /// <inheritdoc cref="IPaginatorSelectMenu"/>
 [PublicAPI]
+[Obsolete("This property is obsolete and its functionality has been replaced by component paginators, which offer better control of select menus.")]
 public class PaginatorSelectMenu : IPaginatorSelectMenu
 {
     private readonly SelectMenuBuilder _builder;

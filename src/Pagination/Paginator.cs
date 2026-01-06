@@ -38,7 +38,9 @@ public abstract class Paginator : IInteractiveElement<KeyValuePair<IEmote, Pagin
         ArgumentNullException.ThrowIfNull(properties.Users);
         ArgumentNullException.ThrowIfNull(properties.Options);
         ArgumentNullException.ThrowIfNull(properties.ButtonFactories);
+#pragma warning disable CS0618 // Type or member is obsolete
         ArgumentNullException.ThrowIfNull(properties.SelectMenuFactories);
+#pragma warning restore CS0618 // Type or member is obsolete
         InteractiveGuards.NotEmpty(properties.ButtonFactories);
         InteractiveGuards.SupportedInputType(properties.InputType, ephemeral: false);
 
@@ -55,7 +57,9 @@ public abstract class Paginator : IInteractiveElement<KeyValuePair<IEmote, Pagin
         Users = properties.Users.ToArray().AsReadOnly();
         Emotes = properties.Options.ToDictionary().AsReadOnly();
         ButtonFactories = properties.ButtonFactories.ToArray().AsReadOnly();
+#pragma warning disable CS0618 // Type or member is obsolete
         SelectMenuFactories = properties.SelectMenuFactories.ToArray().AsReadOnly();
+#pragma warning restore CS0618 // Type or member is obsolete
         CanceledPage = properties.CanceledPage?.Build();
         TimeoutPage = properties.TimeoutPage?.Build();
         RestrictedPage = properties.RestrictedPageFactory?.Invoke(Users);
@@ -114,6 +118,7 @@ public abstract class Paginator : IInteractiveElement<KeyValuePair<IEmote, Pagin
     /// Gets the select menu factories.
     /// </summary>
     /// <remarks>Paginator select menus are detached from the paginator and their interactions must be manually handled.</remarks>
+    [Obsolete("Paginator select menus are obsolete and its functionality has been replaced by component paginators, which offer better control of select menus.")]
     public IReadOnlyList<Func<ISelectMenuContext, IPaginatorSelectMenu>> SelectMenuFactories { get; }
 
     /// <inheritdoc/>
@@ -445,6 +450,7 @@ public abstract class Paginator : IInteractiveElement<KeyValuePair<IEmote, Pagin
             builder.WithButton(button);
         }
 
+#pragma warning disable CS0618 // Type or member is obsolete
         for (int i = 0; i < SelectMenuFactories.Count; i++)
         {
             var context = new SelectMenuContext(i, CurrentPageIndex, MaxPageIndex, disableAll);
@@ -458,6 +464,7 @@ public abstract class Paginator : IInteractiveElement<KeyValuePair<IEmote, Pagin
 
             builder.WithSelectMenu(selectMenu);
         }
+#pragma warning restore CS0618 // Type or member is obsolete
 
         return builder;
     }

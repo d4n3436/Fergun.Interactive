@@ -1,9 +1,11 @@
-﻿using JetBrains.Annotations;
+﻿using System;
+using JetBrains.Annotations;
 
 namespace Fergun.Interactive.Pagination;
 
 /// <inheritdoc cref="ISelectMenuContext"/>
 [PublicAPI]
+[Obsolete("Paginator select menus are obsolete and its functionality has been replaced by component paginators, which offer better control of select menus.")]
 public readonly struct SelectMenuContext : ISelectMenuContext
 {
     private readonly bool _disableAll;
