@@ -82,7 +82,7 @@ public static class PaginatorBuilderExtensions
         ArgumentNullException.ThrowIfNull(builder);
         ArgumentNullException.ThrowIfNull(pageFactory);
 
-        builder.PageFactory = pageFactory as Func<IComponentPaginator, ValueTask<IPage>> ?? (async index => await pageFactory(index).ConfigureAwait(false));
+        builder.PageFactory = pageFactory as Func<IComponentPaginator, ValueTask<IPage>> ?? (async paginator => await pageFactory(paginator).ConfigureAwait(false));
         return builder;
     }
 
