@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <Version>1.9.2-beta.1</Version>
+    <Version>1.9.2</Version>
     <LangVersion>14</LangVersion>
     <Nullable>enable</Nullable>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
@@ -26,7 +26,7 @@ This is a fork of Discord.InteractivityAddon that adds several features like mor
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Discord.Net.WebSocket" Version="3.19.0-beta.1" />
+    <PackageReference Include="Discord.Net.WebSocket" Version="3.19.1" />
     <PackageReference Include="JetBrains.Annotations.Sources" Version="2025.2.4" PrivateAssets="all" />
   </ItemGroup>
 
